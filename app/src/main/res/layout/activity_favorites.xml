@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/favoritesRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F5F5">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/favoritesToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#4CAF50"
+        app:title="My Favorites"
+        app:titleTextColor="@android:color/white"
+        app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/favoritesRv"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_margin="8dp"
+        android:padding="8dp"
+        android:clipToPadding="false" />
+
+    <TextView
+        android:id="@+id/emptyFavoritesTv"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="No favorites yet\nAdd products to your wishlist!"
+        android:textSize="18sp"
+        android:textColor="@android:color/darker_gray"
+        android:textAlignment="center"
+        android:visibility="gone"
+        android:layout_gravity="center"
+        android:gravity="center" />
+
+    <!-- Custom Bottom Navigation -->
+    <include layout="@layout/bottom_navigation_custom" />
+
+</LinearLayout>

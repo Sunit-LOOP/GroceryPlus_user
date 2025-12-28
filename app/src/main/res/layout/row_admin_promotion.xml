@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            
+            <TextView
+                android:id="@+id/promoCodeTv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="SUMMER50"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#333333" />
+                
+            <ImageView
+                android:id="@+id/deletePromoBtn"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_delete" 
+                app:tint="#D32F2F"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/promoDiscountTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="50% Discount"
+            android:textColor="#4CAF50"
+            android:layout_marginTop="4dp"/>
+
+        <TextView
+            android:id="@+id/promoValidUntilTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Valid until: 2024-12-31"
+            android:textSize="12sp"
+            android:textColor="#757575"
+            android:layout_marginTop="4dp"/>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

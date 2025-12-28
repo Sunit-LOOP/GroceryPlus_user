@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:usesCleartextTraffic="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.GroceryPLus">
+        <activity
+            android:name=".SplashScreenActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SignupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UserHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminDashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SearchActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CartActivity"
+            android:exported="false" />
+        <activity
+            android:name=".OrderHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UserProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MessageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UserDetailViewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UserSettingViewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProductDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PaymentActivity"
+            android:label="Checkout"
+            android:exported="false" />
+        <activity
+            android:name=".AdminLoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".OrderSuccessActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FavoritesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.ProductManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.CategoryManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.OrderManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.CustomerManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AnalyticsDashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.PromotionManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.ReviewsManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.DeliveryPersonnelActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.PaymentTrackingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AdminMessagesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".OrderTrackingActivity"
+            android:label="Track Order"
+            android:parentActivityName=".OrderHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MapPickerActivity"
+            android:label="Select Delivery Location"
+            android:exported="false" />
+        <activity
+            android:name=".NotificationActivity"
+            android:label="Notifications"
+            android:exported="false" />
+        <activity
+            android:name=".AddressManagementActivity"
+            android:label="My Addresses"
+            android:exported="false" />
+        <activity
+            android:name=".VendorMapActivity"
+            android:label="Nearby Vendors"
+            android:exported="false" />
+        <activity
+            android:name=".admin.VendorManagementActivity"
+            android:label="Vendor Management"
+            android:exported="false" />
+        <activity
+            android:name=".FakePaymentActivity"
+            android:exported="false" />
+    </application>
+
+</manifest>

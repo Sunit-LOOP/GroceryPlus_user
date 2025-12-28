@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">GroceryPLus</string>
+    <string name="admin_welcome">Welcome, Admin!</string>
+    <string name="admin_dashboard_subtitle">Manage your grocery plus application from here</string>
+    <string name="manage_products">Manage Products</string>
+    <string name="manage_categories">Manage Categories</string>
+    <string name="customer_management">Customer Management</string>
+    <string name="message_customers">Message Customers</string>
+    <string name="order_management">Order Management</string>
+    <string name="analytics_dashboard">Analytics Dashboard</string>
+    <string name="promotions">Promotions</string>
+    <string name="reviews_management">Reviews Management</string>
+    <string name="payment_received">Payment Received</string>
+    <string name="delivery_management">Delivery Management</string>
+    <string name="vendor_management">Vendor Management</string>
+    <string name="logout">Logout</string>
+</resources>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="#E0E0E0">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/paymentOrderIdTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Order #1234"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="#1A1A1A"/>
+
+                <TextView
+                    android:id="@+id/paymentDateTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dec 12, 2024 • 10:30 AM"
+                    android:textSize="12sp"
+                    android:textColor="#757575"
+                    android:layout_marginTop="2dp"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/paymentAmountTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rs. 150.00"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="#4CAF50"/>
+
+        </LinearLayout>
+
+        <!-- Payment Method -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="#F5F5F5"
+            android:padding="12dp"
+            android:radius="8dp">
+
+            <ImageView
+                android:id="@+id/paymentMethodIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/stripe_icon"
+                android:layout_marginEnd="8dp"/>
+
+            <TextView
+                android:id="@+id/paymentMethodTv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Stripe Payment"
+                android:textSize="14sp"
+                android:textColor="#1A1A1A"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/statusChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Completed"
+                android:textSize="10sp"
+                app:chipBackgroundColor="#E8F5E9"
+                android:textColor="#4CAF50"/>
+
+        </LinearLayout>
+
+        <!-- Transaction ID -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Transaction ID: "
+                android:textSize="12sp"
+                android:textColor="#757575"/>
+
+            <TextView
+                android:id="@+id/paymentTransactionIdTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TXN1234567890"
+                android:textSize="12sp"
+                android:textColor="#1A1A1A"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

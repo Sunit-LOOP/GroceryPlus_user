@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#EEEEEE"
+            app:strokeWidth="1dp">
+            
+            <ImageView
+                android:id="@+id/cartProductImageIv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/product_icon"
+                android:contentDescription="Product Image" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
+
+            <TextView
+                android:id="@+id/cartProductNameTv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Product Name"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="#212121"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/cartProductPriceTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rs. 0.00"
+                android:textSize="14sp"
+                android:textColor="#4CAF50"
+                android:fontFamily="sans-serif-black"
+                android:layout_marginTop="4dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/rounded_gray_background"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp">
+
+                <ImageButton
+                    android:id="@+id/decreaseQuantityBtn"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_remove"
+                    android:padding="4dp"
+                    app:tint="#757575"
+                    android:contentDescription="Decrease"/>
+
+                <TextView
+                    android:id="@+id/cartQuantityTv"
+                    android:layout_width="30dp"
+                    android:layout_height="wrap_content"
+                    android:text="1"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#212121"
+                    android:gravity="center"
+                    android:layout_marginHorizontal="8dp" />
+
+                <ImageButton
+                    android:id="@+id/increaseQuantityBtn"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_add"
+                    app:tint="#757575"
+                    android:padding="4dp"
+                    android:contentDescription="Increase"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/cartSubtotalTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Subtotal: Rs. 0.00"
+                android:textSize="12sp"
+                android:textColor="#757575"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/removeCartItemBtn"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_gravity="top|end"
+            android:contentDescription="Remove"
+            app:tint="#E53935"/>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,52 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    
+    <!-- Head -->
+    <path
+        android:fillColor="#FFCCBC"
+        android:pathData="M50,25c5.5,0 10,4.5 10,10s-4.5,10 -10,10s-10,-4.5 -10,-10S44.5,25 50,25z"/>
+    
+    <!-- Body -->
+    <path
+        android:fillColor="#2196F3"
+        android:pathData="M40,35h20v30h-20z"/>
+    
+    <!-- Left Arm -->
+    <path
+        android:fillColor="#FFCCBC"
+        android:pathData="M35,35h5v20h-5z"/>
+    
+    <!-- Right Arm -->
+    <path
+        android:fillColor="#FFCCBC"
+        android:pathData="M60,35h5v20h-5z"/>
+    
+    <!-- Left Leg -->
+    <path
+        android:fillColor="#424242"
+        android:pathData="M42,65h6v20h-6z"/>
+    
+    <!-- Right Leg -->
+    <path
+        android:fillColor="#424242"
+        android:pathData="M52,65h6v20h-6z"/>
+    
+    <!-- Cap -->
+    <path
+        android:fillColor="#F44336"
+        android:pathData="M40,20h20v10h-20z"/>
+    
+    <!-- Package box -->
+    <path
+        android:fillColor="#FFC107"
+        android:pathData="M65,45h15v15h-15z"/>
+    
+    <!-- Box details -->
+    <path
+        android:fillColor="#FFA000"
+        android:pathData="M65,45h15v2h-15z"/>
+    
+</vector>

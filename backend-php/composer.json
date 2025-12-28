@@ -1,0 +1,12 @@
+{
+    "name": "groceryplus-stripe-backend",
+    "description": "PHP backend for Stripe payments in GroceryPlus app",
+    "require": {
+        "stripe/stripe-php": "^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "GroceryPlus\\": "src/"
+        }
+    }
+}

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            
+            <TextView
+                android:id="@+id/reviewProductTv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Product Name"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#333333" />
+                
+            <ImageView
+                android:id="@+id/deleteReviewBtn"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_delete" 
+                app:tint="#D32F2F"/>
+        </LinearLayout>
+
+        <RatingBar
+            android:id="@+id/reviewRatingBar"
+            style="?android:attr/ratingBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:rating="4"
+            android:layout_marginTop="4dp"
+            android:theme="@style/Widget.AppCompat.RatingBar.Small"
+            android:progressTint="#FFC107"/>
+
+        <TextView
+            android:id="@+id/reviewCommentTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Great product!"
+            android:textColor="#555555"
+            android:layout_marginTop="8dp"/>
+
+        <TextView
+            android:id="@+id/reviewUserTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="By: User Name - 2024-12-12"
+            android:textSize="12sp"
+            android:textColor="#757575"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

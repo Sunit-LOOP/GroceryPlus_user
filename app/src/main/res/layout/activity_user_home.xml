@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/home_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F8F9FA">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/homeToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00C853"
+        app:title="Grocery Plus"
+        app:titleTextColor="@android:color/white"
+        app:titleCentered="true">
+
+        <ImageView
+            android:id="@+id/notification_bell"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/ic_notifications"
+            app:tint="@android:color/white"/>
+
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="24dp">
+
+            <!-- Search Bar -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnSearchField"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_margin="16dp"
+                app:cardCornerRadius="25dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#EEEEEE">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp">
+                    <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/search_icon" app:tint="#757575"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Search for fresh items..." android:layout_marginStart="12dp" android:textColor="#9E9E9E"/>
+                </LinearLayout>
+             </com.google.android.material.card.MaterialCardView>
+
+             <!-- Banner Carousel -->
+             <androidx.viewpager2.widget.ViewPager2
+                 android:id="@+id/bannerViewPager"
+                 android:layout_width="match_parent"
+                 android:layout_height="250dp"
+                 android:layout_marginBottom="8dp" />
+
+             <com.google.android.material.tabs.TabLayout
+                 android:id="@+id/bannerIndicator"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="center_horizontal"
+                 android:layout_marginBottom="16dp"
+                 app:tabBackground="@drawable/tab_indicator_selector"
+                 app:tabGravity="center"
+                 app:tabIndicatorHeight="0dp" />
+
+             <!-- Explore Vendors Map Link -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/exploreVendorsCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E0E0E0">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="12dp"
+                    android:gravity="center_vertical">
+                    <ImageView 
+                        android:layout_width="40dp" 
+                        android:layout_height="40dp" 
+                        android:src="@drawable/map_icon" 
+                        app:tint="#00C853"/>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+                        <TextView 
+                            android:layout_width="wrap_content" 
+                            android:layout_height="wrap_content" 
+                            android:text="Discover Local Vendors" 
+                            android:textStyle="bold" 
+                            android:textColor="#333333"/>
+                        <TextView 
+                            android:layout_width="wrap_content" 
+                            android:layout_height="wrap_content" 
+                            android:text="See stores around you on the map" 
+                            android:textSize="12sp" 
+                            android:textColor="#757575"/>
+                    </LinearLayout>
+                    <ImageView 
+                        android:layout_width="20dp" 
+                        android:layout_height="20dp" 
+                        android:src="@drawable/ic_chevron_right" 
+                        app:tint="#BDBDBD"/>
+                </LinearLayout>
+             </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/freeDeliveryGoalCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android.layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E8F5E9"
+                android:visibility="gone">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp"
+                    android:background="#E8F5E9">
+                    <TextView
+                        android:id="@+id/freeDeliveryTv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Add ₹200 more for FREE delivery"
+                        android:textColor="#2E7D32"
+                        android:textStyle="bold"
+                        android:textSize="13sp"/>
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/freeDeliveryProgress"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        app:indicatorColor="#00C853"
+                        app:trackColor="#C8E6C9"
+                        app:trackThickness="6dp"
+                        app:trackCornerRadius="3dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Delivery Time & Buy Again Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="16dp"
+                android:gravity="center_vertical">
+                
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#FFF3E0">
+                    <TextView
+                        android:id="@+id/deliveryTimeTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="12dp"
+                        android:paddingRight="12dp"
+                        android:paddingTop="6dp"
+                        android:paddingBottom="6dp"
+                        android:text="20 mins"
+                        android:textColor="#E65100"
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        app:drawableStartCompat="@android:drawable/ic_dialog_info"
+                        app:drawableTint="#E65100"
+                        android:drawablePadding="4dp"/>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- Shop by Category -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Shop by Category" android:textSize="18sp" android:textStyle="bold" android:layout_marginStart="16dp" android:layout_marginBottom="12dp" android:textColor="#212121"/>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/categoriesRv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="8dp"
+                android:clipToPadding="false"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- Buy Again -->
+            <LinearLayout
+                android:id="@+id/buyAgainSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginBottom="24dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Buy Again" android:textSize="18sp" android:textStyle="bold" android:layout_marginStart="16dp" android:layout_marginBottom="12dp" android:textColor="#212121"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/buyAgainRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="8dp"
+                    android:clipToPadding="false"/>
+            </LinearLayout>
+
+            <!-- Recommended for You -->
+            <LinearLayout
+                android:id="@+id/recommendationSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
+                <TextView 
+                    android:layout_width="wrap_content" 
+                    android:layout_height="wrap_content" 
+                    android:text="Recommended for You" 
+                    android:textSize="18sp" 
+                    android:textStyle="bold" 
+                    android:layout_marginStart="16dp" 
+                    android:layout_marginBottom="12dp" 
+                    android:textColor="#212121"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recommendedRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="8dp"
+                    android:clipToPadding="false"/>
+            </LinearLayout>
+
+            <!-- Featured Products -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Handpicked for You" android:textSize="18sp" android:textStyle="bold" android:layout_marginStart="16dp" android:layout_marginBottom="12dp" android:textColor="#212121"/>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/featuredRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="8dp"
+                android:clipToPadding="false"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- All Products Header -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:layout_marginBottom="12dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="All Products" android:textSize="18sp" android:textStyle="bold" android:textColor="#212121"/>
+                <ImageView
+                    android:id="@+id/sortIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/sort_icon"
+                    app:tint="#00C853"/>
+            </RelativeLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/allProductsRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:nestedScrollingEnabled="false"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <include layout="@layout/bottom_navigation_custom" />
+
+</LinearLayout>
