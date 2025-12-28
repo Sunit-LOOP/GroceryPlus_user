@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sunit.groceryplus.adapters.OrderAdapter;
 import com.sunit.groceryplus.models.Order;
 import com.sunit.groceryplus.models.OrderItem;
-import com.sunit.groceryplus.network.ApiService;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public class OrderHistoryActivity extends AppCompatActivity {
     private int userId;
     private OrderRepository orderRepository;
     private OrderAdapter orderAdapter;
-    private ApiService apiService;
+
     private List<Order> orders = new ArrayList<>();
 
     @Override
@@ -58,7 +58,7 @@ public class OrderHistoryActivity extends AppCompatActivity {
 
         // Initialize repositories
         orderRepository = new OrderRepository(this);
-        apiService = new ApiService(this);
+
 
         // Initialize views
         initViews();
@@ -115,37 +115,7 @@ public class OrderHistoryActivity extends AppCompatActivity {
     }
 
     private void loadOrders() {
-        // Try API first, fallback to database
-        apiService.getOrders(new ApiService.ApiCallback<org.json.JSONArray>() {
-            @Override
-            public void onSuccess(org.json.JSONArray response) {
-                try {
-                    orders.clear();
-                    for (int i = 0; i < response.length(); i++) {
-                        org.json.JSONObject orderJson = response.getJSONObject(i);
-                        Order order = parseOrderFromJson(orderJson);
-                        orders.add(order);
-                    }
-
-                    if (!orders.isEmpty()) {
-                        orderAdapter.updateOrders(orders);
-                        showOrders();
-                        Log.d(TAG, "Loaded " + orders.size() + " orders from API");
-                    } else {
-                        showEmptyOrders();
-                    }
-                } catch (org.json.JSONException e) {
-                    Log.e(TAG, "Error parsing orders from API", e);
-                    loadOrdersFromDatabase();
-                }
-            }
-
-            @Override
-            public void onError(String error) {
-                Log.d(TAG, "API orders failed: " + error + " - Loading from database");
-                loadOrdersFromDatabase();
-            }
-        });
+        loadOrdersFromDatabase();
     }
 
     private void loadOrdersFromDatabase() {

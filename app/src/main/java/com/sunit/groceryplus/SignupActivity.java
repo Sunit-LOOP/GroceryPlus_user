@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.sunit.groceryplus.models.User;
-import com.sunit.groceryplus.network.ApiService;
+
 
 public class SignupActivity extends AppCompatActivity {
 
@@ -27,7 +27,7 @@ public class SignupActivity extends AppCompatActivity {
     private Button signupButton;
     private TextView loginTextView;
     private UserRepository userRepository;
-    private ApiService apiService;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +39,7 @@ public class SignupActivity extends AppCompatActivity {
 
         // Initialize repositories
         userRepository = new UserRepository(this);
-        apiService = new ApiService(this);
+
 
         // Set click listeners
         setClickListeners();
@@ -129,49 +129,29 @@ public class SignupActivity extends AppCompatActivity {
         signupButton.setEnabled(false);
         signupButton.setText("Registering...");
 
-        // Try API registration first
-        Log.d(TAG, "Attempting API registration for email: " + email);
-        apiService.register(name, email, password, phone, new ApiService.ApiCallback<org.json.JSONObject>() {
-            @Override
-            public void onSuccess(org.json.JSONObject response) {
-                Log.d(TAG, "=== API REGISTRATION SUCCESSFUL ===");
-                Toast.makeText(SignupActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
+        // Use database registration
+        if (userRepository.isUserExists(email)) {
+            signupButton.setEnabled(true);
+            signupButton.setText("Sign Up");
+            Toast.makeText(SignupActivity.this, "User with this email already exists", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                // Navigate to login screen
-                Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
-                startActivity(intent);
-                finish();
-            }
+        boolean success = userRepository.registerUser(name, email, phone, password, "customer");
+        if (success) {
+            Log.d(TAG, "=== DATABASE REGISTRATION SUCCESSFUL ===");
+            Toast.makeText(SignupActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "User registered: " + name + " (" + email + ")");
 
-            @Override
-            public void onError(String error) {
-                Log.d(TAG, "API registration failed: " + error + " - Trying database registration");
-
-                // Fallback to database registration (for admin users)
-                if (userRepository.isUserExists(email)) {
-                    signupButton.setEnabled(true);
-                    signupButton.setText("Sign Up");
-                    Toast.makeText(SignupActivity.this, "User with this email already exists", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                boolean success = userRepository.registerUser(name, email, phone, password, "customer");
-                if (success) {
-                    Log.d(TAG, "=== DATABASE REGISTRATION SUCCESSFUL ===");
-                    Toast.makeText(SignupActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "User registered: " + name + " (" + email + ")");
-
-                    // Navigate to login screen
-                    Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    signupButton.setEnabled(true);
-                    signupButton.setText("Sign Up");
-                    Toast.makeText(SignupActivity.this, "Registration failed. Please try again.", Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "Both API and database registration failed for email: " + email);
-                }
-            }
-        });
+            // Navigate to login screen
+            Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            signupButton.setEnabled(true);
+            signupButton.setText("Sign Up");
+            Toast.makeText(SignupActivity.this, "Registration failed. Please try again.", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Database registration failed for email: " + email);
+        }
     }
 }

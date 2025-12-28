@@ -19,7 +19,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.sunit.groceryplus.adapters.ReviewAdapter;
 import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.models.Review;
-import com.sunit.groceryplus.network.ApiService;
+
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ProductRepository productRepository;
     private CartRepository cartRepository;
     private ReviewRepository reviewRepository;
-    private ApiService apiService;
+
     
     private Product product;
     private ReviewAdapter reviewAdapter;
@@ -66,7 +66,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         productRepository = new ProductRepository(this);
         cartRepository = new CartRepository(this);
         reviewRepository = new ReviewRepository(this);
-        apiService = new ApiService(this);
+
 
         initViews();
         setupReviewsRecyclerView();
@@ -129,54 +129,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private void loadReviews() {
-        // Try API first, fallback to database
-        apiService.getProductReviews(productId, new ApiService.ApiCallback<java.util.List<org.json.JSONObject>>() {
-            @Override
-            public void onSuccess(java.util.List<JSONObject> response) {
-                try {
-                    reviewList.clear();
-                    float totalRating = 0;
-                    for (JSONObject reviewJson : response) {
-                        int reviewId = reviewJson.optInt("review_id", 0);
-                        int userIdFromJson = reviewJson.optInt("user_id", 0);
-                        String userName = reviewJson.optString("user_name", "Anonymous");
-                        int productIdFromJson = reviewJson.optInt("product_id", 0);
-                        String productName = ""; // API might not provide this
-                        int rating = (int) reviewJson.optDouble("rating", 0);
-                        String comment = reviewJson.optString("comment", "");
-                        String createdAt = reviewJson.optString("review_date", "");
-
-                        Review review = new Review(reviewId, userIdFromJson, userName, productIdFromJson, productName, rating, comment, createdAt);
-                        reviewList.add(review);
-                        totalRating += review.getRating();
-                    }
-
-                    float avgRating = reviewList.isEmpty() ? 0 : totalRating / reviewList.size();
-                    productAvgRatingTv.setText(String.format("%.1f", avgRating));
-                    productAvgRatingBar.setRating(avgRating);
-                    productReviewCountTv.setText("Based on " + reviewList.size() + " reviews");
-
-                    if (reviewList.isEmpty()) {
-                        noReviewsTv.setVisibility(View.VISIBLE);
-                        productReviewsRv.setVisibility(View.GONE);
-                    } else {
-                        noReviewsTv.setVisibility(View.GONE);
-                        productReviewsRv.setVisibility(View.VISIBLE);
-                        reviewAdapter.updateReviews(reviewList);
-                    }
-                    Log.d(TAG, "Loaded reviews from API");
-                } catch (Exception e) {
-                    Log.e(TAG, "Error parsing reviews from API", e);
-                    loadReviewsFromDatabase();
-                }
-            }
-
-            @Override
-            public void onError(String error) {
-                Log.d(TAG, "API reviews failed: " + error + " - Loading from database");
-                loadReviewsFromDatabase();
-            }
-        });
+        loadReviewsFromDatabase();
     }
 
     private void loadReviewsFromDatabase() {
@@ -243,60 +196,26 @@ public class ProductDetailActivity extends AppCompatActivity {
                 return;
             }
 
-            // Try API first, fallback to database
-            java.util.Map<String, Object> reviewData = new java.util.HashMap<>();
-            reviewData.put("product_id", productId);
-            reviewData.put("rating", rating);
-            reviewData.put("comment", comment);
-
-            apiService.submitReview(reviewData, new ApiService.ApiCallback<JSONObject>() {
-                @Override
-                public void onSuccess(JSONObject response) {
-                    Toast.makeText(ProductDetailActivity.this, "Review submitted successfully", Toast.LENGTH_SHORT).show();
-                    loadReviews();
-                    dialog.dismiss();
-                    Log.d(TAG, "Review submitted via API");
-                }
-
-                @Override
-                public void onError(String error) {
-                    Log.d(TAG, "API submit review failed: " + error + " - Using database");
-                    long result = reviewRepository.addReview(userId, productId, rating, comment);
-                    if (result != -1) {
-                        Toast.makeText(ProductDetailActivity.this, "Review submitted successfully", Toast.LENGTH_SHORT).show();
-                        loadReviews();
-                        dialog.dismiss();
-                    } else {
-                        Toast.makeText(ProductDetailActivity.this, "Failed to submit review", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
+            long result = reviewRepository.addReview(userId, productId, rating, comment);
+            if (result != -1) {
+                Toast.makeText(ProductDetailActivity.this, "Review submitted successfully", Toast.LENGTH_SHORT).show();
+                loadReviews();
+                dialog.dismiss();
+            } else {
+                Toast.makeText(ProductDetailActivity.this, "Failed to submit review", Toast.LENGTH_SHORT).show();
+            }
         });
 
         dialog.show();
     }
 
     private void addToCart() {
-        // Try API first, fallback to database
-        apiService.addToCart(productId, quantity, new ApiService.ApiCallback<org.json.JSONObject>() {
-            @Override
-            public void onSuccess(org.json.JSONObject response) {
-                Toast.makeText(ProductDetailActivity.this, "Added to cart", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Product added to cart via API");
-                finish();
-            }
-
-            @Override
-            public void onError(String error) {
-                Log.d(TAG, "API add to cart failed: " + error + " - Using database");
-                if (cartRepository.addToCart(userId, productId, quantity)) {
-                    Toast.makeText(ProductDetailActivity.this, "Added to cart", Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
-                    Toast.makeText(ProductDetailActivity.this, "Failed to add to cart", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        if (cartRepository.addToCart(userId, productId, quantity)) {
+            Toast.makeText(ProductDetailActivity.this, "Added to cart", Toast.LENGTH_SHORT).show();
+            finish();
+        } else {
+            Toast.makeText(ProductDetailActivity.this, "Failed to add to cart", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private int getImageResource(String imageName) {

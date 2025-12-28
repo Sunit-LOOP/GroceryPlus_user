@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sunit.groceryplus.adapters.ProductAdapter;
 import com.sunit.groceryplus.models.Product;
-import com.sunit.groceryplus.network.ApiService;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public class FavoritesActivity extends AppCompatActivity {
     private FavoriteRepository favoriteRepository;
     private CartRepository cartRepository;
     private ProductAdapter productAdapter;
-    private ApiService apiService;
+
 
     private List<Product> favoriteProducts = new ArrayList<>();
 
@@ -49,7 +49,7 @@ public class FavoritesActivity extends AppCompatActivity {
         // Initialize repositories
         favoriteRepository = new FavoriteRepository(this);
         cartRepository = new CartRepository(this);
-        apiService = new ApiService(this);
+
 
         // Initialize views
         initViews();
