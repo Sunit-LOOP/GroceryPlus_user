@@ -39,17 +39,21 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.mpandroidchart)
     implementation(libs.circleimageview)
-    
+
     // Glide for image loading
     implementation("com.github.bumptech.glide:glide:5.0.5")
     annotationProcessor("com.github.bumptech.glide:compiler:5.0.5")
-    
+
     // OSMDroid for Maps
     implementation("org.osmdroid:osmdroid-android:6.1.20")
-    
+
     // Stripe Android SDK for future use
     implementation("com.stripe:stripe-android:22.5.0")
-    
+
+    // Retrofit for networking
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
