@@ -14,19 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.card.MaterialCardView;
 import android.widget.RadioButton;
 import com.sunit.groceryplus.models.CartItem;
-import com.sunit.groceryplus.network.ApiClient;
-import com.sunit.groceryplus.network.ApiService;
-import com.sunit.groceryplus.network.PaymentIntentRequest;
-import com.sunit.groceryplus.network.PaymentIntentResponse;
+import com.sunit.groceryplus.models.CartItem;
 import com.sunit.groceryplus.utils.Config;
-
-import com.stripe.android.PaymentConfiguration;
-import com.stripe.android.paymentsheet.PaymentSheet;
-import com.stripe.android.paymentsheet.PaymentSheetResult;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class PaymentActivity extends AppCompatActivity {
 
@@ -38,14 +27,11 @@ public class PaymentActivity extends AppCompatActivity {
     private RadioButton creditCardRadio, cashOnDeliveryRadio;
     private MaterialCardView stripeCard, codCard;
     
-    private PaymentSheet paymentSheet;
-    private String paymentIntentClientSecret;
     private double finalAmount = 0.0;
     private int userId = -1;
 
     // Database helper
     private com.sunit.groceryplus.DatabaseHelper dbHelper;
-    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,20 +39,8 @@ public class PaymentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_payment);
         
         // Initialize Stripe
-        PaymentConfiguration.init(this, Config.STRIPE_PUBLISHABLE_KEY);
-        paymentSheet = new PaymentSheet(this, this::onPaymentSheetResult);
-        
-        // Get user ID from intent
-        userId = getIntent().getIntExtra("user_id", -1);
-        if (userId == -1) {
-            Toast.makeText(this, "Invalid user", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-        
         // Initialize database helper
         dbHelper = new com.sunit.groceryplus.DatabaseHelper(this);
-        apiService = new ApiService(this);
         
         initViews();
         setupToolbar();
@@ -176,83 +150,10 @@ public class PaymentActivity extends AppCompatActivity {
         startActivity(intent);
     }
     
-    private void createPaymentIntent() {
-        Log.d(TAG, "Creating PaymentIntent for amount: " + finalAmount);
-        
-        // Convert amount to paisa (Stripe expects amount in smallest currency unit)
-        int amountInPaisa = (int) (finalAmount * 100);
-
-        PaymentIntentRequest request = new PaymentIntentRequest(amountInPaisa, "npr");
-        
-        ApiClient.getStripeApi().createPaymentIntent(request)
-            .enqueue(new Callback<PaymentIntentResponse>() {
-                @Override
-                public void onResponse(Call<PaymentIntentResponse> call, Response<PaymentIntentResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        paymentIntentClientSecret = response.body().getClientSecret();
-                        Log.d(TAG, "PaymentIntent created successfully");
-                        presentPaymentSheet();
-                    } else {
-                        String errorMsg = "Failed to create payment intent";
-                        Log.e(TAG, errorMsg + " (Code: " + response.code() + ")");
-                        Toast.makeText(PaymentActivity.this, errorMsg, Toast.LENGTH_LONG).show();
-                        resetPayButton();
-                    }
-                }
-                
-                @Override
-                public void onFailure(Call<PaymentIntentResponse> call, Throwable t) {
-                    Log.e(TAG, "Network error creating PaymentIntent", t);
-                    String errorMsg = "Network error: " + t.getMessage();
-                    
-                    // More specific timeout and network error handling
-                    if (t instanceof java.net.SocketTimeoutException) {
-                        errorMsg = "Payment request timed out. Please check your connection and try again.";
-                    } else if (t instanceof java.net.ConnectException) {
-                        errorMsg = "Cannot connect to payment server. Please check internet connection.";
-                    } else if (t instanceof java.net.UnknownHostException) {
-                        errorMsg = "Payment server not found. Please check server URL.";
-                    } else if (t instanceof java.io.IOException) {
-                        errorMsg = "Network error. Please check your internet connection.";
-                    }
-                    
-                    Toast.makeText(PaymentActivity.this, errorMsg, Toast.LENGTH_LONG).show();
-                    resetPayButton();
-                }
-            });
-    }
-    
-    private void presentPaymentSheet() {
-        if (paymentIntentClientSecret != null) {
-            PaymentSheet.Configuration configuration = new PaymentSheet.Configuration("GroceryPlus");
-            paymentSheet.presentWithPaymentIntent(paymentIntentClientSecret, configuration);
-        } else {
-            Log.e(TAG, "Cannot present PaymentSheet - client secret is null");
-            Toast.makeText(this, "Payment configuration error", Toast.LENGTH_SHORT).show();
-            resetPayButton();
-        }
-    }
-    
-    private void onPaymentSheetResult(final PaymentSheetResult paymentSheetResult) {
-        resetPayButton();
-
-        if (paymentSheetResult instanceof PaymentSheetResult.Completed) {
-            Toast.makeText(this, "Payment successfully completed!", Toast.LENGTH_SHORT).show();
-            createOrder("stripe");
-        } else if (paymentSheetResult instanceof PaymentSheetResult.Canceled) {
-            Log.d(TAG, "Payment canceled");
-            Toast.makeText(this, "Payment canceled", Toast.LENGTH_SHORT).show();
-        } else if (paymentSheetResult instanceof PaymentSheetResult.Failed) {
-            Throwable error = ((PaymentSheetResult.Failed) paymentSheetResult).getError();
-            Log.e(TAG, "Payment failed", error);
-            Toast.makeText(this, "Payment failed: " + error.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
-    
     private void createOrder(String paymentMethod) {
         Log.d(TAG, "Creating order with payment method: " + paymentMethod);
 
-        // Get cart items from database for the API call
+        // Get cart items from database
         CartRepository cartRepo = new CartRepository(this);
         java.util.List<CartItem> cartItems = cartRepo.getCartItems(userId);
         if (cartItems == null || cartItems.isEmpty()) {
@@ -260,49 +161,10 @@ public class PaymentActivity extends AppCompatActivity {
             return;
         }
 
-        // Prepare cart items for API
-        org.json.JSONArray cartItemsArray = new org.json.JSONArray();
-        try {
-            for (CartItem item : cartItems) {
-                org.json.JSONObject itemObj = new org.json.JSONObject();
-                itemObj.put("product_id", item.getProductId());
-                itemObj.put("quantity", item.getQuantity());
-                cartItemsArray.put(itemObj);
-            }
-        } catch (org.json.JSONException e) {
-            Log.e(TAG, "Error preparing cart items", e);
-            Toast.makeText(this, "Error preparing order", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Try API first, fallback to database
-        apiService.placeOrder(cartItemsArray, "Kathmandu, Nepal", new ApiService.ApiCallback<org.json.JSONObject>() {
-            @Override
-            public void onSuccess(org.json.JSONObject response) {
-                Log.d(TAG, "Order placed successfully via API");
-
-                // Clear cart after successful order
-                dbHelper.clearCart(userId);
-
-                // Show success message
-                String message = "Order placed successfully!";
-                Toast.makeText(PaymentActivity.this, message, Toast.LENGTH_LONG).show();
-
-                // Navigate to order success
-                Intent intent = new Intent(PaymentActivity.this, com.sunit.groceryplus.OrderSuccessActivity.class);
-                intent.putExtra("user_id", userId);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                finish();
-            }
-
-            @Override
-            public void onError(String error) {
-                Log.d(TAG, "API place order failed: " + error + " - Using database");
-                createOrderDatabase(paymentMethod);
-            }
-        });
+        createOrderDatabase(paymentMethod);
     }
+    
+
 
     private void createOrderDatabase(String paymentMethod) {
         // Create order using direct database method

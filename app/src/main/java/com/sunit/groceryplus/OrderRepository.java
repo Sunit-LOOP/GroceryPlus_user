@@ -5,29 +5,20 @@ import android.util.Log;
 
 import com.sunit.groceryplus.models.Order;
 import com.sunit.groceryplus.models.OrderItem;
-import com.sunit.groceryplus.network.ApiClient;
-import com.sunit.groceryplus.network.GroceryApi;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import com.sunit.groceryplus.utils.DeliveryOptimizer;
+
 public class OrderRepository {
     private static final String TAG = "OrderRepository";
     private DatabaseHelper dbHelper;
     private Context context;
-    private GroceryApi groceryApi;
 
     public OrderRepository(Context context) {
         this.context = context;
         this.dbHelper = new DatabaseHelper(context);
-        this.groceryApi = ApiClient.getGroceryApi();
     }
 
     /**
@@ -37,9 +28,6 @@ public class OrderRepository {
         try {
             long orderId = dbHelper.createOrder(userId, totalAmount, deliveryFee, status, addressId);
             if (orderId != -1) {
-                // Sync with web API
-                syncOrderToAPI(orderId, userId, totalAmount);
-
                 String title = "Order Placed";
                 // Estimate delivery time using Dijkstra's Algorithm
                 int deliveryMin = DeliveryOptimizer.calculateShortestDeliveryTime("Area B");
@@ -163,48 +151,6 @@ public class OrderRepository {
         } catch (Exception e) {
             Log.e(TAG, "Error recording payment", e);
             return false;
-        }
-    }
-
-    /**
-     * Sync order to web API
-     */
-    private void syncOrderToAPI(long orderId, int userId, double total) {
-        try {
-            // Get order items
-            List<OrderItem> items = dbHelper.getOrderItems((int) orderId);
-            List<Map<String, Object>> itemData = new ArrayList<>();
-            for (OrderItem item : items) {
-                Map<String, Object> itemMap = new HashMap<>();
-                itemMap.put("product_id", item.getProductId());
-                itemMap.put("quantity", item.getQuantity());
-                itemMap.put("price", item.getPrice());
-                itemData.add(itemMap);
-            }
-
-            Map<String, Object> orderData = new HashMap<>();
-            orderData.put("user_id", userId);
-            orderData.put("total_amount", total);
-            orderData.put("status", "pending");
-            orderData.put("items", itemData);
-
-            groceryApi.placeOrder(orderData).enqueue(new Callback<Map<String, Object>>() {
-                @Override
-                public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
-                    if (response.isSuccessful()) {
-                        Log.d(TAG, "Order synced to web API");
-                    } else {
-                        Log.e(TAG, "Failed to sync order: " + response.code());
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<Map<String, Object>> call, Throwable t) {
-                    Log.e(TAG, "Error syncing order to API", t);
-                }
-            });
-        } catch (Exception e) {
-            Log.e(TAG, "Error preparing order sync", e);
         }
     }
 }
