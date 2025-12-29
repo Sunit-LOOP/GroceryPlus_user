@@ -103,16 +103,37 @@
 
         </LinearLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/reorderBtn"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="REORDER"
-            android:textColor="#4CAF50"
-            app:strokeColor="#4CAF50"
-            app:cornerRadius="8dp" />
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/reorderBtn"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="REORDER"
+                android:textColor="#4CAF50"
+                app:strokeColor="#4CAF50"
+                app:cornerRadius="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cancelBtn"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="CANCEL"
+                android:textColor="#F44336"
+                app:strokeColor="#F44336"
+                app:cornerRadius="8dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

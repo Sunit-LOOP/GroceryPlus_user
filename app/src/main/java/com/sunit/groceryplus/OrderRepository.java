@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.sunit.groceryplus.utils.DeliveryOptimizer;
+import com.sunit.groceryplus.utils.GroceryNotificationManager;
 
 public class OrderRepository {
     private static final String TAG = "OrderRepository";
@@ -24,17 +25,16 @@ public class OrderRepository {
     /**
      * Create a new order
      */
-    public long createOrder(int userId, double totalAmount, double deliveryFee, String status, int addressId) {
+    public long createOrder(int userId, double totalAmount, double deliveryFee, String status, int addressId, String instructions) {
         try {
-            long orderId = dbHelper.createOrder(userId, totalAmount, deliveryFee, status, addressId);
+            long orderId = dbHelper.createOrder(userId, totalAmount, deliveryFee, status, addressId, instructions);
             if (orderId != -1) {
                 String title = "Order Placed";
                 // Estimate delivery time using Dijkstra's Algorithm
                 int deliveryMin = DeliveryOptimizer.calculateShortestDeliveryTime("Area B");
                 String message = "Your order #" + orderId + " is placed! Delivery estimated in " + deliveryMin + " mins.";
 
-                dbHelper.addNotification(userId, title, message);
-                com.sunit.groceryplus.utils.NotificationUtils.showNotification(context, title, message);
+                GroceryNotificationManager.getInstance(context).sendNotification(userId, title, message, GroceryNotificationManager.TYPE_ORDER, String.valueOf(orderId));
             }
             return orderId;
         } catch (Exception e) {
@@ -111,8 +111,7 @@ public class OrderRepository {
                     message = "Your order #" + orderId + " is now " + status;
                 }
                 
-                dbHelper.addNotification(userId, title, message);
-                com.sunit.groceryplus.utils.NotificationUtils.showNotification(context, title, message);
+                GroceryNotificationManager.getInstance(context).sendNotification(userId, title, message, GroceryNotificationManager.TYPE_ORDER, String.valueOf(orderId));
             }
             return success;
         } catch (Exception e) {

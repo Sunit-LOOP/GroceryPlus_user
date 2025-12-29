@@ -48,9 +48,16 @@ public class AdminMessagesActivity extends AppCompatActivity {
         messagesRv.setAdapter(adapter);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadMessages();
+    }
+
     private void loadMessages() {
+        int adminId = dbHelper.getAdminId();
         List<Message> messages = new ArrayList<>();
-        Cursor cursor = dbHelper.getAllMessages();
+        Cursor cursor = dbHelper.getConversations(adminId);
         
         if (cursor != null && cursor.moveToFirst()) {
             do {
@@ -61,11 +68,13 @@ public class AdminMessagesActivity extends AppCompatActivity {
                 int isRead = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.MessageEntry.COLUMN_NAME_IS_READ));
                 String date = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.MessageEntry.COLUMN_NAME_CREATED_AT));
                 
-                String senderName = "";
-                int senderNameIdx = cursor.getColumnIndex("sender_name");
-                if (senderNameIdx != -1) senderName = cursor.getString(senderNameIdx);
-
-                messages.add(new Message(id, senderId, receiverId, text, isRead == 1, date, senderName, null));
+                String partnerName = "";
+                int nameIdx = cursor.getColumnIndex("remote_name");
+                if (nameIdx != -1) partnerName = cursor.getString(nameIdx);
+                
+                // Construct the message preserving the original sender/receiver
+                Message msg = new Message(id, senderId, receiverId, text, isRead == 1, date, partnerName, null);
+                messages.add(msg);
             } while (cursor.moveToNext());
             cursor.close();
         }

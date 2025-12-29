@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -10,8 +11,8 @@ android {
         applicationId = "com.sunit.groceryplus"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -39,6 +40,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.mpandroidchart)
     implementation(libs.circleimageview)
+    implementation(libs.swiperefreshlayout)
 
     // Glide for image loading
     implementation("com.github.bumptech.glide:glide:5.0.5")
@@ -58,6 +60,8 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-
-
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.analytics)
 }

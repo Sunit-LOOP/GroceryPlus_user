@@ -30,6 +30,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     public interface OnOrderClickListener {
         void onOrderClick(Order order);
         void onReorderClick(Order order);
+        void onCancelOrderClick(Order order);
     }
 
     public OrderAdapter(Context context, List<Order> orders, OnOrderClickListener listener) {
@@ -72,6 +73,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         private Handler timerHandler = new Handler();
         private Runnable timerRunnable;
         View reorderBtn;
+        View cancelBtn;
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -83,6 +85,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             orderItemCountTv = itemView.findViewById(R.id.orderItemCountTv);
             orderTimerTv = itemView.findViewById(R.id.orderTimerTv);
             reorderBtn = itemView.findViewById(R.id.reorderBtn);
+            cancelBtn = itemView.findViewById(R.id.cancelBtn);
 
             reorderBtn.setOnClickListener(v -> {
                 int position = getAdapterPosition();
@@ -90,6 +93,15 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     listener.onReorderClick(orders.get(position));
                 }
             });
+
+            if (cancelBtn != null) {
+                cancelBtn.setOnClickListener(v -> {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION && listener != null) {
+                        listener.onCancelOrderClick(orders.get(position));
+                    }
+                });
+            }
 
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
@@ -115,6 +127,15 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             // Set status color
             int statusColor = getStatusColor(order.getStatus());
             orderStatusTv.setTextColor(statusColor);
+
+            // Cancel button visibility - Only for PENDING orders
+            if (cancelBtn != null) {
+                if ("pending".equalsIgnoreCase(order.getStatus())) {
+                    cancelBtn.setVisibility(View.VISIBLE);
+                } else {
+                    cancelBtn.setVisibility(View.GONE);
+                }
+            }
 
             setupTimer(order);
         }

@@ -17,7 +17,7 @@ import com.sunit.groceryplus.adapters.AdminOrderAdapter;
 import com.sunit.groceryplus.models.DeliveryPerson;
 import com.sunit.groceryplus.models.Order;
 import com.sunit.groceryplus.utils.DeliveryOptimizer;
-import com.sunit.groceryplus.utils.NotificationHelper;
+import com.sunit.groceryplus.utils.GroceryNotificationManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class OrderManagementActivity extends AppCompatActivity {
     private RecyclerView ordersRv;
     private AdminOrderAdapter adapter;
     private OrderRepository orderRepository;
-    private NotificationHelper notificationHelper;
+    private GroceryNotificationManager notificationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +42,7 @@ public class OrderManagementActivity extends AppCompatActivity {
 
         ordersRv = findViewById(R.id.ordersRv);
         orderRepository = new OrderRepository(this);
-        notificationHelper = new NotificationHelper(this);
+        notificationManager = GroceryNotificationManager.getInstance(this);
 
         setupRecyclerView();
         loadOrders();
@@ -83,11 +83,24 @@ public class OrderManagementActivity extends AppCompatActivity {
                         loadOrders();
 
                         // Send notification to user
-                        if ("Shipped".equals(newStatus)) {
-                            notificationHelper.sendNotification(order.getUserId(), "Order Shipped!", "Your order #" + order.getOrderId() + " has been shipped.");
-                        } else if ("Delivered".equals(newStatus)) {
-                            notificationHelper.sendNotification(order.getUserId(), "Order Delivered!", "Your order #" + order.getOrderId() + " has been delivered.");
+                        String title = "Order Update";
+                        String message = "Your order #" + order.getOrderId() + " is now " + newStatus;
+                        
+                        if ("Processing".equalsIgnoreCase(newStatus)) {
+                            title = "Order Accepted";
+                            message = "The store has accepted your order #" + order.getOrderId();
+                        } else if ("Shipped".equalsIgnoreCase(newStatus)) {
+                            title = "Out for Delivery";
+                            message = "Your order #" + order.getOrderId() + " is out for delivery!";
+                        } else if ("Delivered".equalsIgnoreCase(newStatus)) {
+                            title = "Order Delivered";
+                            message = "Your order #" + order.getOrderId() + " has been delivered successfully. Enjoy!";
+                        } else if ("Cancelled".equalsIgnoreCase(newStatus)) {
+                            title = "Order Cancelled";
+                            message = "Your order #" + order.getOrderId() + " has been cancelled.";
                         }
+                        
+                        notificationManager.sendNotification(order.getUserId(), title, message, GroceryNotificationManager.TYPE_ORDER, String.valueOf(order.getOrderId()));
 
                     } else {
                         Toast.makeText(this, "Failed to update status", Toast.LENGTH_SHORT).show();
@@ -138,8 +151,8 @@ public class OrderManagementActivity extends AppCompatActivity {
 
                         // Send notification to user
                         String title = "Delivery Update";
-                        String message = "Your order #" + order.getOrderId() + " has been assigned to " + selectedPerson.getName();
-                        notificationHelper.sendNotification(order.getUserId(), title, message);
+                        String message = "Your order #" + order.getOrderId() + " has been assigned to " + selectedPerson.getName() + ". They will be arriving soon!";
+                        notificationManager.sendNotification(order.getUserId(), title, message, GroceryNotificationManager.TYPE_ORDER, String.valueOf(order.getOrderId()));
 
                         loadOrders();
                     } else {

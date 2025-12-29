@@ -3,6 +3,7 @@ package com.sunit.groceryplus;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -24,7 +25,8 @@ import com.sunit.groceryplus.models.Product;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import androidx.viewpager2.widget.ViewPager2;
-import android.os.Handler;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import com.sunit.groceryplus.utils.LoadingDialog;
 
 import com.sunit.groceryplus.DatabaseContract;
 import com.sunit.groceryplus.DatabaseHelper;
@@ -38,14 +40,16 @@ public class UserHomeActivity extends AppCompatActivity {
 
     private static final String TAG = "UserHomeActivity";
 
-    private RecyclerView categoriesRv, featuredRecyclerView, allProductsRecyclerView, buyAgainRecyclerView, recommendedRecyclerView;
+    private RecyclerView categoriesRv, featuredRecyclerView, allProductsRecyclerView, buyAgainRecyclerView, recommendedRecyclerView, recentOrdersRecyclerView, recentlyViewedRecyclerView;
     private CategoryAdapter categoryAdapter;
-    private ProductAdapter featuredAdapter, allProductsAdapter, buyAgainAdapter, recommendedAdapter;
+    private ProductAdapter featuredAdapter, allProductsAdapter, buyAgainAdapter, recommendedAdapter, recentlyViewedAdapter;
+    private com.sunit.groceryplus.adapters.RecentOrderAdapter recentOrdersAdapter;
 
     private TextView deliveryTimeTv, freeDeliveryTv;
     private com.google.android.material.progressindicator.LinearProgressIndicator freeDeliveryProgress;
-    private View freeDeliveryGoalCard, buyAgainSection, recommendationSection;
+    private View freeDeliveryGoalCard, buyAgainSection, recommendationSection, recentOrdersSection, recentlyViewedSection;
     private ImageView sortIcon;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     private ViewPager2 bannerViewPager;
     private TabLayout bannerIndicator;
@@ -69,6 +73,8 @@ public class UserHomeActivity extends AppCompatActivity {
     private List<Product> allProducts = new ArrayList<>();
     private List<Product> buyAgainProducts = new ArrayList<>();
     private List<Product> recommendedProducts = new ArrayList<>();
+    private List<Product> recentlyViewedProducts = new ArrayList<>();
+    private List<com.sunit.groceryplus.models.Order> recentOrders = new ArrayList<>();
 
     private int selectedCategoryId = -1;
     private String currentSortOrder = "default";
@@ -153,9 +159,29 @@ public class UserHomeActivity extends AppCompatActivity {
         buyAgainRecyclerView = findViewById(R.id.buyAgainRecyclerView);
         recommendedRecyclerView = findViewById(R.id.recommendedRecyclerView);
         recommendationSection = findViewById(R.id.recommendationSection);
+        recentOrdersRecyclerView = findViewById(R.id.recentOrdersRecyclerView);
+        recentOrdersSection = findViewById(R.id.recentOrdersSection);
+        recentlyViewedRecyclerView = findViewById(R.id.recentlyViewedRecyclerView);
+        recentlyViewedSection = findViewById(R.id.recentlyViewedSection);
 
         bannerViewPager = findViewById(R.id.bannerViewPager);
         bannerIndicator = findViewById(R.id.bannerIndicator);
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+
+        findViewById(R.id.btnViewAllOrders).setOnClickListener(v -> {
+            Intent intent = new Intent(this, OrderHistoryActivity.class);
+            intent.putExtra("user_id", userId);
+            startActivity(intent);
+        });
+
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            if (isNetworkAvailable()) {
+                refreshData();
+            } else {
+                swipeRefreshLayout.setRefreshing(false);
+                Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         findViewById(R.id.btnSearchField).setOnClickListener(v -> {
             Intent intent = new Intent(this, SearchActivity.class);
@@ -185,6 +211,8 @@ public class UserHomeActivity extends AppCompatActivity {
         allProductsRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         buyAgainRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recommendedRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recentOrdersRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recentlyViewedRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
         categoryAdapter = new CategoryAdapter(this, categories, category -> {
             selectedCategoryId = category.getCategoryId();
@@ -197,17 +225,22 @@ public class UserHomeActivity extends AppCompatActivity {
         allProductsAdapter = new ProductAdapter(this, allProducts, userId);
         buyAgainAdapter = new ProductAdapter(this, buyAgainProducts, userId);
         recommendedAdapter = new ProductAdapter(this, recommendedProducts, userId);
+        recentlyViewedAdapter = new ProductAdapter(this, recentlyViewedProducts, userId);
+        recentOrdersAdapter = new com.sunit.groceryplus.adapters.RecentOrderAdapter(this, recentOrders, userId);
 
         ProductAdapter.OnCartUpdateListener cartListener = this::updateFreeDeliveryGoal;
         featuredAdapter.setCartUpdateListener(cartListener);
         allProductsAdapter.setCartUpdateListener(cartListener);
         buyAgainAdapter.setCartUpdateListener(cartListener);
         recommendedAdapter.setCartUpdateListener(cartListener);
+        recentlyViewedAdapter.setCartUpdateListener(cartListener);
 
         featuredRecyclerView.setAdapter(featuredAdapter);
         allProductsRecyclerView.setAdapter(allProductsAdapter);
         buyAgainRecyclerView.setAdapter(buyAgainAdapter);
         recommendedRecyclerView.setAdapter(recommendedAdapter);
+        recentlyViewedRecyclerView.setAdapter(recentlyViewedAdapter);
+        recentOrdersRecyclerView.setAdapter(recentOrdersAdapter);
     }
 
     private void setupBanner() {
@@ -260,13 +293,31 @@ public class UserHomeActivity extends AppCompatActivity {
     }
 
     private void loadData() {
+        if (!isNetworkAvailable()) {
+            Toast.makeText(this, "You are offline. Showing cached data.", Toast.LENGTH_SHORT).show();
+        }
         loadCategories();
         loadFeaturedProducts();
         loadAllProducts();
         loadBuyAgainProducts();
         loadRecommendedProducts();
+        loadRecentlyViewedProducts();
+        loadRecentOrders();
         updateFreeDeliveryGoal();
         updateDeliveryTime();
+    }
+
+    private void refreshData() {
+        // Clear caches if needed, then reload
+        loadData();
+        // Hide refreshing after some time or after all loads complete
+        new Handler().postDelayed(() -> swipeRefreshLayout.setRefreshing(false), 2000);
+    }
+
+    private boolean isNetworkAvailable() {
+        android.net.ConnectivityManager cm = (android.net.ConnectivityManager) getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+        android.net.NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
     private void loadCategories() {
@@ -426,6 +477,40 @@ public class UserHomeActivity extends AppCompatActivity {
             recommendedAdapter.updateProducts(recommendedProducts);
         } else {
             recommendationSection.setVisibility(View.GONE);
+        }
+    }
+
+    private void loadRecentlyViewedProducts() {
+        List<Integer> ids = com.sunit.groceryplus.utils.RecentProductsHelper.getRecentProductIds(this);
+        if (ids != null && !ids.isEmpty()) {
+            recentlyViewedProducts.clear();
+            for (int id : ids) {
+                Product p = productRepository.getProductById(id);
+                if (p != null) recentlyViewedProducts.add(p);
+            }
+            if (!recentlyViewedProducts.isEmpty()) {
+                recentlyViewedSection.setVisibility(View.VISIBLE);
+                recentlyViewedAdapter.updateProducts(recentlyViewedProducts);
+            } else {
+                recentlyViewedSection.setVisibility(View.GONE);
+            }
+        } else {
+            recentlyViewedSection.setVisibility(View.GONE);
+        }
+    }
+
+    private void loadRecentOrders() {
+        List<com.sunit.groceryplus.models.Order> allUserOrders = orderRepository.getUserOrders(userId);
+        if (allUserOrders != null && !allUserOrders.isEmpty()) {
+            recentOrders.clear();
+            // Show only last 3 orders
+            for (int i = 0; i < Math.min(3, allUserOrders.size()); i++) {
+                recentOrders.add(allUserOrders.get(i));
+            }
+            recentOrdersSection.setVisibility(View.VISIBLE);
+            recentOrdersAdapter.updateOrders(recentOrders);
+        } else {
+            recentOrdersSection.setVisibility(View.GONE);
         }
     }
 

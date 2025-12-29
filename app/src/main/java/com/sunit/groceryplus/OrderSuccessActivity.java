@@ -8,7 +8,7 @@ import android.os.Looper;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.sunit.groceryplus.utils.NotificationHelper;
+import com.sunit.groceryplus.utils.GroceryNotificationManager;
 
 public class OrderSuccessActivity extends AppCompatActivity {
 
@@ -27,8 +27,8 @@ public class OrderSuccessActivity extends AppCompatActivity {
 
         // Send notification
         if (userId != -1) {
-            NotificationHelper notificationHelper = new NotificationHelper(this);
-            notificationHelper.sendNotification(userId, "Order Placed!", "Your order has been successfully placed.");
+            GroceryNotificationManager notificationManager = GroceryNotificationManager.getInstance(this);
+            notificationManager.sendNotification(userId, "Order Placed!", "Your order has been successfully placed.", GroceryNotificationManager.TYPE_ORDER, null);
         }
 
         // Handle back press with modern dispatcher

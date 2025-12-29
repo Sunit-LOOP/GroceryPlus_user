@@ -29,6 +29,9 @@ public class CartActivity extends AppCompatActivity {
     private RecyclerView cartRecyclerView;
     private TextView emptyCartTv;
     private TextView totalPriceTv;
+    private TextView freeDeliveryTv;
+    private com.google.android.material.progressindicator.LinearProgressIndicator freeDeliveryProgress;
+    private View freeDeliveryGoalCard;
     private Button checkoutBtn;
     
     private CartRepository cartRepository;
@@ -102,6 +105,9 @@ public class CartActivity extends AppCompatActivity {
         cartRecyclerView = findViewById(R.id.cartRecyclerView);
         emptyCartTv = findViewById(R.id.emptyCartTv);
         totalPriceTv = findViewById(R.id.cartTotalPriceTv);
+        freeDeliveryTv = findViewById(R.id.freeDeliveryTv);
+        freeDeliveryProgress = findViewById(R.id.freeDeliveryProgress);
+        freeDeliveryGoalCard = findViewById(R.id.freeDeliveryGoalCard);
         checkoutBtn = findViewById(R.id.checkoutBtn);
     }
     
@@ -257,6 +263,24 @@ public class CartActivity extends AppCompatActivity {
         double total = cartAdapter.getTotalPrice();
         double totalWithDelivery = cartAdapter.getTotalPriceWithDelivery();
         totalPriceTv.setText("Total: रु " + String.format("%.2f", total) + " (Including Delivery: रु " + String.format("%.2f", totalWithDelivery) + ")");
+        updateFreeDeliveryGoal(total);
+    }
+
+    private void updateFreeDeliveryGoal(double total) {
+        double threshold = 500.0;
+        if (total <= 0) {
+            freeDeliveryGoalCard.setVisibility(View.GONE);
+        } else if (total >= threshold) {
+            freeDeliveryGoalCard.setVisibility(View.VISIBLE);
+            freeDeliveryTv.setText("Yay! You get FREE delivery!");
+            freeDeliveryProgress.setProgress(100);
+        } else {
+            freeDeliveryGoalCard.setVisibility(View.VISIBLE);
+            double gap = threshold - total;
+            freeDeliveryTv.setText("Add Rs. " + String.format("%.0f", gap) + " more for FREE delivery");
+            int progress = (int) ((total / threshold) * 100);
+            freeDeliveryProgress.setProgress(progress);
+        }
     }
     
     private void showCart() {
@@ -288,6 +312,18 @@ public class CartActivity extends AppCompatActivity {
             return;
         }
         
+        double total = cartAdapter.getTotalPrice();
+        double minOrder = 200.0; // Minimum order value
+        
+        if (total < minOrder) {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Minimum Order Value")
+                    .setMessage("A minimum order of रु " + String.format("%.2f", minOrder) + " is required to checkout. Your current total is रु " + String.format("%.2f", total))
+                    .setPositiveButton("Add More Items", null)
+                    .show();
+            return;
+        }
+
         try {
             // Calculate total with delivery fee
             double totalWithDelivery = cartAdapter.getTotalPriceWithDelivery();

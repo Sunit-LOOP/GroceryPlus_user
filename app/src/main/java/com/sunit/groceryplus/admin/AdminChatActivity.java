@@ -66,6 +66,7 @@ public class AdminChatActivity extends AppCompatActivity {
 
     private void loadConversation() {
         if (userId != -1) {
+            dbHelper.markMessagesAsRead(adminId, userId);
             Cursor cursor = dbHelper.getConversation(adminId, userId);
             adapter.swapCursor(cursor);
             chatRv.scrollToPosition(adapter.getItemCount() - 1);

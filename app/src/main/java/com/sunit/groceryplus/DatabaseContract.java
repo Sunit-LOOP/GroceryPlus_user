@@ -56,6 +56,7 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_SHIPPED_DATE = "shipped_date";
         public static final String COLUMN_NAME_DELIVERY_PERSON_ID = "delivery_person_id";
         public static final String COLUMN_NAME_ADDRESS_ID = "address_id";
+        public static final String COLUMN_NAME_DELIVERY_INSTRUCTIONS = "delivery_instructions";
     }
 
     /* Inner class that defines the order_items table contents */
@@ -160,6 +161,14 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_RATING = "rating";
     }
 
+    public static class SearchHistoryEntry implements BaseColumns {
+        public static final String TABLE_NAME = "search_history";
+        public static final String COLUMN_NAME_HISTORY_ID = "history_id";
+        public static final String COLUMN_NAME_USER_ID = "user_id";
+        public static final String COLUMN_NAME_QUERY = "query";
+        public static final String COLUMN_NAME_CREATED_AT = "created_at";
+    }
+
     // SQL statements to create tables
     public static final String SQL_CREATE_USERS_TABLE =
             "CREATE TABLE " + UserEntry.TABLE_NAME + " (" +
@@ -202,6 +211,7 @@ public final class DatabaseContract {
                     OrderEntry.COLUMN_NAME_SHIPPED_DATE + " DATETIME," +
                     OrderEntry.COLUMN_NAME_DELIVERY_PERSON_ID + " INTEGER," +
                     OrderEntry.COLUMN_NAME_ADDRESS_ID + " INTEGER," +
+                    OrderEntry.COLUMN_NAME_DELIVERY_INSTRUCTIONS + " TEXT," +
                     "FOREIGN KEY(" + OrderEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + ")," +
                     "FOREIGN KEY(" + OrderEntry.COLUMN_NAME_DELIVERY_PERSON_ID + ") REFERENCES " + DeliveryPersonEntry.TABLE_NAME + "(" + DeliveryPersonEntry.COLUMN_NAME_PERSON_ID + ")," +
                     "FOREIGN KEY(" + OrderEntry.COLUMN_NAME_ADDRESS_ID + ") REFERENCES " + AddressEntry.TABLE_NAME + "(" + AddressEntry.COLUMN_NAME_ADDRESS_ID + "))";
@@ -305,6 +315,14 @@ public final class DatabaseContract {
                     VendorEntry.COLUMN_NAME_LONGITUDE + " REAL," +
                     VendorEntry.COLUMN_NAME_ICON + " TEXT," +
                     VendorEntry.COLUMN_NAME_RATING + " REAL DEFAULT 0.0)";
+
+    public static final String SQL_CREATE_SEARCH_HISTORY_TABLE =
+            "CREATE TABLE " + SearchHistoryEntry.TABLE_NAME + " (" +
+                    SearchHistoryEntry.COLUMN_NAME_HISTORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    SearchHistoryEntry.COLUMN_NAME_USER_ID + " INTEGER," +
+                    SearchHistoryEntry.COLUMN_NAME_QUERY + " TEXT," +
+                    SearchHistoryEntry.COLUMN_NAME_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    "FOREIGN KEY(" + SearchHistoryEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + "))";
             
             public static class NotificationEntry implements BaseColumns {
         public static final String TABLE_NAME = "notifications";
@@ -312,6 +330,8 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_USER_ID = "user_id";
         public static final String COLUMN_NAME_TITLE = "title";
         public static final String COLUMN_NAME_MESSAGE = "message";
+        public static final String COLUMN_NAME_TYPE = "type"; // ORDER, PAYMENT, ACCOUNT, PROMO
+        public static final String COLUMN_NAME_REF_ID = "ref_id"; // Order ID, Product ID, etc.
         public static final String COLUMN_NAME_IS_READ = "is_read";
         public static final String COLUMN_NAME_CREATED_AT = "created_at";
     }
@@ -322,6 +342,8 @@ public final class DatabaseContract {
                     NotificationEntry.COLUMN_NAME_USER_ID + " INTEGER," +
                     NotificationEntry.COLUMN_NAME_TITLE + " TEXT," +
                     NotificationEntry.COLUMN_NAME_MESSAGE + " TEXT," +
+                    NotificationEntry.COLUMN_NAME_TYPE + " TEXT," +
+                    NotificationEntry.COLUMN_NAME_REF_ID + " TEXT," +
                     NotificationEntry.COLUMN_NAME_IS_READ + " INTEGER DEFAULT 0," +
                     NotificationEntry.COLUMN_NAME_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
                     "FOREIGN KEY(" + NotificationEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + "))";
@@ -371,4 +393,7 @@ public final class DatabaseContract {
 
     public static final String SQL_DELETE_ADDRESSES_TABLE =
             "DROP TABLE IF EXISTS " + AddressEntry.TABLE_NAME;
+
+    public static final String SQL_DELETE_SEARCH_HISTORY_TABLE =
+            "DROP TABLE IF EXISTS " + SearchHistoryEntry.TABLE_NAME;
 }

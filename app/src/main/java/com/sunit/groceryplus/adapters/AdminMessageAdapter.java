@@ -20,10 +20,12 @@ public class AdminMessageAdapter extends RecyclerView.Adapter<AdminMessageAdapte
 
     private Context context;
     private List<Message> messages;
+    private int adminId;
 
     public AdminMessageAdapter(Context context, List<Message> messages) {
         this.context = context;
         this.messages = messages;
+        this.adminId = new com.sunit.groceryplus.DatabaseHelper(context).getAdminId();
     }
 
     public void updateMessages(List<Message> newMessages) {
@@ -41,13 +43,30 @@ public class AdminMessageAdapter extends RecyclerView.Adapter<AdminMessageAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Message message = messages.get(position);
+        
+        // The senderName field was populated with the partner's name in AdminMessagesActivity
         holder.senderTv.setText(message.getSenderName() != null ? message.getSenderName() : "User #" + message.getSenderId());
         holder.dateTv.setText(message.getCreatedAt());
-        holder.contentTv.setText(message.getMessageText());
+        
+        String prefix = (message.getSenderId() == adminId) ? "You: " : "";
+        holder.contentTv.setText(prefix + message.getMessageText());
+
+        // Bold unread messages (received by admin and not read)
+        boolean isUnread = !message.isRead() && message.getReceiverId() == adminId;
+        if (isUnread) {
+            holder.senderTv.setTypeface(null, android.graphics.Typeface.BOLD);
+            holder.contentTv.setTypeface(null, android.graphics.Typeface.BOLD);
+            holder.contentTv.setTextColor(context.getResources().getColor(android.R.color.black));
+        } else {
+            holder.senderTv.setTypeface(null, android.graphics.Typeface.NORMAL);
+            holder.contentTv.setTypeface(null, android.graphics.Typeface.NORMAL);
+            holder.contentTv.setTextColor(context.getResources().getColor(android.R.color.darker_gray));
+        }
 
         holder.itemView.setOnClickListener(v -> {
+            int partnerId = (message.getSenderId() == adminId) ? message.getReceiverId() : message.getSenderId();
             Intent intent = new Intent(context, AdminChatActivity.class);
-            intent.putExtra("user_id", message.getSenderId());
+            intent.putExtra("user_id", partnerId);
             context.startActivity(intent);
         });
     }

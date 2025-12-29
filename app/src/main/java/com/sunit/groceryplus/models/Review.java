@@ -29,6 +29,14 @@ public class Review {
         return userName;
     }
 
+    public int getUserId() {
+        return userId;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
+
     public String getProductName() {
         return productName;
     }

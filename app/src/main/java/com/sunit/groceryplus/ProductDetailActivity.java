@@ -19,6 +19,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.sunit.groceryplus.adapters.ReviewAdapter;
 import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.models.Review;
+import com.sunit.groceryplus.utils.RecentProductsHelper;
 
 import org.json.JSONObject;
 
@@ -62,6 +63,9 @@ public class ProductDetailActivity extends AppCompatActivity {
             finish();
             return;
         }
+
+        // Add to recently viewed
+        RecentProductsHelper.addProduct(this, productId);
 
         productRepository = new ProductRepository(this);
         cartRepository = new CartRepository(this);

@@ -9,6 +9,9 @@ activity = "1.12.1"
 constraintlayout = "2.2.1"
 mpandroidchart = "v3.1.0"
 circleimageview = "3.1.0"
+swiperefreshlayout = "1.1.0"
+firebaseBom = "34.7.0"
+googleServices = "4.4.4"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -20,6 +23,11 @@ activity = { group = "androidx.activity", name = "activity", version = "1.12.2" 
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 mpandroidchart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpandroidchart" }
 circleimageview = { group = "de.hdodenhof", name = "circleimageview", version.ref = "circleimageview" }
+swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }

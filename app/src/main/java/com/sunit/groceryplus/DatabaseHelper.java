@@ -28,7 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Database Info
     private static final String DATABASE_NAME = "GroceryPlus.db";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 8;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -52,6 +52,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(DatabaseContract.SQL_CREATE_NOTIFICATIONS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_ADDRESSES_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_VENDORS_TABLE);
+        db.execSQL(DatabaseContract.SQL_CREATE_SEARCH_HISTORY_TABLE);
 
         // Insert default admin user
         insertDefaultAdmin(db);
@@ -75,6 +76,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(DatabaseContract.SQL_DELETE_NOTIFICATIONS_TABLE);
         db.execSQL(DatabaseContract.SQL_DELETE_ADDRESSES_TABLE);
         db.execSQL(DatabaseContract.SQL_DELETE_VENDORS_TABLE);
+        db.execSQL(DatabaseContract.SQL_DELETE_SEARCH_HISTORY_TABLE);
 
         onCreate(db);
     }
@@ -507,7 +509,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Create a new order
      */
-    public long createOrder(int userId, double totalAmount, double deliveryFee, String status, int addressId) {
+    public long createOrder(int userId, double totalAmount, double deliveryFee, String status, int addressId, String instructions) {
         SQLiteDatabase db = this.getWritableDatabase();
         
         try {
@@ -517,6 +519,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             values.put(OrderEntry.COLUMN_NAME_DELIVERY_FEE, deliveryFee);
             values.put(OrderEntry.COLUMN_NAME_STATUS, status);
             values.put(OrderEntry.COLUMN_NAME_ADDRESS_ID, addressId);
+            values.put(OrderEntry.COLUMN_NAME_DELIVERY_INSTRUCTIONS, instructions);
             
             // Inserting Row
             long orderId = db.insert(OrderEntry.TABLE_NAME, null, values);
@@ -1502,6 +1505,46 @@ addProduct("Apple", (int)fruitsId, 120.0, "Fresh red apples", "apple", 200, 1);
     }
 
     /**
+     * Get the latest message for each unique conversation involving the admin.
+     */
+    public Cursor getConversations(int adminId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        
+        String sAdminId = String.valueOf(adminId);
+        
+        // Subquery to find the latest message ID for each conversation
+        String subQuery = "SELECT MAX(" + DatabaseContract.MessageEntry.COLUMN_NAME_MESSAGE_ID + ") " +
+                         "FROM " + DatabaseContract.MessageEntry.TABLE_NAME + " " +
+                         "WHERE " + DatabaseContract.MessageEntry.COLUMN_NAME_SENDER_ID + " = " + sAdminId + " " +
+                         "OR " + DatabaseContract.MessageEntry.COLUMN_NAME_RECEIVER_ID + " = " + sAdminId + " " +
+                         "GROUP BY (CASE WHEN " + DatabaseContract.MessageEntry.COLUMN_NAME_SENDER_ID + " = " + sAdminId + " " +
+                         "THEN " + DatabaseContract.MessageEntry.COLUMN_NAME_RECEIVER_ID + " " +
+                         "ELSE " + DatabaseContract.MessageEntry.COLUMN_NAME_SENDER_ID + " END)";
+
+        String mainQuery = "SELECT m.*, u." + DatabaseContract.UserEntry.COLUMN_NAME_USER_NAME + " as remote_name, " +
+                          "(CASE WHEN m." + DatabaseContract.MessageEntry.COLUMN_NAME_SENDER_ID + " = ? " +
+                          "THEN m." + DatabaseContract.MessageEntry.COLUMN_NAME_RECEIVER_ID + " " +
+                          "ELSE m." + DatabaseContract.MessageEntry.COLUMN_NAME_SENDER_ID + " END) as conversation_partner_id " +
+                          "FROM " + DatabaseContract.MessageEntry.TABLE_NAME + " m " +
+                          "JOIN " + DatabaseContract.UserEntry.TABLE_NAME + " u ON u." + DatabaseContract.UserEntry.COLUMN_NAME_USER_ID + " = conversation_partner_id " +
+                          "WHERE m." + DatabaseContract.MessageEntry.COLUMN_NAME_MESSAGE_ID + " IN (" + subQuery + ") " +
+                          "ORDER BY m." + DatabaseContract.MessageEntry.COLUMN_NAME_CREATED_AT + " DESC";
+
+        return db.rawQuery(mainQuery, new String[]{sAdminId});
+    }
+
+    public boolean markMessagesAsRead(int receiverId, int senderId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.MessageEntry.COLUMN_NAME_IS_READ, 1);
+        return db.update(DatabaseContract.MessageEntry.TABLE_NAME, values,
+                DatabaseContract.MessageEntry.COLUMN_NAME_RECEIVER_ID + " = ? AND " +
+                DatabaseContract.MessageEntry.COLUMN_NAME_SENDER_ID + " = ? AND " +
+                DatabaseContract.MessageEntry.COLUMN_NAME_IS_READ + " = 0",
+                new String[]{String.valueOf(receiverId), String.valueOf(senderId)}) > 0;
+    }
+
+    /**
      * Add a product review
      */
     public long addReview(int userId, int productId, float rating, String comment) {
@@ -1558,6 +1601,57 @@ addProduct("Apple", (int)fruitsId, 120.0, "Fresh red apples", "apple", 200, 1);
     }
 
     /**
+     * Get all reviews for collaborative filtering
+     */
+    public java.util.List<com.sunit.groceryplus.models.Review> getAllReviewsForRecommendations() {
+        java.util.List<com.sunit.groceryplus.models.Review> reviews = new java.util.ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(DatabaseContract.ReviewEntry.TABLE_NAME, null, null, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                try {
+                    int reviewId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ReviewEntry.COLUMN_NAME_REVIEW_ID));
+                    int userId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ReviewEntry.COLUMN_NAME_USER_ID));
+                    int productId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ReviewEntry.COLUMN_NAME_PRODUCT_ID));
+                    int rating = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ReviewEntry.COLUMN_NAME_RATING));
+                    reviews.add(new com.sunit.groceryplus.models.Review(reviewId, userId, "", productId, "", rating, "", ""));
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing review", e);
+                }
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        return reviews;
+    }
+
+    /**
+     * Get all user purchase history (compact)
+     */
+    public java.util.Map<Integer, java.util.Map<Integer, Integer>> getAllUserPurchaseHistory() {
+        java.util.Map<Integer, java.util.Map<Integer, Integer>> history = new java.util.HashMap<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT o." + OrderEntry.COLUMN_NAME_USER_ID + ", oi." + OrderItemEntry.COLUMN_NAME_PRODUCT_ID + 
+                      ", SUM(oi." + OrderItemEntry.COLUMN_NAME_QUANTITY + ") as total_qty " +
+                      "FROM " + OrderEntry.TABLE_NAME + " o " +
+                      "JOIN " + OrderItemEntry.TABLE_NAME + " oi ON o." + OrderEntry.COLUMN_NAME_ORDER_ID + " = oi." + OrderItemEntry.COLUMN_NAME_ORDER_ID +
+                      " GROUP BY o." + OrderEntry.COLUMN_NAME_USER_ID + ", oi." + OrderItemEntry.COLUMN_NAME_PRODUCT_ID;
+        
+        Cursor cursor = db.rawQuery(query, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                int userId = cursor.getInt(0);
+                int productId = cursor.getInt(1);
+                int qty = cursor.getInt(2);
+                
+                if (!history.containsKey(userId)) history.put(userId, new java.util.HashMap<>());
+                history.get(userId).put(productId, qty);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        return history;
+    }
+
+    /**
      * Get average rating for a product
      */
     public float getAverageRatingForProduct(int productId) {
@@ -1576,18 +1670,29 @@ addProduct("Apple", (int)fruitsId, 120.0, "Fresh red apples", "apple", 200, 1);
 
     // ==================== NOTIFICATION METHODS ====================
 
-    public long addNotification(int userId, String title, String message) {
+    public long addNotification(int userId, String title, String message, String type, String refId) {
         SQLiteDatabase db = this.getWritableDatabase();
         try {
             ContentValues values = new ContentValues();
             values.put(DatabaseContract.NotificationEntry.COLUMN_NAME_USER_ID, userId);
             values.put(DatabaseContract.NotificationEntry.COLUMN_NAME_TITLE, title);
             values.put(DatabaseContract.NotificationEntry.COLUMN_NAME_MESSAGE, message);
+            values.put(DatabaseContract.NotificationEntry.COLUMN_NAME_TYPE, type);
+            values.put(DatabaseContract.NotificationEntry.COLUMN_NAME_REF_ID, refId);
             return db.insert(DatabaseContract.NotificationEntry.TABLE_NAME, null, values);
         } catch (Exception e) {
             Log.e(TAG, "Error adding notification", e);
             return -1;
         }
+    }
+
+    public boolean markNotificationRead(int notificationId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.NotificationEntry.COLUMN_NAME_IS_READ, 1);
+        return db.update(DatabaseContract.NotificationEntry.TABLE_NAME, values,
+                DatabaseContract.NotificationEntry.COLUMN_NAME_NOTIFICATION_ID + " = ?",
+                new String[]{String.valueOf(notificationId)}) > 0;
     }
 
     public Cursor getUserNotifications(int userId) {
@@ -1870,5 +1975,30 @@ addProduct("Apple", (int)fruitsId, 120.0, "Fresh red apples", "apple", 200, 1);
         } catch (Exception e) {
             Log.e(TAG, "Error during vendor migration", e);
         }
+    }
+
+    public long addSearchQuery(int userId, String query) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.SearchHistoryEntry.COLUMN_NAME_USER_ID, userId);
+        values.put(DatabaseContract.SearchHistoryEntry.COLUMN_NAME_QUERY, query);
+        return db.insert(DatabaseContract.SearchHistoryEntry.TABLE_NAME, null, values);
+    }
+
+    public Cursor getRecentSearchQueries(int userId, int limit) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT DISTINCT " + DatabaseContract.SearchHistoryEntry.COLUMN_NAME_QUERY + 
+                      " FROM " + DatabaseContract.SearchHistoryEntry.TABLE_NAME +
+                      " WHERE " + DatabaseContract.SearchHistoryEntry.COLUMN_NAME_USER_ID + " = ?" +
+                      " ORDER BY " + DatabaseContract.SearchHistoryEntry.COLUMN_NAME_CREATED_AT + " DESC" +
+                      " LIMIT " + limit;
+        return db.rawQuery(query, new String[]{String.valueOf(userId)});
+    }
+
+    public boolean clearSearchHistory(int userId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(DatabaseContract.SearchHistoryEntry.TABLE_NAME,
+                DatabaseContract.SearchHistoryEntry.COLUMN_NAME_USER_ID + " = ?",
+                new String[]{String.valueOf(userId)}) > 0;
     }
 }

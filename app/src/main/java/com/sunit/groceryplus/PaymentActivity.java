@@ -15,7 +15,9 @@ import com.google.android.material.card.MaterialCardView;
 import android.widget.RadioButton;
 import com.sunit.groceryplus.models.CartItem;
 import com.sunit.groceryplus.models.CartItem;
+import com.sunit.groceryplus.models.CartItem;
 import com.sunit.groceryplus.utils.Config;
+import com.sunit.groceryplus.utils.GroceryNotificationManager;
 
 public class PaymentActivity extends AppCompatActivity {
 
@@ -23,12 +25,14 @@ public class PaymentActivity extends AppCompatActivity {
 
     // UI Elements
     private TextView totalAmountTv, summarySubtotal, summaryDeliveryFee;
+    private android.widget.EditText instructionsEt;
     private Button payNowBtn;
     private RadioButton creditCardRadio, cashOnDeliveryRadio;
     private MaterialCardView stripeCard, codCard;
     
     private double finalAmount = 0.0;
     private int userId = -1;
+    private GroceryNotificationManager notificationManager;
 
     // Database helper
     private com.sunit.groceryplus.DatabaseHelper dbHelper;
@@ -41,6 +45,9 @@ public class PaymentActivity extends AppCompatActivity {
         // Initialize Stripe
         // Initialize database helper
         dbHelper = new com.sunit.groceryplus.DatabaseHelper(this);
+        notificationManager = GroceryNotificationManager.getInstance(this);
+        
+        userId = getIntent().getIntExtra("user_id", -1);
         
         initViews();
         setupToolbar();
@@ -51,6 +58,7 @@ public class PaymentActivity extends AppCompatActivity {
         totalAmountTv = findViewById(R.id.paymentTotalAmount);
         summarySubtotal = findViewById(R.id.summarySubtotal);
         summaryDeliveryFee = findViewById(R.id.summaryDeliveryFee);
+        instructionsEt = findViewById(R.id.instructionsEt);
         payNowBtn = findViewById(R.id.paymentPayNowBtn);
 
         // Initialize radio buttons
@@ -147,6 +155,7 @@ public class PaymentActivity extends AppCompatActivity {
         intent.putExtra("user_id", userId);
         intent.putExtra("amount", finalAmount);
         intent.putExtra("subtotal_amount", getIntent().getDoubleExtra("subtotal_amount", 0.0));
+        intent.putExtra("delivery_instructions", instructionsEt.getText().toString().trim());
         startActivity(intent);
     }
     
@@ -170,7 +179,8 @@ public class PaymentActivity extends AppCompatActivity {
         // Create order using direct database method
         double subtotal = getIntent().getDoubleExtra("subtotal_amount", 0.0);
         double deliveryFee = finalAmount - subtotal;
-        long orderId = dbHelper.createOrder(userId, finalAmount, deliveryFee, "PENDING", -1);
+        String instructions = instructionsEt.getText().toString().trim();
+        long orderId = dbHelper.createOrder(userId, finalAmount, deliveryFee, "PENDING", -1, instructions);
 
         if (orderId != -1) {
             // Add payment record for tracking
@@ -181,6 +191,19 @@ public class PaymentActivity extends AppCompatActivity {
 
             // Clear cart after successful order
             dbHelper.clearCart(userId);
+
+            // Send Notifications
+            String title = "Order Placed Successfully";
+            String msg = "Your order #" + orderId + " has been placed. We're processing it now!";
+            if ("cod".equalsIgnoreCase(paymentMethod)) {
+                title = "Order Confirmed (COD)";
+                msg = "Order #" + orderId + " confirmed! Please keep Rs. " + String.format("%.2f", finalAmount) + " ready for Cash on Delivery.";
+            }
+            notificationManager.sendNotification(userId, title, msg, GroceryNotificationManager.TYPE_ORDER, String.valueOf(orderId));
+            
+            if (!"cod".equalsIgnoreCase(paymentMethod)) {
+                notificationManager.sendNotification(userId, "Payment Successful", "Payment for order #" + orderId + " has been received successfully.", GroceryNotificationManager.TYPE_PAYMENT, String.valueOf(orderId));
+            }
 
             // Show success message
             String message = "Order placed successfully!";

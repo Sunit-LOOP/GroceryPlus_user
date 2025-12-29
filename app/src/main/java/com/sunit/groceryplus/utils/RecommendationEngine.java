@@ -13,6 +13,7 @@ import java.util.*;
 public class RecommendationEngine {
     private DatabaseHelper dbHelper;
     private Context context;
+    private static final int K_NEIGHBORS = 5;
 
     public RecommendationEngine(Context context) {
         this.context = context;
@@ -20,37 +21,80 @@ public class RecommendationEngine {
     }
 
     /**
-     * Gets personalized recommendations for a user
-     * @param userId The ID of the user
-     * @param limit Maximum number of recommendations to return
-     * @return List of recommended products
+     * Gets personalized recommendations using Collaborative Filtering
      */
     public List<Product> getRecommendations(int userId, int limit) {
         List<Product> recommendations = new ArrayList<>();
         Set<Integer> recommendedProductIds = new HashSet<>();
 
-        // 1. Content-Based: Recommendations based on user's own history
-        List<Product> contentBased = getContentBasedRecommendations(userId);
-        for (Product p : contentBased) {
-            if (recommendedProductIds.add(p.getProductId())) {
-                recommendations.add(p);
+        // 1. Get Purchase History and Ratings for all users
+        Map<Integer, Map<Integer, Integer>> purchaseHistory = dbHelper.getAllUserPurchaseHistory();
+        List<com.sunit.groceryplus.models.Review> allReviews = dbHelper.getAllReviewsForRecommendations();
+        
+        // Transform reviews into User-Item rating map
+        Map<Integer, Map<Integer, Integer>> ratingMatrix = new HashMap<>();
+        for (com.sunit.groceryplus.models.Review review : allReviews) {
+            if (!ratingMatrix.containsKey(review.getUserId())) {
+                ratingMatrix.put(review.getUserId(), new HashMap<>());
             }
-            if (recommendations.size() >= limit / 2) break;
+            ratingMatrix.get(review.getUserId()).put(review.getProductId(), review.getRating());
         }
 
-        // 2. Collaborative Filtering: Recommendations based on similar users
-        List<Product> collaborative = getCollaborativeRecommendations(userId);
-        for (Product p : collaborative) {
-            if (recommendedProductIds.add(p.getProductId())) {
-                recommendations.add(p);
+        // 2. Compute Similarities
+        Map<Integer, Double> similarities = computeUserSimilarities(userId, purchaseHistory, ratingMatrix);
+
+        // 3. Get recommendations from top K neighbors
+        if (!similarities.isEmpty()) {
+            List<Map.Entry<Integer, Double>> sortedSimilarities = new ArrayList<>(similarities.entrySet());
+            Collections.sort(sortedSimilarities, (e1, e2) -> e2.getValue().compareTo(e1.getValue()));
+
+            Set<Integer> userBoughtIds = purchaseHistory.getOrDefault(userId, new HashMap<>()).keySet();
+            Map<Integer, Double> productScores = new HashMap<>();
+
+            int neighborsCount = Math.min(K_NEIGHBORS, sortedSimilarities.size());
+            for (int i = 0; i < neighborsCount; i++) {
+                int neighborId = sortedSimilarities.get(i).getKey();
+                double similarity = sortedSimilarities.get(i).getValue();
+
+                Map<Integer, Integer> neighborPurchases = purchaseHistory.getOrDefault(neighborId, new HashMap<>());
+                for (int productId : neighborPurchases.keySet()) {
+                    if (!userBoughtIds.contains(productId)) {
+                        productScores.put(productId, productScores.getOrDefault(productId, 0.0) + similarity);
+                    }
+                }
+                
+                // Also consider neighbor ratings
+                Map<Integer, Integer> neighborRatings = ratingMatrix.getOrDefault(neighborId, new HashMap<>());
+                for (Map.Entry<Integer, Integer> entry : neighborRatings.entrySet()) {
+                    int productId = entry.getKey();
+                    int rating = entry.getValue();
+                    if (!userBoughtIds.contains(productId)) {
+                        // Weighted score: similarity * (rating / 5.0)
+                        double score = similarity * (rating / 5.0);
+                        productScores.put(productId, productScores.getOrDefault(productId, 0.0) + score);
+                    }
+                }
             }
-            if (recommendations.size() >= limit) break;
+
+            // Sort products by score
+            List<Map.Entry<Integer, Double>> sortedProducts = new ArrayList<>(productScores.entrySet());
+            Collections.sort(sortedProducts, (e1, e2) -> e2.getValue().compareTo(e1.getValue()));
+
+            for (Map.Entry<Integer, Double> entry : sortedProducts) {
+                Product p = dbHelper.getProductById(entry.getKey());
+                if (p != null) {
+                    recommendations.add(p);
+                    recommendedProductIds.add(p.getProductId());
+                }
+                if (recommendations.size() >= limit) break;
+            }
         }
 
-        // 3. Fallback: Popular products if not enough personalized results
+        // 4. Fallback: Popular products if not enough personalized results (Cold Start)
         if (recommendations.size() < limit) {
             List<Product> allProducts = dbHelper.getAllProducts();
-            Collections.shuffle(allProducts); // Randomize for variety
+            // In a real app, we would sort by actual popularity (sales count)
+            Collections.shuffle(allProducts); 
             for (Product p : allProducts) {
                 if (recommendedProductIds.add(p.getProductId())) {
                     recommendations.add(p);
@@ -62,97 +106,60 @@ public class RecommendationEngine {
         return recommendations;
     }
 
-    /**
-     * Content-Based Filtering: Find products in categories the user frequently buys from
-     */
-    private List<Product> getContentBasedRecommendations(int userId) {
-        List<Product> results = new ArrayList<>();
-        Map<Integer, Integer> categoryWeights = new HashMap<>();
+    private Map<Integer, Double> computeUserSimilarities(int targetUserId, 
+                                                       Map<Integer, Map<Integer, Integer>> purchaseHistory,
+                                                       Map<Integer, Map<Integer, Integer>> ratingMatrix) {
+        Map<Integer, Double> similarities = new HashMap<>();
+        Map<Integer, Integer> targetPurchases = purchaseHistory.getOrDefault(targetUserId, new HashMap<>());
+        Map<Integer, Integer> targetRatings = ratingMatrix.getOrDefault(targetUserId, new HashMap<>());
 
-        // Analyze user's previous orders
-        List<com.sunit.groceryplus.models.Order> orders = dbHelper.getOrdersByUser(userId);
-        for (com.sunit.groceryplus.models.Order order : orders) {
-            List<OrderItem> items = dbHelper.getOrderItems(order.getOrderId());
-            for (OrderItem item : items) {
-                Product p = dbHelper.getProductById(item.getProductId());
-                if (p != null) {
-                    int catId = p.getCategoryId();
-                    categoryWeights.put(catId, categoryWeights.getOrDefault(catId, 0) + item.getQuantity());
-                }
+        Set<Integer> allUsers = new HashSet<>(purchaseHistory.keySet());
+        allUsers.addAll(ratingMatrix.keySet());
+
+        for (int otherUserId : allUsers) {
+            if (otherUserId == targetUserId) continue;
+
+            double jaccard = calculateJaccard(targetPurchases.keySet(), purchaseHistory.getOrDefault(otherUserId, new HashMap<>()).keySet());
+            double cosine = calculateCosine(targetRatings, ratingMatrix.getOrDefault(otherUserId, new HashMap<>()));
+
+            // Weighted combination (40% purchase overlap, 60% rating similarity)
+            double combinedSimilarity = (0.4 * jaccard) + (0.6 * cosine);
+            
+            if (combinedSimilarity > 0) {
+                similarities.put(otherUserId, combinedSimilarity);
             }
         }
-
-        // Get top categories
-        List<Map.Entry<Integer, Integer>> sortedCategories = new ArrayList<>(categoryWeights.entrySet());
-        Collections.sort(sortedCategories, (e1, e2) -> e2.getValue().compareTo(e1.getValue()));
-
-        // Fetch products from favorite categories
-        for (int i = 0; i < Math.min(2, sortedCategories.size()); i++) {
-            results.addAll(dbHelper.getProductsByCategory(sortedCategories.get(i).getKey()));
-        }
-
-        return results;
+        return similarities;
     }
 
-    /**
-     * Simple Collaborative Filtering: "Users who bought this also bought..."
-     */
-    private List<Product> getCollaborativeRecommendations(int userId) {
-        List<Product> results = new ArrayList<>();
-        Set<Integer> userBoughtIds = new HashSet<>();
+    private double calculateJaccard(Set<Integer> set1, Set<Integer> set2) {
+        if (set1.isEmpty() || set2.isEmpty()) return 0;
+        Set<Integer> intersection = new HashSet<>(set1);
+        intersection.retainAll(set2);
+        Set<Integer> union = new HashSet<>(set1);
+        union.addAll(set2);
+        return (double) intersection.size() / union.size();
+    }
+
+    private double calculateCosine(Map<Integer, Integer> ratings1, Map<Integer, Integer> ratings2) {
+        if (ratings1.isEmpty() || ratings2.isEmpty()) return 0;
         
-        // Get products current user bought
-        List<com.sunit.groceryplus.models.Order> userOrders = dbHelper.getOrdersByUser(userId);
-        for (com.sunit.groceryplus.models.Order order : userOrders) {
-            for (OrderItem item : dbHelper.getOrderItems(order.getOrderId())) {
-                userBoughtIds.add(item.getProductId());
-            }
+        double dotProduct = 0;
+        double norm1 = 0;
+        double norm2 = 0;
+
+        Set<Integer> allProducts = new HashSet<>(ratings1.keySet());
+        allProducts.addAll(ratings2.keySet());
+
+        for (int productId : allProducts) {
+            int r1 = ratings1.getOrDefault(productId, 0);
+            int r2 = ratings2.getOrDefault(productId, 0);
+            dotProduct += r1 * r2;
+            norm1 += r1 * r1;
+            norm2 += r2 * r2;
         }
 
-        // Find other users who bought at least one of these products
-        Map<Integer, Integer> otherUserScores = new HashMap<>();
-        List<com.sunit.groceryplus.models.User> allUsers = dbHelper.getAllUsers();
-        
-        for (com.sunit.groceryplus.models.User otherUser : allUsers) {
-            if (otherUser.getUserId() == userId) continue;
-            
-            int overlap = 0;
-            List<com.sunit.groceryplus.models.Order> otherOrders = dbHelper.getOrdersByUser(otherUser.getUserId());
-            for (com.sunit.groceryplus.models.Order order : otherOrders) {
-                for (OrderItem item : dbHelper.getOrderItems(order.getOrderId())) {
-                    if (userBoughtIds.contains(item.getProductId())) {
-                        overlap++;
-                    }
-                }
-            }
-            if (overlap > 0) {
-                otherUserScores.put(otherUser.getUserId(), overlap);
-            }
-        }
-
-        // Get top similar user
-        Integer topSimilarUser = null;
-        int maxOverlap = -1;
-        for (Map.Entry<Integer, Integer> entry : otherUserScores.entrySet()) {
-            if (entry.getValue() > maxOverlap) {
-                maxOverlap = entry.getValue();
-                topSimilarUser = entry.getKey();
-            }
-        }
-
-        // Recommend products from most similar user that current user hasn't bought
-        if (topSimilarUser != null) {
-            List<com.sunit.groceryplus.models.Order> similarOrders = dbHelper.getOrdersByUser(topSimilarUser);
-            for (com.sunit.groceryplus.models.Order order : similarOrders) {
-                for (OrderItem item : dbHelper.getOrderItems(order.getOrderId())) {
-                    if (!userBoughtIds.contains(item.getProductId())) {
-                        Product p = dbHelper.getProductById(item.getProductId());
-                        if (p != null) results.add(p);
-                    }
-                }
-            }
-        }
-
-        return results;
+        if (norm1 == 0 || norm2 == 0) return 0;
+        return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
     }
 }

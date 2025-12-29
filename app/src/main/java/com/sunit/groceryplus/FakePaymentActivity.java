@@ -15,8 +15,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
+import com.sunit.groceryplus.utils.GroceryNotificationManager;
 import com.sunit.groceryplus.utils.LoadingDialog;
-import com.sunit.groceryplus.utils.NotificationHelper;
 
 public class FakePaymentActivity extends AppCompatActivity {
 
@@ -27,9 +27,10 @@ public class FakePaymentActivity extends AppCompatActivity {
     private int userId;
     private double amount;
     private double subtotal;
+    private String instructions;
     private com.sunit.groceryplus.DatabaseHelper dbHelper;
     private LoadingDialog loadingDialog;
-    private NotificationHelper notificationHelper;
+    private GroceryNotificationManager notificationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +40,10 @@ public class FakePaymentActivity extends AppCompatActivity {
         userId = getIntent().getIntExtra("user_id", -1);
         amount = getIntent().getDoubleExtra("amount", 0.0);
         subtotal = getIntent().getDoubleExtra("subtotal_amount", 0.0);
+        instructions = getIntent().getStringExtra("delivery_instructions");
         dbHelper = new com.sunit.groceryplus.DatabaseHelper(this);
         loadingDialog = new LoadingDialog(this);
-        notificationHelper = new NotificationHelper(this);
+        notificationManager = GroceryNotificationManager.getInstance(this);
 
         initViews();
         setupToolbar();
@@ -113,7 +115,7 @@ public class FakePaymentActivity extends AppCompatActivity {
         if (validateFields()) {
             processPaymentBtn.setEnabled(false);
             loadingDialog.startLoadingDialog();
-            notificationHelper.sendNotification(userId, "Payment Processing", "Your payment is being processed.");
+            notificationManager.sendNotification(userId, "Payment Processing", "Your payment for order is being processed safely.", GroceryNotificationManager.TYPE_PAYMENT, null);
             // Simulate payment processing delay
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 loadingDialog.dismissDialog();
@@ -144,7 +146,7 @@ public class FakePaymentActivity extends AppCompatActivity {
 
     private void createOrder() {
         double deliveryFee = amount - subtotal;
-        long orderId = dbHelper.createOrder(userId, amount, deliveryFee, "PENDING", -1);
+        long orderId = dbHelper.createOrder(userId, amount, deliveryFee, "PENDING", -1, instructions);
         if (orderId != -1) {
             // Add payment record for tracking
             long paymentId = dbHelper.addPayment((int)orderId, amount, "stripe", "TXN_" + System.currentTimeMillis());
@@ -152,10 +154,14 @@ public class FakePaymentActivity extends AppCompatActivity {
                 Log.e("FakePaymentActivity", "Failed to add payment record for order: " + orderId);
             }
 
-            notificationHelper.sendNotification(userId, "Payment Successful", "Your payment of Rs. " + String.format("%.2f", amount) + " was successful.");
+            // Clear cart after successful payment
+            dbHelper.clearCart(userId);
+
+            notificationManager.sendNotification(userId, "Payment Successful", "Your payment of Rs. " + String.format("%.2f", amount) + " was successful. Your order #" + orderId + " is now pending.", GroceryNotificationManager.TYPE_PAYMENT, String.valueOf(orderId));
+            notificationManager.sendNotification(userId, "Order Placed", "Your order #" + orderId + " has been placed successfully!", GroceryNotificationManager.TYPE_ORDER, String.valueOf(orderId));
 
             Toast.makeText(this, "Payment successful!", Toast.LENGTH_LONG).show();
-            Intent intent = new Intent(this, com.sunit.groceryplus.UserHomeActivity.class);
+            Intent intent = new Intent(this, com.sunit.groceryplus.OrderSuccessActivity.class);
             intent.putExtra("user_id", userId);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);

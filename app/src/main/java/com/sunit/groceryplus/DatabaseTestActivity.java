@@ -96,7 +96,7 @@ public class DatabaseTestActivity extends AppCompatActivity {
             
             // Test 7: Create order
             OrderRepository orderRepository = new OrderRepository(this);
-            long orderId = orderRepository.createOrder(newUser.getUserId(), 9.95, 5.0, "pending", 1);
+            long orderId = orderRepository.createOrder(newUser.getUserId(), 9.95, 5.0, "pending", 1, "No instructions");
             if (orderId != -1) {
                 Log.d(TAG, "Order created successfully with ID: " + orderId);
                 Toast.makeText(this, "Order created successfully", Toast.LENGTH_SHORT).show();

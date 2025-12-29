@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sunit.groceryplus.adapters.OrderAdapter;
 import com.sunit.groceryplus.models.Order;
 import com.sunit.groceryplus.models.OrderItem;
+import com.sunit.groceryplus.utils.GroceryNotificationManager;
 
 
 import java.util.ArrayList;
@@ -110,6 +111,11 @@ public class OrderHistoryActivity extends AppCompatActivity {
             public void onReorderClick(Order order) {
                 reorderItems(order);
             }
+
+            @Override
+            public void onCancelOrderClick(Order order) {
+                showCancelConfirmation(order);
+            }
         });
         ordersRecyclerView.setAdapter(orderAdapter);
     }
@@ -193,6 +199,33 @@ public class OrderHistoryActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(TAG, "Error reordering items", e);
             Toast.makeText(this, "Failed to reorder", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showCancelConfirmation(Order order) {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Cancel Order")
+                .setMessage("Are you sure you want to cancel order #" + order.getOrderId() + "?")
+                .setPositiveButton("Yes, Cancel", (dialog, which) -> cancelOrder(order))
+                .setNegativeButton("No", null)
+                .show();
+    }
+
+    private void cancelOrder(Order order) {
+        boolean success = orderRepository.updateOrderStatus(order.getOrderId(), userId, "Cancelled");
+        if (success) {
+            Toast.makeText(this, "Order #" + order.getOrderId() + " cancelled", Toast.LENGTH_SHORT).show();
+            
+            // Send Notification
+            GroceryNotificationManager.getInstance(this).sendNotification(userId,
+                    "Order Cancelled",
+                    "Your order #" + order.getOrderId() + " has been cancelled as requested.",
+                    GroceryNotificationManager.TYPE_ORDER,
+                    String.valueOf(order.getOrderId()));
+            
+            loadOrders();
+        } else {
+            Toast.makeText(this, "Failed to cancel order", Toast.LENGTH_SHORT).show();
         }
     }
 

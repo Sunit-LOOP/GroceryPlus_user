@@ -21,6 +21,7 @@ public class Order {
     private boolean paymentReceived;
     private String paymentMethod;
     private int addressId;
+    private String deliveryInstructions;
 
     // Order status constants
     public static final String STATUS_PENDING = "pending";
@@ -186,6 +187,14 @@ public class Order {
 
     public void setAddressId(int addressId) {
         this.addressId = addressId;
+    }
+
+    public String getDeliveryInstructions() {
+        return deliveryInstructions;
+    }
+
+    public void setDeliveryInstructions(String deliveryInstructions) {
+        this.deliveryInstructions = deliveryInstructions;
     }
 
     // Delivery Person

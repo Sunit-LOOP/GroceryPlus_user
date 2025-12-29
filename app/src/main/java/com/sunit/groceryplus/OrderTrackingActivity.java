@@ -114,6 +114,55 @@ public class OrderTrackingActivity extends AppCompatActivity {
         line.setColor(0xFF4CAF50); // Green for delivery route
         line.setWidth(5f);
         map.getOverlays().add(line);
+
+        // Calculate and display ETA
+        calculateAndDisplayEta(vendorPoint, deliveryPoint, orderStatus);
+    }
+
+    private void calculateAndDisplayEta(GeoPoint p1, GeoPoint p2, String status) {
+        TextView etaTv = findViewById(R.id.orderEtaTv);
+        if (etaTv == null) return;
+
+        if ("DELIVERED".equalsIgnoreCase(status)) {
+            etaTv.setText("Order Delivered");
+            return;
+        }
+
+        if ("CANCELLED".equalsIgnoreCase(status)) {
+            etaTv.setText("Order Cancelled");
+            return;
+        }
+
+        // Distance in KM
+        double distance = calculateDistance(p1.getLatitude(), p1.getLongitude(), p2.getLatitude(), p2.getLongitude());
+        
+        // Speed: 0.5 KM per min (30 KM/H)
+        int travelTime = (int) Math.ceil(distance / 0.5);
+        
+        // Processing time based on status
+        int processingTime = 0;
+        if ("PENDING".equalsIgnoreCase(status)) processingTime = 15;
+        else if ("CONFIRMED".equalsIgnoreCase(status)) processingTime = 10;
+        else if ("PREPARING".equalsIgnoreCase(status)) processingTime = 5;
+        
+        int totalMin = travelTime + processingTime;
+        
+        if (totalMin < 5) {
+            etaTv.setText("Arriving in less than 5 mins");
+        } else {
+            etaTv.setText("Estimated Delivery: " + totalMin + " - " + (totalMin + 5) + " mins");
+        }
+    }
+
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371; // Earth Radius in KM
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 
     @Override

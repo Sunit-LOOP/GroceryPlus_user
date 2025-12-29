@@ -1,6 +1,6 @@
 package com.sunit.groceryplus;
 
-import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -40,6 +40,13 @@ public class SearchActivity extends AppCompatActivity {
     
     private List<Product> allProducts = new ArrayList<>();
     private List<Product> searchResults = new ArrayList<>();
+    
+    // History
+    private View historyLayout;
+    private RecyclerView historyRv;
+    private com.sunit.groceryplus.adapters.SearchHistoryAdapter historyAdapter;
+    private List<String> recentSearches = new ArrayList<>();
+    private com.sunit.groceryplus.DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +64,7 @@ public class SearchActivity extends AppCompatActivity {
         // Initialize repositories
         productRepository = new ProductRepository(this);
         cartRepository = new CartRepository(this);
+        dbHelper = new com.sunit.groceryplus.DatabaseHelper(this);
 
         // Initialize views
         initViews();
@@ -96,6 +104,13 @@ public class SearchActivity extends AppCompatActivity {
         
         // Auto-focus search field
         searchEt.requestFocus();
+
+        // History Setup
+        historyLayout = findViewById(R.id.historyLayout);
+        historyRv = findViewById(R.id.historyRv);
+        findViewById(R.id.clearHistoryTv).setOnClickListener(v -> clearSearchHistory());
+        setupHistoryRecyclerView();
+        loadSearchHistory();
     }
 
     private void showSortDialog() {
@@ -174,6 +189,27 @@ public class SearchActivity extends AppCompatActivity {
                 // Not needed
             }
         });
+
+        // Handle search action on keyboard
+        searchEt.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                String query = searchEt.getText().toString().trim();
+                if (!query.isEmpty()) {
+                    saveSearchQuery(query);
+                }
+                return true;
+            }
+            return false;
+        });
+
+        // Toggle history visibility
+        searchEt.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus && searchEt.getText().toString().isEmpty()) {
+                showHistory();
+            } else {
+                hideHistory();
+            }
+        });
     }
 
     private void performSearch(String query) {
@@ -209,6 +245,57 @@ public class SearchActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(TAG, "Error searching products", e);
             Toast.makeText(this, "Error searching products", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void setupHistoryRecyclerView() {
+        historyRv.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        historyAdapter = new com.sunit.groceryplus.adapters.SearchHistoryAdapter(recentSearches, query -> {
+            searchEt.setText(query);
+            searchEt.setSelection(query.length());
+            performSearch(query);
+            hideHistory();
+        });
+        historyRv.setAdapter(historyAdapter);
+    }
+
+    private void loadSearchHistory() {
+        Cursor cursor = dbHelper.getRecentSearchQueries(userId, 5);
+        recentSearches.clear();
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                recentSearches.add(cursor.getString(0));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        historyAdapter.updateItems(recentSearches);
+    }
+
+    private void saveSearchQuery(String query) {
+        dbHelper.addSearchQuery(userId, query);
+        loadSearchHistory();
+    }
+
+    private void clearSearchHistory() {
+        dbHelper.clearSearchHistory(userId);
+        loadSearchHistory();
+        hideHistory();
+    }
+
+    private void showHistory() {
+        if (!recentSearches.isEmpty()) {
+            historyLayout.setVisibility(View.VISIBLE);
+            searchResultsRv.setVisibility(View.GONE);
+            noResultsTv.setVisibility(View.GONE);
+        }
+    }
+
+    private void hideHistory() {
+        historyLayout.setVisibility(View.GONE);
+        if (searchResults.isEmpty()) {
+            showNoResults();
+        } else {
+            showResults();
         }
     }
 

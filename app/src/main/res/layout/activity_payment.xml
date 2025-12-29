@@ -274,6 +274,37 @@
                     app:backgroundTint="@color/primary"
                     android:layout_marginBottom="0dp"/>
             </LinearLayout>
+
+            <!-- Delivery Instructions Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delivery Instructions"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/instructionsInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundColor="#FFFFFF"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                android:layout_marginBottom="24dp"
+                android:hint="Eg: Ring bell, leave at gate...">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/instructionsEt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:minLines="2"
+                    android:gravity="top" />
+            </com.google.android.material.textfield.TextInputLayout>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

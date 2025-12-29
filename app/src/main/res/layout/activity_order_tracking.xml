@@ -16,16 +16,31 @@
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <TextView
-        android:id="@+id/orderStatusTv"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:padding="16dp"
-        android:background="#E0F7FA"
-        android:text="Status: On the way"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="@android:color/black" />
+        android:background="#E0F7FA">
+
+        <TextView
+            android:id="@+id/orderStatusTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Status: On the way"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/orderEtaTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Estimated Delivery: 20-30 mins"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary" />
+    </LinearLayout>
 
     <org.osmdroid.views.MapView
         android:id="@+id/map"
