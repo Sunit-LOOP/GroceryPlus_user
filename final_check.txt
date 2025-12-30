@@ -1,0 +1,198 @@
+interactive rebase in progress; onto 40e2555
+Last command done (1 command done):
+   pick 627b581 # Major update: Implement hybrid database (SQLite + Firestore), Admin panel enhancements, UI improvements, and code refactor
+No commands remaining.
+You are currently rebasing branch 'master' on '40e2555'.
+  (all conflicts fixed: run "git rebase --continue")
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   DATABASE_USAGE.md
+	new file:   DEMO_GUIDE.md
+	new file:   HYBRID_DATABASE_GUIDE.md
+	new file:   PROJECT_DOCUMENTATION.md
+	modified:   README.md
+	modified:   app/build.gradle.kts
+	modified:   app/src/main/AndroidManifest.xml
+	modified:   app/src/main/java/com/sunit/groceryplus/AdminDashboardActivity.java
+	modified:   app/src/main/java/com/sunit/groceryplus/AdminLoginActivity.java
+	new file:   app/src/main/java/com/sunit/groceryplus/AdminSettingsRepository.java
+	modified:   app/src/main/java/com/sunit/groceryplus/DatabaseContract.java
+	modified:   app/src/main/java/com/sunit/groceryplus/DatabaseHelper.java
+	modified:   app/src/main/java/com/sunit/groceryplus/DatabaseHelperTest.java
+	modified:   app/src/main/java/com/sunit/groceryplus/DatabaseInitActivity.java
+	modified:   app/src/main/java/com/sunit/groceryplus/DeliveryPersonRepository.java
+	modified:   app/src/main/java/com/sunit/groceryplus/FakePaymentActivity.java
+	new file:   app/src/main/java/com/sunit/groceryplus/HybridDatabaseDemoActivity.java
+	modified:   app/src/main/java/com/sunit/groceryplus/LoginActivity.java
+	modified:   app/src/main/java/com/sunit/groceryplus/MainActivity.java
+	modified:   app/src/main/java/com/sunit/groceryplus/OrderHistoryActivity.java
+	modified:   app/src/main/java/com/sunit/groceryplus/OrderItemRepository.java
+	modified:   app/src/main/java/com/sunit/groceryplus/OrderRepository.java
+	modified:   app/src/main/java/com/sunit/groceryplus/PaymentActivity.java
+	modified:   app/src/main/java/com/sunit/groceryplus/ProductDetailActivity.java
+	new file:   app/src/main/java/com/sunit/groceryplus/ProductRepositoryWithSync.java
+	modified:   app/src/main/java/com/sunit/groceryplus/SplashScreenActivity.java
+	new file:   app/src/main/java/com/sunit/groceryplus/SyncOnAppStart.java
+	modified:   app/src/main/java/com/sunit/groceryplus/UserHomeActivity.java
+	new file:   app/src/main/java/com/sunit/groceryplus/WishlistActivity.java
+	new file:   app/src/main/java/com/sunit/groceryplus/WishlistRepository.java
+	modified:   app/src/main/java/com/sunit/groceryplus/adapters/AdminProductAdapter.java
+	modified:   app/src/main/java/com/sunit/groceryplus/adapters/BannerAdapter.java
+	modified:   app/src/main/java/com/sunit/groceryplus/adapters/CartAdapter.java
+	modified:   app/src/main/java/com/sunit/groceryplus/adapters/DeliveryPersonnelAdapter.java
+	new file:   app/src/main/java/com/sunit/groceryplus/adapters/DrawableImageAdapter.java
+	modified:   app/src/main/java/com/sunit/groceryplus/adapters/OrderItemAdapter.java
+	modified:   app/src/main/java/com/sunit/groceryplus/adapters/ProductAdapter.java
+	new file:   app/src/main/java/com/sunit/groceryplus/admin/AdminSettingsActivity.java
+	new file:   app/src/main/java/com/sunit/groceryplus/admin/DeliveryBoyManagementActivity.java
+	modified:   app/src/main/java/com/sunit/groceryplus/admin/DeliveryPersonnelActivity.java
+	new file:   app/src/main/java/com/sunit/groceryplus/admin/InventoryAlertsActivity.java
+	modified:   app/src/main/java/com/sunit/groceryplus/admin/ProductManagementActivity.java
+	new file:   app/src/main/java/com/sunit/groceryplus/admin/ReportsActivity.java
+	new file:   app/src/main/java/com/sunit/groceryplus/models/AdminSettings.java
+	modified:   app/src/main/java/com/sunit/groceryplus/models/DeliveryPerson.java
+	modified:   app/src/main/java/com/sunit/groceryplus/models/Order.java
+	modified:   app/src/main/java/com/sunit/groceryplus/models/Product.java
+	modified:   app/src/main/java/com/sunit/groceryplus/models/User.java
+	new file:   app/src/main/java/com/sunit/groceryplus/models/Wishlist.java
+	new file:   app/src/main/java/com/sunit/groceryplus/utils/AnimationUtils.java
+	new file:   app/src/main/java/com/sunit/groceryplus/utils/FirestoreSyncHelper.java
+	modified:   app/src/main/java/com/sunit/groceryplus/utils/GroceryNotificationManager.java
+	new file:   app/src/main/java/com/sunit/groceryplus/utils/HybridDatabaseManager.java
+	new file:   app/src/main/java/com/sunit/groceryplus/utils/NetworkUtils.java
+	new file:   app/src/main/java/com/sunit/groceryplus/utils/ProductImageLoader.java
+	new file:   app/src/main/java/com/sunit/groceryplus/utils/UIComponents.java
+	new file:   app/src/main/java/com/sunit/groceryplus/utils/ValidationUtils.java
+	new file:   app/src/main/res/anim/slide_in_from_bottom.xml
+	new file:   app/src/main/res/anim/slide_in_from_left.xml
+	renamed:    assets/ic_chevron_right.xml -> app/src/main/res/drawable/alert_icon.xml
+	new file:   app/src/main/res/drawable/button_ripple_effect.xml
+	new file:   app/src/main/res/drawable/card_elevated_background.xml
+	renamed:    assets/rounded_white_background.xml -> app/src/main/res/drawable/fab_background.xml
+	new file:   app/src/main/res/drawable/gradient_accent.xml
+	new file:   app/src/main/res/drawable/gradient_primary.xml
+	new file:   app/src/main/res/drawable/ic_apple.xml
+	new file:   app/src/main/res/drawable/ic_bread.xml
+	renamed:    assets/ic_arrow_back.xml -> app/src/main/res/drawable/ic_edit.xml
+	new file:   app/src/main/res/drawable/ic_milk.xml
+	renamed:    assets/ic_category_placeholder.xml -> app/src/main/res/drawable/ic_refresh.xml
+	renamed:    assets/ic_language.xml -> app/src/main/res/drawable/ic_save_for_later.xml
+	new file:   app/src/main/res/drawable/ic_tomato.xml
+	renamed:    assets/ic_email.xml -> app/src/main/res/drawable/reports_icon.xml
+	renamed:    assets/rounded_gray_background.xml -> app/src/main/res/drawable/rounded_status_bg.xml
+	new file:   app/src/main/res/drawable/shimmer_background.xml
+	modified:   app/src/main/res/layout/activity_admin_dashboard.xml
+	new file:   app/src/main/res/layout/activity_admin_settings.xml
+	new file:   app/src/main/res/layout/activity_delivery_boy_management.xml
+	modified:   app/src/main/res/layout/activity_fake_payment.xml
+	new file:   app/src/main/res/layout/activity_hybrid_database_demo.xml
+	new file:   app/src/main/res/layout/activity_inventory_alerts.xml
+	new file:   app/src/main/res/layout/activity_reports.xml
+	modified:   app/src/main/res/layout/activity_user_login.xml
+	new file:   app/src/main/res/layout/activity_wishlist.xml
+	new file:   app/src/main/res/layout/dialog_delivery_boy.xml
+	new file:   app/src/main/res/layout/dialog_drawable_selector.xml
+	modified:   app/src/main/res/layout/dialog_product.xml
+	new file:   app/src/main/res/layout/grid_item_drawable_image.xml
+	new file:   app/src/main/res/layout/row_delivery_boy.xml
+	modified:   app/src/main/res/values/colors.xml
+	modified:   app/src/main/res/values/strings.xml
+	modified:   app/src/main/res/values/themes.xml
+	new file:   app/src/main/res/xml/file_paths.xml
+	deleted:    assets/admin_icon.png
+	deleted:    assets/analysis_icon.png
+	deleted:    assets/analytics_icon.png
+	deleted:    assets/apple.jpg
+	deleted:    assets/banana.jpg
+	deleted:    assets/banner_1.jpg
+	deleted:    assets/banner_2.jpg
+	deleted:    assets/banner_3.jpg
+	deleted:    assets/banner_4.jpg
+	deleted:    assets/banner_5.jpg
+	deleted:    assets/bg_msg_received.xml
+	deleted:    assets/bg_msg_sent.xml
+	deleted:    assets/bottle_gourd.jpg
+	deleted:    assets/bottle_milk.jpg
+	deleted:    assets/bread.jpg
+	deleted:    assets/cabbage.jpg
+	deleted:    assets/card_icon.png
+	deleted:    assets/cart_icon.png
+	deleted:    assets/cash_on_delivery_icon.png
+	deleted:    assets/category_icon.png
+	deleted:    assets/cauliflower.jpg
+	deleted:    assets/chat_icon.png
+	deleted:    assets/cheese_slice.jpg
+	deleted:    assets/circle_background.xml
+	deleted:    assets/cross_icon.png
+	deleted:    assets/curd.jpg
+	deleted:    assets/dahi.jpg
+	deleted:    assets/delivery_guy.xml
+	deleted:    assets/delivery_truck_icon.png
+	deleted:    assets/discount_banner_bg.xml
+	deleted:    assets/green_vegetable.jpg
+	deleted:    assets/history_icon.png
+	deleted:    assets/home_icon.png
+	deleted:    assets/ic_add.xml
+	deleted:    assets/ic_add_shopping_cart.xml
+	deleted:    assets/ic_credit_card.xml
+	deleted:    assets/ic_dark_mode.xml
+	deleted:    assets/ic_delete.xml
+	deleted:    assets/ic_favorite_border.xml
+	deleted:    assets/ic_help.xml
+	deleted:    assets/ic_launcher_background.xml
+	deleted:    assets/ic_launcher_foreground.xml
+	deleted:    assets/ic_location.xml
+	deleted:    assets/ic_lock.xml
+	deleted:    assets/ic_notifications.xml
+	deleted:    assets/ic_person.xml
+	deleted:    assets/ic_policy.xml
+	deleted:    assets/ic_product_placeholder.xml
+	deleted:    assets/ic_remove.xml
+	deleted:    assets/juice_bottle.jpg
+	deleted:    assets/lettuce_leaf.jpg
+	deleted:    assets/link_icon.png
+	deleted:    assets/log_out_icon.png
+	deleted:    assets/map_icon.png
+	deleted:    assets/message_icon.png
+	deleted:    assets/notification_bell_icon.png
+	deleted:    assets/oil_bottle.jpg
+	deleted:    assets/order_icon.png
+	deleted:    assets/paneer_cubes.jpg
+	deleted:    assets/product_icon.png
+	deleted:    assets/promo_icon.png
+	deleted:    assets/review_icon.png
+	deleted:    assets/rice_sack.jpg
+	deleted:    assets/search_icon.png
+	deleted:    assets/settings_icon.png
+	deleted:    assets/skim_milk.jpg
+	deleted:    assets/small_green_leaf_vegetable.jpg
+	deleted:    assets/sort_icon.xml
+	deleted:    assets/splash_logo.png
+	deleted:    assets/stripe_icon.png
+	deleted:    assets/supplier_icon.png
+	deleted:    assets/tab_indicator_selector.xml
+	deleted:    assets/tick_icon.png
+	deleted:    assets/tomato_red.jpg
+	deleted:    assets/update_icon.png
+	deleted:    assets/user_icon.png
+	deleted:    assets/user_profile.png
+	deleted:    assets/vendor_icon.png
+	deleted:    assets/vindi.jpg
+	new file:   firestore-seeder-android.java
+	new file:   firestore-seeder-node.js
+	new file:   git_status_output.txt
+	modified:   gradle/libs.versions.toml
+	modified:   init_db_sqlite.sql
+	modified:   pass.md
+	new file:   status.txt
+	new file:   status_cmd.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	final_check.txt
+	pull_output.txt
+	push_output.txt
+	remote.txt
+	status_final.txt
+
