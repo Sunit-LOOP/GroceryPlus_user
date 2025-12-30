@@ -16,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.sunit.groceryplus.utils.GroceryNotificationManager;
-import com.sunit.groceryplus.utils.LoadingDialog;
 
 public class FakePaymentActivity extends AppCompatActivity {
 
@@ -24,12 +23,16 @@ public class FakePaymentActivity extends AppCompatActivity {
     private TextView cardPreviewNumber, cardPreviewName, cardPreviewExpiry;
     private Button processPaymentBtn;
 
+    private View paymentProcessingOverlay;
+    private TextView processingSubtitleTv;
+
     private int userId;
     private double amount;
     private double subtotal;
+    private double deliveryFee;
+    private int addressId;
     private String instructions;
     private com.sunit.groceryplus.DatabaseHelper dbHelper;
-    private LoadingDialog loadingDialog;
     private GroceryNotificationManager notificationManager;
 
     @Override
@@ -40,9 +43,10 @@ public class FakePaymentActivity extends AppCompatActivity {
         userId = getIntent().getIntExtra("user_id", -1);
         amount = getIntent().getDoubleExtra("amount", 0.0);
         subtotal = getIntent().getDoubleExtra("subtotal_amount", 0.0);
+        deliveryFee = getIntent().getDoubleExtra("delivery_fee", -1.0);
+        addressId = getIntent().getIntExtra("address_id", -1);
         instructions = getIntent().getStringExtra("delivery_instructions");
         dbHelper = new com.sunit.groceryplus.DatabaseHelper(this);
-        loadingDialog = new LoadingDialog(this);
         notificationManager = GroceryNotificationManager.getInstance(this);
 
         initViews();
@@ -64,6 +68,9 @@ public class FakePaymentActivity extends AppCompatActivity {
 
         processPaymentBtn = findViewById(R.id.processPaymentBtn);
         processPaymentBtn.setText("Pay Rs. " + String.format("%.2f", amount));
+
+        paymentProcessingOverlay = findViewById(R.id.paymentProcessingOverlay);
+        processingSubtitleTv = findViewById(R.id.processingSubtitleTv);
     }
 
     private void setupToolbar() {
@@ -114,13 +121,33 @@ public class FakePaymentActivity extends AppCompatActivity {
     private void handlePayment() {
         if (validateFields()) {
             processPaymentBtn.setEnabled(false);
-            loadingDialog.startLoadingDialog();
+            showProcessingOverlay(true);
             notificationManager.sendNotification(userId, "Payment Processing", "Your payment for order is being processed safely.", GroceryNotificationManager.TYPE_PAYMENT, null);
-            // Simulate payment processing delay
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                loadingDialog.dismissDialog();
+
+            Handler handler = new Handler(Looper.getMainLooper());
+            // Stage 1
+            handler.postDelayed(() -> updateProcessingStatus("Authorizing…"), 350);
+            // Stage 2
+            handler.postDelayed(() -> updateProcessingStatus("Confirming…"), 1150);
+            // Stage 3
+            handler.postDelayed(() -> updateProcessingStatus("Finalizing…"), 2100);
+
+            // Finish
+            handler.postDelayed(() -> {
                 createOrder();
-            }, 3000); // 3 seconds delay
+            }, 3000);
+        }
+    }
+
+    private void showProcessingOverlay(boolean show) {
+        if (paymentProcessingOverlay != null) {
+            paymentProcessingOverlay.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void updateProcessingStatus(String status) {
+        if (processingSubtitleTv != null && status != null) {
+            processingSubtitleTv.setText(status);
         }
     }
 
@@ -145,13 +172,30 @@ public class FakePaymentActivity extends AppCompatActivity {
     }
 
     private void createOrder() {
-        double deliveryFee = amount - subtotal;
-        long orderId = dbHelper.createOrder(userId, amount, deliveryFee, "PENDING", -1, instructions);
+        double resolvedDeliveryFee = deliveryFee;
+        if (resolvedDeliveryFee < 0) {
+            resolvedDeliveryFee = amount - subtotal;
+        }
+
+        long orderId = dbHelper.createOrder(userId, amount, resolvedDeliveryFee, "PENDING", addressId, instructions);
         if (orderId != -1) {
             // Add payment record for tracking
             long paymentId = dbHelper.addPayment((int)orderId, amount, "stripe", "TXN_" + System.currentTimeMillis());
             if (paymentId == -1) {
                 Log.e("FakePaymentActivity", "Failed to add payment record for order: " + orderId);
+            }
+
+            try {
+                CartRepository cartRepo = new CartRepository(this);
+                java.util.List<com.sunit.groceryplus.models.CartItem> cartItems = cartRepo.getCartItems(userId);
+                if (cartItems != null) {
+                    for (com.sunit.groceryplus.models.CartItem item : cartItems) {
+                        dbHelper.addOrderItem((int) orderId, item.getProductId(), item.getQuantity(), item.getPrice());
+                        dbHelper.decrementStock(item.getProductId(), item.getQuantity());
+                    }
+                }
+            } catch (Exception e) {
+                Log.e("FakePaymentActivity", "Failed to transfer cart items to order", e);
             }
 
             // Clear cart after successful payment
@@ -161,13 +205,25 @@ public class FakePaymentActivity extends AppCompatActivity {
             notificationManager.sendNotification(userId, "Order Placed", "Your order #" + orderId + " has been placed successfully!", GroceryNotificationManager.TYPE_ORDER, String.valueOf(orderId));
 
             Toast.makeText(this, "Payment successful!", Toast.LENGTH_LONG).show();
+            showProcessingOverlay(false);
             Intent intent = new Intent(this, com.sunit.groceryplus.OrderSuccessActivity.class);
             intent.putExtra("user_id", userId);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();
         } else {
+            showProcessingOverlay(false);
+            processPaymentBtn.setEnabled(true);
             Toast.makeText(this, "Error creating order", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (paymentProcessingOverlay != null && paymentProcessingOverlay.getVisibility() == View.VISIBLE) {
+            // Prevent back during processing
+            return;
+        }
+        super.onBackPressed();
     }
 }

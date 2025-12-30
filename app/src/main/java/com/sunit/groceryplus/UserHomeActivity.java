@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.card.MaterialCardView;
 import com.sunit.groceryplus.adapters.BannerAdapter;
 import com.sunit.groceryplus.adapters.CategoryAdapter;
 import com.sunit.groceryplus.adapters.ProductAdapter;
@@ -27,6 +28,8 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import androidx.viewpager2.widget.ViewPager2;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.sunit.groceryplus.utils.LoadingDialog;
+import com.sunit.groceryplus.utils.AnimationUtils;
+import com.sunit.groceryplus.utils.UIComponents;
 
 import com.sunit.groceryplus.DatabaseContract;
 import com.sunit.groceryplus.DatabaseHelper;
@@ -125,6 +128,7 @@ public class UserHomeActivity extends AppCompatActivity {
         setupBanner();
         setupToolbar();
         setupSortFunctionality();
+        setupAnimations();
 
         loadData();
     }
@@ -259,8 +263,11 @@ public class UserHomeActivity extends AppCompatActivity {
 
         // Fallback to default banners if no promotions
         if (bannerImages.isEmpty()) {
-            bannerImages.add("https://via.placeholder.com/800x400?text=Banner+1");
-            bannerImages.add("https://via.placeholder.com/800x400?text=Banner+2");
+            bannerImages.add("banner_1");
+            bannerImages.add("banner_2");
+            bannerImages.add("banner_3");
+            bannerImages.add("banner_4");
+            bannerImages.add("banner_5");
         }
 
         bannerAdapter = new BannerAdapter(this, bannerImages);
@@ -403,6 +410,21 @@ public class UserHomeActivity extends AppCompatActivity {
 
     private void loadFeaturedProductsFromDatabase() {
         List<Product> all = productRepository.getAllProducts();
+        
+        // Debug: Log product count
+        Log.d("UserHomeActivity", "Loaded " + all.size() + " products for featured section");
+        
+        // If no products, force refresh sample data
+        if (all.isEmpty()) {
+            Log.d("UserHomeActivity", "No products found, forcing sample data refresh...");
+            DatabaseHelper dbHelper = new DatabaseHelper(this);
+            dbHelper.forceRefreshSampleData();
+            
+            // Reload products after refresh
+            all = productRepository.getAllProducts();
+            Log.d("UserHomeActivity", "After refresh: " + all.size() + " products");
+        }
+        
         if (all != null && !all.isEmpty()) {
             featuredProducts.clear();
             for (int i = 0; i < Math.min(6, all.size()); i++) {
@@ -448,6 +470,24 @@ public class UserHomeActivity extends AppCompatActivity {
             allProducts = productRepository.getAllProducts();
         } else {
             allProducts = productRepository.getProductsByCategory(selectedCategoryId);
+        }
+        
+        // Debug: Log product count
+        Log.d("UserHomeActivity", "Loaded " + allProducts.size() + " products for all products section");
+        
+        // If no products, force refresh sample data
+        if (allProducts.isEmpty()) {
+            Log.d("UserHomeActivity", "No products found, forcing sample data refresh...");
+            DatabaseHelper dbHelper = new DatabaseHelper(this);
+            dbHelper.forceRefreshSampleData();
+            
+            // Reload products after refresh
+            if (selectedCategoryId == -1) {
+                allProducts = productRepository.getAllProducts();
+            } else {
+                allProducts = productRepository.getProductsByCategory(selectedCategoryId);
+            }
+            Log.d("UserHomeActivity", "After refresh: " + allProducts.size() + " products");
         }
         applySortAndNotify();
     }
@@ -572,6 +612,34 @@ public class UserHomeActivity extends AppCompatActivity {
         if (bannerHandler != null && bannerRunnable != null) {
             bannerHandler.postDelayed(bannerRunnable, BANNER_DELAY);
         }
+    }
+
+    private void setupAnimations() {
+        // Animate sections on load
+        AnimationUtils.fadeIn(freeDeliveryGoalCard, 500);
+        AnimationUtils.fadeIn(buyAgainSection, 600);
+        AnimationUtils.fadeIn(recommendationSection, 700);
+        AnimationUtils.fadeIn(recentOrdersSection, 800);
+        AnimationUtils.fadeIn(recentlyViewedSection, 900);
+        
+        // Animate RecyclerViews
+        AnimationUtils.setRecyclerViewAnimation(categoriesRv);
+        AnimationUtils.setRecyclerViewAnimation(featuredRecyclerView);
+        AnimationUtils.setRecyclerViewAnimation(allProductsRecyclerView);
+        AnimationUtils.setRecyclerViewAnimation(buyAgainRecyclerView);
+        AnimationUtils.setRecyclerViewAnimation(recommendedRecyclerView);
+        AnimationUtils.setRecyclerViewAnimation(recentOrdersRecyclerView);
+        AnimationUtils.setRecyclerViewAnimation(recentlyViewedRecyclerView);
+        
+        // Apply modern UI components (commented out for missing view IDs)
+        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.freeDeliveryCard), 4);
+        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.categoriesCard), 4);
+        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.featuredProductsCard), 4);
+        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.allProductsCard), 4);
+        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.buyAgainCard), 4);
+        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.recommendationsCard), 4);
+        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.recentOrdersCard), 4);
+        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.recentlyViewedCard), 4);
     }
 
     @Override

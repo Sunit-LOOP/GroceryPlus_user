@@ -49,30 +49,29 @@ public class DeliveryPersonnelAdapter extends RecyclerView.Adapter<DeliveryPerso
         DeliveryPerson person = personnel.get(position);
         holder.nameTv.setText(person.getName());
         holder.phoneTv.setText(person.getPhone());
-        
-        if ("Available".equalsIgnoreCase(person.getStatus())) {
-            holder.statusTv.setText("Available");
-            holder.statusTv.setTextColor(Color.parseColor("#4CAF50")); // Green
-            holder.statusTv.setBackgroundColor(Color.parseColor("#E8F5E9"));
-        } else {
-            holder.statusTv.setText("Busy");
-            holder.statusTv.setTextColor(Color.parseColor("#F44336")); // Red
-            holder.statusTv.setBackgroundColor(Color.parseColor("#FFEBEE"));
-        }
 
-        holder.toggleBtn.setOnClickListener(v -> listener.onToggleStatus(person));
+        // Show availability instead of status
+        boolean available = person.isAvailable();
+        holder.statusTv.setText(available ? "Available" : "Unavailable");
+        holder.statusTv.setTextColor(available ? Color.parseColor("#4CAF50") : Color.parseColor("#F44336"));
+
+        holder.toggleBtn.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onToggleStatus(person);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return personnel.size();
+        return personnel != null ? personnel.size() : 0;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
         TextView nameTv, phoneTv, statusTv;
         Button toggleBtn;
 
-        public ViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
             nameTv = itemView.findViewById(R.id.personNameTv);
             phoneTv = itemView.findViewById(R.id.personPhoneTv);

@@ -14,4 +14,102 @@
     <string name="delivery_management">Delivery Management</string>
     <string name="vendor_management">Vendor Management</string>
     <string name="logout">Logout</string>
+    
+    <!-- Validation Error Messages -->
+    <string name="error_email_required">Email is required</string>
+    <string name="error_invalid_email">Invalid email address</string>
+    <string name="error_password_required">Password is required</string>
+    <string name="error_password_length">Password must be at least 6 characters</string>
+    <string name="error_name_required">Name is required</string>
+    <string name="error_invalid_name">Name can only contain letters and spaces</string>
+    <string name="error_phone_required">Phone number is required</string>
+    <string name="error_invalid_phone">Invalid phone number</string>
+    <string name="error_confirm_password_required">Confirm password is required</string>
+    <string name="error_password_mismatch">Passwords do not match</string>
+    <string name="error_product_name_required">Product name is required</string>
+    <string name="error_price_required">Price is required</string>
+    <string name="error_invalid_price">Invalid price</string>
+    <string name="error_stock_required">Stock quantity is required</string>
+    <string name="error_invalid_stock">Invalid stock quantity</string>
+    <string name="error_description_required">Description is required</string>
+    <string name="error_address_required">Address is required</string>
+    <string name="error_city_required">City is required</string>
+    <string name="error_state_required">State is required</string>
+    <string name="error_postal_code_required">Postal code is required</string>
+    <string name="error_category_required">Category is required</string>
+    <string name="error_vendor_required">Vendor is required</string>
+    
+    <!-- Success Messages -->
+    <string name="success_login">Login successful</string>
+    <string name="success_signup">Registration successful</string>
+    <string name="success_product_added">Product added successfully</string>
+    <string name="success_product_updated">Product updated successfully</string>
+    <string name="success_product_deleted">Product deleted successfully</string>
+    <string name="success_category_added">Category added successfully</string>
+    <string name="success_category_updated">Category updated successfully</string>
+    <string name="success_category_deleted">Category deleted successfully</string>
+    <string name="success_order_placed">Order placed successfully</string>
+    <string name="success_order_updated">Order updated successfully</string>
+    <string name="success_payment_processed">Payment processed successfully</string>
+    <string name="success_address_saved">Address saved successfully</string>
+    <string name="success_profile_updated">Profile updated successfully</string>
+    
+    <!-- Error Messages -->
+    <string name="error_login_failed">Login failed. Please check your credentials</string>
+    <string name="error_signup_failed">Registration failed. Please try again</string>
+    <string name="error_network">Network error. Please check your connection</string>
+    <string name="error_server">Server error. Please try again later</string>
+    <string name="error_unknown">An error occurred. Please try again</string>
+    <string name="error_no_internet">No internet connection</string>
+    <string name="error_session_expired">Session expired. Please login again</string>
+    <string name="error_insufficient_stock">Insufficient stock</string>
+    <string name="error_out_of_stock">Product is out of stock</string>
+    <string name="error_cart_empty">Cart is empty</string>
+    <string name="error_payment_failed">Payment failed. Please try again</string>
+    
+    <!-- Common Messages -->
+    <string name="msg_loading">Loading...</string>
+    <string name="msg_processing">Processing...</string>
+    <string name="msg_please_wait">Please wait...</string>
+    <string name="msg_no_data">No data available</string>
+    <string name="msg_no_internet">No internet connection</string>
+    <string name="msg_session_expired">Session expired</string>
+    <string name="msg_login_required">Please login to continue</string>
+    <string name="msg_permission_denied">Permission denied</string>
+    <string name="msg_permission_required">Permission required</string>
+    
+    <!-- Actions -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_yes">Yes</string>
+    <string name="action_no">No</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_add">Add</string>
+    <string name="action_update">Update</string>
+    <string name="action_submit">Submit</string>
+    <string name="action_login">Login</string>
+    <string name="action_signup">Sign Up</string>
+    <string name="action_logout">Logout</string>
+    <string name="action_search">Search</string>
+    <string name="action_filter">Filter</string>
+    <string name="action_sort">Sort</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_retry">Retry</string>
+    
+    <!-- Placeholders -->
+    <string name="placeholder_email">Enter your email</string>
+    <string name="placeholder_password">Enter your password</string>
+    <string name="placeholder_name">Enter your name</string>
+    <string name="placeholder_phone">Enter your phone number</string>
+    <string name="placeholder_search">Search products...</string>
+    <string name="placeholder_product_name">Product name</string>
+    <string name="placeholder_price">Price</string>
+    <string name="placeholder_stock">Stock quantity</string>
+    <string name="placeholder_description">Product description</string>
+    <string name="placeholder_address">Enter your address</string>
+    <string name="placeholder_city">City</string>
+    <string name="placeholder_state">State</string>
+    <string name="placeholder_postal_code">Postal code</string>
 </resources>

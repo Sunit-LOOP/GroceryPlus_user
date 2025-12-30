@@ -77,7 +77,11 @@ public class Product {
 
     public int getStockQuantity() { return stockQuantity; }
     public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
-
+    
+    // Alias methods for consistency
+    public int getStock() { return stockQuantity; }
+    public void setStock(int stock) { this.stockQuantity = stock; }
+    
     public boolean isInStock() { return stockQuantity > 0; }
 
     public double getRating() { return rating; }
@@ -99,4 +103,20 @@ public class Product {
                 ", vendorName='" + vendorName + '\'' +
                 '}';
     }
+
+    public Product(int productId, String productName, int categoryId, double price, String description, String image, int stockQuantity, int vendorId) {
+        this.productId = productId;
+        this.productName = productName;
+        this.categoryId = categoryId;
+        this.categoryName = "";
+        this.price = price;
+        this.description = description;
+        this.image = image;
+        this.stockQuantity = stockQuantity;
+        this.vendorId = vendorId;
+        this.vendorName = "";
+        this.rating = 0.0;
+    }
+
 }
+

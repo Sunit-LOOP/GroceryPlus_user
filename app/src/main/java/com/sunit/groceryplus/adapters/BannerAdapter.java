@@ -33,10 +33,26 @@ public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.BannerView
 
     @Override
     public void onBindViewHolder(@NonNull BannerViewHolder holder, int position) {
-        Glide.with(context)
-                .load(bannerImages.get(position))
-                .centerCrop()
-                .into(holder.bannerIv);
+        String imageSource = bannerImages.get(position);
+        
+        // Check if imageSource is a drawable resource name
+        int resId = context.getResources().getIdentifier(imageSource, "drawable", context.getPackageName());
+        
+        if (resId != 0) {
+            // It's a local drawable
+            Glide.with(context)
+                    .load(resId)
+                    .centerCrop()
+                    .into(holder.bannerIv);
+        } else {
+            // It's a URL or path
+            Glide.with(context)
+                    .load(imageSource)
+                    .centerCrop()
+                    .placeholder(R.drawable.ic_product_placeholder)
+                    .error(R.drawable.ic_product_placeholder)
+                    .into(holder.bannerIv);
+        }
     }
 
     @Override

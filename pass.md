@@ -5,5 +5,5 @@
 **Email:** admin@gmail.com
 **Password:** admin123
 
-**Email:** john@gmail.com
-**Password:** 123456
+**Email:** ram@gmail.com
+**Password:** ram123

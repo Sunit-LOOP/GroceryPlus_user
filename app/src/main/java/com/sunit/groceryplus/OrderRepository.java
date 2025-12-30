@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.sunit.groceryplus.models.Order;
 import com.sunit.groceryplus.models.OrderItem;
+import com.sunit.groceryplus.models.DeliveryPerson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +16,13 @@ import com.sunit.groceryplus.utils.GroceryNotificationManager;
 public class OrderRepository {
     private static final String TAG = "OrderRepository";
     private DatabaseHelper dbHelper;
+    private DeliveryPersonRepository deliveryPersonRepository;
     private Context context;
 
     public OrderRepository(Context context) {
         this.context = context;
-        this.dbHelper = new DatabaseHelper(context);
+        dbHelper = new DatabaseHelper(context);
+        deliveryPersonRepository = new DeliveryPersonRepository(context);
     }
 
     /**
@@ -137,7 +140,80 @@ public class OrderRepository {
     }
 
     public boolean assignDeliveryPerson(int orderId, int deliveryPersonId) {
-        return dbHelper.assignDeliveryPerson(orderId, deliveryPersonId);
+        boolean dbResult = dbHelper.assignDeliveryPerson(orderId, deliveryPersonId);
+        if (dbResult) {
+            deliveryPersonRepository.assignOrderToDeliveryPerson(deliveryPersonId, orderId);
+        }
+        return dbResult;
+    }
+
+    /**
+     * Auto-assign next available delivery boy to an order
+     */
+    public boolean autoAssignNextAvailable(int orderId) {
+        DeliveryPerson next = deliveryPersonRepository.getNextAvailableDeliveryPerson();
+        if (next != null) {
+            return assignDeliveryPerson(orderId, next.getPersonId());
+        }
+        return false;
+    }
+
+    /**
+     * Update order status and handle delivery person availability
+     */
+    public boolean updateOrderStatusWithDeliveryLogic(int orderId, int userId, String status) {
+        try {
+            Order order = dbHelper.getOrderById(orderId);
+            if (order == null) return false;
+
+            boolean success = dbHelper.updateOrderStatus(orderId, status);
+            if (!success) return false;
+
+            // Handle delivery person logic
+            if ("OUT_FOR_DELIVERY".equalsIgnoreCase(status) && order.getDeliveryPersonId() > 0) {
+                deliveryPersonRepository.assignOrderToDeliveryPerson(order.getDeliveryPersonId(), orderId);
+            } else if (("DELIVERED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status)) && order.getDeliveryPersonId() > 0) {
+                deliveryPersonRepository.releaseDeliveryPerson(order.getDeliveryPersonId());
+            }
+
+            // Notification
+            String title = "Order Update";
+            String message;
+            if ("delivered".equalsIgnoreCase(status)) {
+                title = "Order Delivered!";
+                message = "Great news! Your order #" + orderId + " has been delivered. Enjoy your groceries!";
+            } else if ("shipped".equalsIgnoreCase(status)) {
+                title = "Order Shipped!";
+                message = "Your order #" + orderId + " is on its way! It should arrive in about 30 minutes.";
+            } else {
+                message = "Your order #" + orderId + " is now " + status;
+            }
+            GroceryNotificationManager.getInstance(context).sendNotification(userId, title, message, GroceryNotificationManager.TYPE_ORDER, String.valueOf(orderId));
+
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating order status with delivery logic", e);
+            return false;
+        }
+    }
+
+    /**
+     * Reassign pending orders for a delivery boy who becomes unavailable
+     */
+    public void reassignOrdersForUnavailableDeliveryBoy(int deliveryPersonId) {
+        try {
+            List<Order> pendingOrders = dbHelper.getOrdersByDeliveryPersonAndStatus(deliveryPersonId, "PENDING");
+            for (Order order : pendingOrders) {
+                boolean reassigned = autoAssignNextAvailable(order.getOrderId());
+                if (reassigned) {
+                    Log.d(TAG, "Reassigned order " + order.getOrderId() + " from unavailable delivery boy " + deliveryPersonId);
+                } else {
+                    Log.w(TAG, "No available delivery boy to reassign order " + order.getOrderId());
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error reassigning orders for unavailable delivery boy", e);
+        }
     }
     
     /**

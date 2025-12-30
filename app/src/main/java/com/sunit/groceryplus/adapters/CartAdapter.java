@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sunit.groceryplus.R;
 import com.sunit.groceryplus.models.CartItem;
+import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import java.util.List;
 
@@ -96,20 +97,8 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
 
             // Set product image with improved handling
             String imageName = item.getImage();
-            if (imageName != null && !imageName.isEmpty()) {
-                int resourceId = context.getResources().getIdentifier(imageName, "drawable", context.getPackageName());
-                if (resourceId != 0) {
-                    productImageIv.setImageResource(resourceId);
-                } else {
-                    // Try to assign specific images based on product name
-                    int specificImage = getSpecificImageForProduct(item.getProductName());
-                    productImageIv.setImageResource(specificImage);
-                }
-            } else {
-                // Assign specific images based on product name
-                int specificImage = getSpecificImageForProduct(item.getProductName());
-                productImageIv.setImageResource(specificImage);
-            }
+            int fallback = getSpecificImageForProduct(item.getProductName());
+            ProductImageLoader.load(context, productImageIv, imageName, fallback);
 
             increaseBtn.setOnClickListener(v -> {
                 int newQuantity = item.getQuantity() + 1;

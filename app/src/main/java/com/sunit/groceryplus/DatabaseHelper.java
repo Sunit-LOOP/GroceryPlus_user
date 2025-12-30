@@ -28,7 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Database Info
     private static final String DATABASE_NAME = "GroceryPlus.db";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -53,9 +53,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(DatabaseContract.SQL_CREATE_ADDRESSES_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_VENDORS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_SEARCH_HISTORY_TABLE);
+        db.execSQL(DatabaseContract.SQL_CREATE_ADMIN_SETTINGS_TABLE);
+        db.execSQL(DatabaseContract.SQL_CREATE_WISHLISTS_TABLE);
 
         // Insert default admin user
         insertDefaultAdmin(db);
+        
+        // Insert sample categories and products
+        insertSampleCategoriesAndProducts(db);
     }
 
     @Override
@@ -77,6 +82,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(DatabaseContract.SQL_DELETE_ADDRESSES_TABLE);
         db.execSQL(DatabaseContract.SQL_DELETE_VENDORS_TABLE);
         db.execSQL(DatabaseContract.SQL_DELETE_SEARCH_HISTORY_TABLE);
+        db.execSQL(DatabaseContract.SQL_DELETE_ADMIN_SETTINGS_TABLE);
+        db.execSQL(DatabaseContract.SQL_DELETE_WISHLISTS_TABLE);
 
         onCreate(db);
     }
@@ -215,6 +222,269 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null; // Authentication failed
     }
     
+    /**
+     * Force refresh sample data (useful for testing)
+     */
+    public void forceRefreshSampleData() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            Log.d(TAG, "Force refreshing sample data...");
+            
+            // Clear existing sample data
+            db.delete(ProductEntry.TABLE_NAME, null, null);
+            db.delete(CategoryEntry.TABLE_NAME, null, null);
+            db.delete(DatabaseContract.VendorEntry.TABLE_NAME, null, null);
+            
+            // Insert fresh sample data
+            insertSampleCategoriesAndProducts(db);
+            
+            Log.d(TAG, "Sample data refreshed successfully");
+        } catch (Exception e) {
+            Log.e(TAG, "Error refreshing sample data", e);
+        }
+    }
+
+    private void insertSampleCategoriesAndProducts(SQLiteDatabase db) {
+        // Insert sample categories
+        ContentValues categoryValues = new ContentValues();
+        categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_NAME, "Fruits");
+        categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION, "Fresh and delicious fruits");
+        db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
+        
+        categoryValues.clear();
+        categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_NAME, "Vegetables");
+        categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION, "Fresh and organic vegetables");
+        db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
+        
+        categoryValues.clear();
+        categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_NAME, "Dairy Products");
+        categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION, "Milk, cheese, and other dairy items");
+        db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
+        
+        categoryValues.clear();
+        categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_NAME, "Bakery");
+        categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION, "Fresh bread and bakery items");
+        db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
+        
+        // Insert sample vendor
+        ContentValues vendorValues = new ContentValues();
+        vendorValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_VENDOR_NAME, "Fresh Market");
+        vendorValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_ADDRESS, "123 Main Street");
+        vendorValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_LATITUDE, 27.7172);
+        vendorValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_LONGITUDE, 85.3240);
+        vendorValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_RATING, 4.5);
+        vendorValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_ICON, "supplier_icon");
+        db.insert(DatabaseContract.VendorEntry.TABLE_NAME, null, vendorValues);
+        
+        // Insert sample products - 5 products per category
+        
+        // FRUITS CATEGORY (5 products)
+        ContentValues productValues = new ContentValues();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Apples");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 120.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh and crispy red apples");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 50);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Bananas");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 60.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Ripe yellow bananas");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 75);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Sweet Oranges");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 80.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Juicy and sweet oranges");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 60);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Grapes");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 150.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Sweet and fresh grapes");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 40);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Ripe Mangoes");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 180.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Sweet and juicy mangoes");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 35);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        // VEGETABLES CATEGORY (5 products)
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Tomatoes");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 40.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh red tomatoes");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 100);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Carrots");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 30.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh orange carrots");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 80);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Green Spinach");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 25.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh green spinach leaves");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 60);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Potatoes");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 35.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh and clean potatoes");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 120);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Onions");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 45.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh red onions");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 90);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        // DAIRY PRODUCTS CATEGORY (5 products)
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Milk");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 55.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh whole milk");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 30);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Greek Yogurt");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 85.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Creamy Greek yogurt");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 25);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Cheddar Cheese");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 220.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Aged cheddar cheese");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 20);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Butter");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 120.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Pure fresh butter");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 35);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Farm Eggs");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 75.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh farm eggs");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 50);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        // BAKERY CATEGORY (5 products)
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Whole Wheat Bread");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 35.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh whole wheat bread");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 25);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Croissants");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 45.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Buttery fresh croissants");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 30);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Chocolate Cake");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 180.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Delicious chocolate cake");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 15);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Bagels");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 40.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh baked bagels");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 35);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        productValues.clear();
+        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "French Pastries");
+        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
+        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 95.0);
+        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh French pastries");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 20);
+        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        db.insert(ProductEntry.TABLE_NAME, null, productValues);
+        
+        Log.d(TAG, "Sample categories and products inserted successfully");
+    }
+
     /**
      * Get user by email
      */
@@ -1138,6 +1408,85 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         
         return orderItems;
     }
+
+    /**
+     * Get products with low stock (below threshold)
+     */
+    public java.util.List<com.sunit.groceryplus.models.Product> getLowStockProducts(int threshold) {
+        java.util.List<com.sunit.groceryplus.models.Product> products = new java.util.ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        
+        String query = "SELECT * FROM " + DatabaseContract.ProductEntry.TABLE_NAME +
+                " WHERE " + DatabaseContract.ProductEntry.COLUMN_NAME_STOCK + " > 0 AND " +
+                DatabaseContract.ProductEntry.COLUMN_NAME_STOCK + " <= ?" +
+                " ORDER BY " + DatabaseContract.ProductEntry.COLUMN_NAME_STOCK + " ASC";
+        
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(threshold)});
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                try {
+                    int id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_PRODUCT_ID));
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_PRODUCT_NAME));
+                    int categoryId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_CATEGORY_ID));
+                    double price = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_PRICE));
+                    String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_DESCRIPTION));
+                    String image = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_IMAGE));
+                    int stock = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_STOCK));
+                    int vendorId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_VENDOR_ID));
+                    
+                    com.sunit.groceryplus.models.Product product = new com.sunit.groceryplus.models.Product(
+                        id, name, categoryId, price, description, image, stock, vendorId
+                    );
+                    products.add(product);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing low stock product", e);
+                }
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        
+        return products;
+    }
+
+    /**
+     * Get products that are out of stock
+     */
+    public java.util.List<com.sunit.groceryplus.models.Product> getOutOfStockProducts() {
+        java.util.List<com.sunit.groceryplus.models.Product> products = new java.util.ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        
+        String query = "SELECT * FROM " + DatabaseContract.ProductEntry.TABLE_NAME +
+                " WHERE " + DatabaseContract.ProductEntry.COLUMN_NAME_STOCK + " <= 0" +
+                " ORDER BY " + DatabaseContract.ProductEntry.COLUMN_NAME_PRODUCT_NAME + " ASC";
+        
+        Cursor cursor = db.rawQuery(query, null);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                try {
+                    int id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_PRODUCT_ID));
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_PRODUCT_NAME));
+                    int categoryId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_CATEGORY_ID));
+                    double price = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_PRICE));
+                    String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_DESCRIPTION));
+                    String image = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_IMAGE));
+                    int stock = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_STOCK));
+                    int vendorId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_VENDOR_ID));
+                    
+                    com.sunit.groceryplus.models.Product product = new com.sunit.groceryplus.models.Product(
+                        id, name, categoryId, price, description, image, stock, vendorId
+                    );
+                    products.add(product);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing out of stock product", e);
+                }
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        
+        return products;
+    }
     
     /**
      * Update order status
@@ -1182,64 +1531,34 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         
         try {
-            // Check if data already exists
-            Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + CategoryEntry.TABLE_NAME, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                int count = cursor.getInt(0);
-                cursor.close();
-                if (count > 0) {
-                    Log.d(TAG, "Sample data already exists");
-                    return;
-                }
-            }
-            Log.d(TAG, "Starting sample data insertion");
+            Log.d(TAG, "Starting independent sample data check and insertion");
             
-            // Insert default admin user if not exists
-            Log.d(TAG, "Checking if admin user exists");
-            if (!isUserExists("admin@gmail.com")) {
-                Log.d(TAG, "Creating default admin user");
-                long adminId = addUser("Admin User", "admin@gmail.com", "9876543210", "admin123", "admin");
-                if (adminId != -1) {
-                    Log.d(TAG, "Default admin user created with ID: " + adminId);
+            // 1. Categories & Products
+            Cursor catCursor = db.rawQuery("SELECT COUNT(*) FROM " + CategoryEntry.TABLE_NAME, null);
+            if (catCursor != null && catCursor.moveToFirst()) {
+                int count = catCursor.getInt(0);
+                catCursor.close();
+                Log.d(TAG, "Categories count: " + count);
+                if (count == 0) {
+                    Log.d(TAG, "Categories table is empty, inserting sample data...");
+                    insertSampleCategoriesAndProducts(db);
                 } else {
-                    Log.e(TAG, "Failed to create default admin user");
+                    Log.d(TAG, "Categories table already has data, skipping sample insertion");
                 }
-            } else {
-                Log.d(TAG, "Admin user already exists");
+
             }
             
-            // Insert categories
-            long fruitsId = addCategory("Fruits", "Fresh fruits");
-            long vegetablesId = addCategory("Vegetables", "Fresh vegetables");
-            long dairyId = addCategory("Dairy", "Milk and dairy products");
-            long bakeryId = addCategory("Bakery", "Bread and baked goods");
-            long meatId = addCategory("Meat", "Fresh meat and poultry");
+            // 2. Admin User
+            if (!isUserExists("admin@gmail.com")) {
+                long adminId = addUser("Admin User", "admin@gmail.com", "9815689963", "admin123", "admin");
+                Log.d(TAG, "Default admin check done");
+            }
             
-            // Insert products linked to vendors
-addProduct("Apple", (int)fruitsId, 120.0, "Fresh red apples", "apple", 200, 1);
-            addProduct("Banana", (int)fruitsId, 60.0, "Fresh bananas", "banana", 150, 1);
-            addProduct("Orange", (int)fruitsId, 100.0, "Fresh oranges", "orange", 180, 2);
-            addProduct("Mango", (int)fruitsId, 150.0, "Sweet mangoes", "mango", 120, 2);
-            
-            addProduct("Tomato", (int)vegetablesId, 40.0, "Fresh tomatoes", "tomato", 200, 3);
-            addProduct("Potato", (int)vegetablesId, 30.0, "Fresh potatoes", "potato", 250, 3);
-            addProduct("Onion", (int)vegetablesId, 35.0, "Fresh onions", "onion", 220, 4);
-            addProduct("Carrot", (int)vegetablesId, 50.0, "Fresh carrots", "carrot", 180, 4);
-            
-            addProduct("Milk", (int)dairyId, 70.0, "Fresh milk", "milk", 100, 5);
-            addProduct("Cheese", (int)dairyId, 200.0, "Cheddar cheese", "cheese", 80, 5);
-            addProduct("Yogurt", (int)dairyId, 80.0, "Plain yogurt", "yogurt", 90, 1);
-            
-            addProduct("Bread", (int)bakeryId, 45.0, "White bread", "bread", 60, 2);
-            addProduct("Croissant", (int)bakeryId, 100.0, "Butter croissant", "croissant", 50, 2);
-            
-            addProduct("Chicken", (int)meatId, 350.0, "Fresh chicken", "chicken", 75, 3);
-            addProduct("Mutton", (int)meatId, 800.0, "Fresh mutton", "mutton", 40, 4);
-            
-            // No default customer user creation - users must register manually
-            
-            Log.d(TAG, "Sample data inserted successfully");
+            // 3. Vendors
             insertSampleVendors();
+            
+            // 4. Promotions
+            insertSamplePromotions();
         } catch (Exception e) {
             Log.e(TAG, "Error inserting sample data", e);
         }
@@ -1276,6 +1595,27 @@ addProduct("Apple", (int)fruitsId, 120.0, "Fresh red apples", "apple", 200, 1);
             addVendor("Fresh Mart KTM", "Durbar Marg, Kathmandu", 27.7120, 85.3210, "vendor_icon", 4.5);
             addVendor("KTM Food Store", "Lazimpat, Kathmandu", 27.7250, 85.3200, "vendor_icon", 4.3);
         }
+    }
+
+    private void insertSamplePromotions() {
+        if (getTotalPromotionsCount() == 0) {
+            addPromotion("FRESH20", 20.0, "2025-12-31", "banner_1");
+            addPromotion("GROCERY10", 10.0, "2025-12-31", "banner_2");
+            addPromotion("SAVE50", 50.0, "2025-12-31", "banner_3");
+            addPromotion("FREE_DEL", 0.0, "2025-12-31", "banner_4");
+            addPromotion("NEWUSER", 15.0, "2025-12-31", "banner_5");
+        }
+    }
+
+    public int getTotalPromotionsCount() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + DatabaseContract.PromotionEntry.TABLE_NAME, null);
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        return count;
     }
     
 
@@ -2000,5 +2340,193 @@ addProduct("Apple", (int)fruitsId, 120.0, "Fresh red apples", "apple", 200, 1);
         return db.delete(DatabaseContract.SearchHistoryEntry.TABLE_NAME,
                 DatabaseContract.SearchHistoryEntry.COLUMN_NAME_USER_ID + " = ?",
                 new String[]{String.valueOf(userId)}) > 0;
+    }
+
+    /**
+     * Get all order items
+     */
+    public java.util.List<com.sunit.groceryplus.models.OrderItem> getAllOrderItems() {
+        java.util.List<com.sunit.groceryplus.models.OrderItem> orderItems = new java.util.ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        
+        String query = "SELECT * FROM " + DatabaseContract.OrderItemEntry.TABLE_NAME +
+                " ORDER BY " + DatabaseContract.OrderItemEntry.COLUMN_NAME_ORDER_ITEM_ID + " DESC";
+        
+        Cursor cursor = db.rawQuery(query, null);
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                try {
+                    int orderItemId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.OrderItemEntry.COLUMN_NAME_ORDER_ITEM_ID));
+                    int orderId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.OrderItemEntry.COLUMN_NAME_ORDER_ID));
+                    int productId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.OrderItemEntry.COLUMN_NAME_PRODUCT_ID));
+                    int quantity = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.OrderItemEntry.COLUMN_NAME_QUANTITY));
+                    double price = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.OrderItemEntry.COLUMN_NAME_PRICE));
+                    
+                    com.sunit.groceryplus.models.OrderItem orderItem = new com.sunit.groceryplus.models.OrderItem(
+                        orderItemId, orderId, productId, "", quantity, price, ""
+                    );
+                    orderItems.add(orderItem);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing order item", e);
+                }
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        
+        return orderItems;
+    }
+
+    /**
+     * Update order item quantity
+     */
+    public boolean updateOrderItemQuantity(int orderItemId, int quantity) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        
+        try {
+            ContentValues values = new ContentValues();
+            values.put(DatabaseContract.OrderItemEntry.COLUMN_NAME_QUANTITY, quantity);
+            
+            int result = db.update(DatabaseContract.OrderItemEntry.TABLE_NAME, values,
+                    DatabaseContract.OrderItemEntry.COLUMN_NAME_ORDER_ITEM_ID + " = ?",
+                    new String[]{String.valueOf(orderItemId)});
+            return result > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating order item quantity", e);
+            return false;
+        }
+    }
+
+    /**
+     * Delete order item
+     */
+    public boolean deleteOrderItem(int orderItemId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        
+        try {
+            int result = db.delete(DatabaseContract.OrderItemEntry.TABLE_NAME,
+                    DatabaseContract.OrderItemEntry.COLUMN_NAME_ORDER_ITEM_ID + " = ?",
+                    new String[]{String.valueOf(orderItemId)});
+            return result > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "Error deleting order item", e);
+            return false;
+        }
+    }
+
+    /**
+     * Validate product stock
+     */
+    public boolean validateStock(int productId, int requestedQuantity) {
+        com.sunit.groceryplus.models.Product product = getProductById(productId);
+        return product != null && product.getStock() >= requestedQuantity;
+    }
+
+    /**
+     * Get total cart value for user
+     */
+    public double getTotalCartValue(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        
+        String query = "SELECT ci." + DatabaseContract.CartItemEntry.COLUMN_NAME_QUANTITY + 
+                ", p." + DatabaseContract.ProductEntry.COLUMN_NAME_PRICE +
+                " FROM " + DatabaseContract.CartItemEntry.TABLE_NAME + " ci" +
+                " JOIN " + DatabaseContract.ProductEntry.TABLE_NAME + " p ON ci." + DatabaseContract.CartItemEntry.COLUMN_NAME_PRODUCT_ID + " = p." + DatabaseContract.ProductEntry.COLUMN_NAME_PRODUCT_ID +
+                " WHERE ci." + DatabaseContract.CartItemEntry.COLUMN_NAME_USER_ID + " = ?";
+        
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
+        double total = 0.0;
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                try {
+                    int quantity = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.CartItemEntry.COLUMN_NAME_QUANTITY));
+                    double price = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.ProductEntry.COLUMN_NAME_PRICE));
+                    total += (quantity * price);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error calculating cart total", e);
+                }
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        
+        return total;
+    }
+
+    /**
+     * Check if product is available
+     */
+    public boolean isProductAvailable(int productId) {
+        com.sunit.groceryplus.models.Product product = getProductById(productId);
+        return product != null && product.getStock() > 0;
+    }
+
+    /**
+     * Format currency consistently
+     */
+    public static String formatCurrency(double amount) {
+        return String.format("रु %.2f", amount);
+    }
+
+    /**
+     * Calculate delivery fee based on cart value
+     */
+    public double calculateDeliveryFee(int userId) {
+        double cartValue = getTotalCartValue(userId);
+        // Free delivery above 50
+        if (cartValue >= 50.0) {
+            return 0.0;
+        }
+        return 5.0; // Standard delivery fee
+    }
+    
+    /**
+     * Get orders by user (or all orders if userId = -1)
+     */
+    public java.util.List<com.sunit.groceryplus.models.Order> getUserOrders(int userId) {
+        if (userId == -1) {
+            return getAllOrders();
+        } else {
+            return getOrdersByUser(userId);
+        }
+    }
+    
+    /**
+     * Get orders by delivery person and status
+     */
+    public java.util.List<com.sunit.groceryplus.models.Order> getOrdersByDeliveryPersonAndStatus(int deliveryPersonId, String status) {
+        java.util.List<com.sunit.groceryplus.models.Order> orders = new java.util.ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        
+        String query = "SELECT * FROM " + DatabaseContract.OrderEntry.TABLE_NAME + 
+                " WHERE " + DatabaseContract.OrderEntry.COLUMN_NAME_DELIVERY_PERSON_ID + " = ? AND " +
+                DatabaseContract.OrderEntry.COLUMN_NAME_STATUS + " = ?";
+        
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(deliveryPersonId), status});
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                try {
+                    int orderId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.OrderEntry.COLUMN_NAME_ORDER_ID));
+                    int orderUserId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.OrderEntry.COLUMN_NAME_USER_ID));
+                    double totalAmount = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.OrderEntry.COLUMN_NAME_TOTAL_AMOUNT));
+                    double deliveryFee = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.OrderEntry.COLUMN_NAME_DELIVERY_FEE));
+                    String orderStatus = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.OrderEntry.COLUMN_NAME_STATUS));
+                    String orderDate = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.OrderEntry.COLUMN_NAME_ORDER_DATE));
+                    
+                    com.sunit.groceryplus.models.Order order = new com.sunit.groceryplus.models.Order(
+                        orderId, orderUserId, "", "", "", totalAmount, deliveryFee, orderStatus, orderDate
+                    );
+                    order.setDeliveryPersonId(deliveryPersonId);
+                    
+                    orders.add(order);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing order", e);
+                }
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        
+        return orders;
     }
 }

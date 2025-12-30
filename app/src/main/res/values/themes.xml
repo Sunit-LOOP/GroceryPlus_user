@@ -1,34 +1,203 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.GroceryPLus" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Primary colors -->
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorPrimaryVariant">@color/primary_dark</item>
-        <item name="colorOnPrimary">@color/white</item>
-
-        <!-- Secondary colors -->
-        <item name="colorSecondary">@color/secondary</item>
-        <item name="colorSecondaryVariant">@color/accent</item>
-        <item name="colorOnSecondary">@color/black</item>
-
-        <!-- Background and surface -->
-        <item name="android:colorBackground">@color/background</item>
-        <item name="colorSurface">@color/surface</item>
-        <item name="colorOnSurface">@color/text_primary</item>
-
-        <!-- Error -->
-        <item name="colorError">@color/error</item>
-        <item name="colorOnError">@color/white</item>
-
-        <!-- Text -->
-        <item name="android:textColorPrimary">@color/text_primary</item>
-        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <!-- Material Design 3 Color System -->
+        <item name="colorPrimary">@color/md_theme_light_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_light_onPrimaryContainer</item>
+        
+        <item name="colorSecondary">@color/md_theme_light_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_light_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/md_theme_light_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_light_onSecondaryContainer</item>
+        
+        <item name="colorTertiary">@color/md_theme_light_tertiary</item>
+        <item name="colorOnTertiary">@color/md_theme_light_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/md_theme_light_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/md_theme_light_onTertiaryContainer</item>
+        
+        <item name="colorError">@color/md_theme_light_error</item>
+        <item name="colorOnError">@color/md_theme_light_onError</item>
+        <item name="colorErrorContainer">@color/md_theme_light_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/md_theme_light_onErrorContainer</item>
+        
+        <item name="android:colorBackground">@color/md_theme_light_background</item>
+        <item name="colorOnBackground">@color/md_theme_light_onBackground</item>
+        <item name="colorSurface">@color/md_theme_light_surface</item>
+        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
+        <item name="colorSurfaceVariant">@color/md_theme_light_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
+        <item name="colorOutline">@color/outline</item>
+        <item name="colorOutlineVariant">@color/outline_variant</item>
+        
+        <!-- Status Bar -->
+        <item name="android:statusBarColor">@color/md_theme_light_surface</item>
+        <item name="android:windowLightStatusBar">true</item>
+        
+        <!-- Navigation Bar -->
+        <item name="android:navigationBarColor">@color/md_theme_light_surface</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        
+        <!-- Typography -->
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.GroceryPlus.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.GroceryPlus.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.GroceryPlus.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.GroceryPlus.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.GroceryPlus.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.GroceryPlus.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.GroceryPlus.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.GroceryPlus.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.GroceryPlus.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.GroceryPlus.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.GroceryPlus.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.GroceryPlus.LabelSmall</item>
+        
+        <!-- Shape Appearance -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.GroceryPlus.SmallComponent</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.GroceryPlus.MediumComponent</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.GroceryPlus.LargeComponent</item>
     </style>
 
+    <style name="Theme.GroceryPlus" parent="Base.Theme.GroceryPLus" />
+    
+    <!-- Typography Styles -->
+    <style name="TextAppearance.GroceryPlus.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:textSize">32sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <style name="TextAppearance.GroceryPlus.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">28sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <style name="TextAppearance.GroceryPlus.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textSize">24sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <style name="TextAppearance.GroceryPlus.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">22sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <style name="TextAppearance.GroceryPlus.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <style name="TextAppearance.GroceryPlus.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <style name="TextAppearance.GroceryPlus.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    
+    <style name="TextAppearance.GroceryPlus.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    
+    <style name="TextAppearance.GroceryPlus.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    
+    <style name="TextAppearance.GroceryPlus.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <style name="TextAppearance.GroceryPlus.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <style name="TextAppearance.GroceryPlus.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <!-- Shape Appearance Styles -->
+    <style name="ShapeAppearance.GroceryPlus.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
+    </style>
+    
+    <style name="ShapeAppearance.GroceryPlus.MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+    
+    <style name="ShapeAppearance.GroceryPlus.LargeComponent" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <!-- Component Styles -->
+    <style name="Widget.GroceryPlus.Button" parent="Widget.Material3.Button">
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <style name="Widget.GroceryPlus.Button.OutlinedButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <style name="Widget.GroceryPlus.Button.TextButton" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    
+    <style name="Widget.GroceryPlus.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="cardUseCompatPadding">true</item>
+    </style>
+    
+    <style name="Widget.GroceryPlus.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+    </style>
+    
+    <style name="Widget.GroceryPlus.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.GroceryPlus.BottomNavigationView</item>
+    </style>
+    
+    <style name="ThemeOverlay.GroceryPlus.BottomNavigationView" parent="">
+        <item name="colorSurface">@color/md_theme_light_surface</item>
+        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
+        <item name="colorPrimary">@color/md_theme_light_primary</item>
+        <item name="colorSecondary">@color/md_theme_light_secondary</item>
+    </style>
+
+    <!-- Dialog Styles -->
+    <style name="ThemeOverlay.GroceryPlus.Dialog" parent="ThemeOverlay.Material3.Dialog">
+        <item name="dialogCornerRadius">16dp</item>
+    </style>
+    
+    <style name="ThemeOverlay.GroceryPlus.AlertDialog" parent="ThemeOverlay.Material3.Dialog">
+        <item name="dialogCornerRadius">16dp</item>
+    </style>
+
+    <!-- Legacy Theme Compatibility -->
+    <style name="Theme.GroceryPlus.AppBarOverlay" parent="ThemeOverlay.Material3.Dark.ActionBar" />
+
+    <style name="Theme.GroceryPlus.PopupOverlay" parent="ThemeOverlay.Material3.Light" />
+
+    <!-- Main Application Theme -->
     <style name="Theme.GroceryPLus" parent="Base.Theme.GroceryPLus" />
-
-    <style name="Theme.GroceryPLus.AppBarOverlay" parent="ThemeOverlay.Material3.Dark" />
-
-    <style name="Theme.GroceryPLus.PopupOverlay" parent="ThemeOverlay.Material3.Light" />
 </resources>

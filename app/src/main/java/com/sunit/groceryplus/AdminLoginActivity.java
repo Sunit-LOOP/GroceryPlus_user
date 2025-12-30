@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.sunit.groceryplus.models.User;
+import com.sunit.groceryplus.utils.ValidationUtils;
 
 public class AdminLoginActivity extends AppCompatActivity {
 
@@ -21,7 +22,7 @@ public class AdminLoginActivity extends AppCompatActivity {
     private TextInputEditText adminPasswordEditText;
     private Button adminLoginButton;
     private TextView userLoginTextView;
-    private UserRepository userRepository;
+    private DatabaseHelper databaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +33,7 @@ public class AdminLoginActivity extends AppCompatActivity {
         initViews();
 
         // Initialize repository
-        userRepository = new UserRepository(this);
+        databaseHelper = new DatabaseHelper(this);
 
         // Set click listeners
         setClickListeners();
@@ -81,10 +82,20 @@ public class AdminLoginActivity extends AppCompatActivity {
         }
 
         // Perform login
-        User user = userRepository.loginUser(email, password);
+        User user = databaseHelper.authenticateUser(email, password);
         if (user != null && user.isAdmin()) {
             Toast.makeText(this, "Admin login successful!", Toast.LENGTH_SHORT).show();
             Log.d(TAG, "Admin logged in: " + user.getName());
+
+            // Save session
+            android.content.SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+            android.content.SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt("userId", user.getUserId());
+            editor.putString("userName", user.getName());
+            editor.putString("userEmail", user.getEmail());
+            editor.putString("userType", user.getUserType());
+            editor.commit();
+            Log.d(TAG, "Admin session saved to SharedPreferences");
 
             // Navigate to admin dashboard
             Intent intent = new Intent(AdminLoginActivity.this, AdminDashboardActivity.class);

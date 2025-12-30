@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
             DatabaseHelper dbHelper = new DatabaseHelper(this);
             
             // Test authentication with default admin
-            User adminUser = dbHelper.authenticateUser("admin@groceryplus.com", "admin123");
+            User adminUser = dbHelper.authenticateUser("admin@gmail.com", "admin123");
             if (adminUser != null) {
                 Log.d(TAG, "Default admin authenticated: " + adminUser.getName() + " (" + adminUser.getUserType() + ")");
             } else {
@@ -44,8 +44,8 @@ public class MainActivity extends AppCompatActivity {
             }
             
             // Check if a regular user exists
-            boolean userExists = dbHelper.isUserExists("john@example.com");
-            Log.d(TAG, "User 'john@example.com' exists: " + userExists);
+            boolean userExists = dbHelper.isUserExists("ram@gmail.com");
+            Log.d(TAG, "User 'ram@gmail.com' exists: " + userExists);
             
         } catch (Exception e) {
             Log.e(TAG, "Database test failed", e);

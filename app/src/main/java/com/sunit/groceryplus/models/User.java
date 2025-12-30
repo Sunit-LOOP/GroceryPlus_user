@@ -39,6 +39,12 @@ public class User {
         return userType;
     }
 
+    // Alias methods for consistency
+    public int getId() { return userId; }
+    public String getUserName() { return name; }
+    public String getUserEmail() { return email; }
+    public String getUserPhone() { return phone; }
+
     // Setters
     public void setUserId(int userId) {
         this.userId = userId;
@@ -65,6 +71,13 @@ public class User {
      */
     public boolean isAdmin() {
         return "admin".equals(this.userType);
+    }
+
+    /**
+     * Get created at timestamp (placeholder for compatibility)
+     */
+    public String getCreatedAt() {
+        return ""; // User table doesn't have created_at field exposed in model
     }
 
     @Override

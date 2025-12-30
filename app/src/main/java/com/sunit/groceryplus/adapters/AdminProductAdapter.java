@@ -23,6 +23,7 @@ import com.sunit.groceryplus.admin.ProductManagementActivity;
 import com.sunit.groceryplus.models.Category;
 import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.ProductRepository;
+import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import java.util.List;
 
@@ -77,20 +78,8 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
 
         // Set product image based on image name with better fallbacks
         String imageName = product.getImage();
-        if (imageName != null && !imageName.isEmpty()) {
-            int resourceId = context.getResources().getIdentifier(imageName, "drawable", context.getPackageName());
-            if (resourceId != 0) {
-                holder.productImageIv.setImageResource(resourceId);
-            } else {
-                // Try to assign specific images based on product name
-                int specificImage = getSpecificImageForProduct(product.getProductName());
-                holder.productImageIv.setImageResource(specificImage);
-            }
-        } else {
-            // Assign specific images based on product name
-            int specificImage = getSpecificImageForProduct(product.getProductName());
-            holder.productImageIv.setImageResource(specificImage);
-        }
+        int fallback = getSpecificImageForProduct(product.getProductName());
+        ProductImageLoader.load(context, holder.productImageIv, imageName, fallback);
     }
 
     /**

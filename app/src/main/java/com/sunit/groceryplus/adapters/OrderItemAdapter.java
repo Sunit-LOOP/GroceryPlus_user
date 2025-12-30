@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sunit.groceryplus.R;
 import com.sunit.groceryplus.models.OrderItem;
+import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import java.util.List;
 
@@ -72,20 +73,8 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.View
 
             // Set product image with improved handling
             String imageName = item.getImage();
-            if (imageName != null && !imageName.isEmpty()) {
-                int resourceId = context.getResources().getIdentifier(imageName, "drawable", context.getPackageName());
-                if (resourceId != 0) {
-                    productImageView.setImageResource(resourceId);
-                } else {
-                    // Try to assign specific images based on product name
-                    int specificImage = getSpecificImageForProduct(item.getProductName());
-                    productImageView.setImageResource(specificImage);
-                }
-            } else {
-                // Assign specific images based on product name
-                int specificImage = getSpecificImageForProduct(item.getProductName());
-                productImageView.setImageResource(specificImage);
-            }
+            int fallback = getSpecificImageForProduct(item.getProductName());
+            ProductImageLoader.load(context, productImageView, imageName, fallback);
         }
 
         /**

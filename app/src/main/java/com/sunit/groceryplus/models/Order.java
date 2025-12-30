@@ -76,6 +76,11 @@ public class Order {
     public int getOrderId() {
         return orderId;
     }
+    
+    // Alias methods for consistency
+    public int getId() { return orderId; }
+    public double getSubtotal() { return totalAmount; }
+    public double getTotalAmount() { return totalAmount; }
 
     public void setOrderId(int orderId) {
         this.orderId = orderId;
@@ -119,10 +124,6 @@ public class Order {
 
     public void setUserPhone(String userPhone) {
         this.userPhone = userPhone;
-    }
-
-    public double getTotalAmount() {
-        return totalAmount;
     }
 
     public void setTotalAmount(double totalAmount) {

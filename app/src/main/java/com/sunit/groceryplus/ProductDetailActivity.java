@@ -20,6 +20,7 @@ import com.sunit.groceryplus.adapters.ReviewAdapter;
 import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.models.Review;
 import com.sunit.groceryplus.utils.RecentProductsHelper;
+import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import org.json.JSONObject;
 
@@ -34,7 +35,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private TextView productNameTv, productPriceTv, productDescriptionTv, productCategoryTv, quantityTv, productVendorTv;
     private TextView productAvgRatingTv, productReviewCountTv, noReviewsTv;
     private RatingBar productAvgRatingBar;
-    private ImageButton decreaseBtn, increaseBtn, backBtn;
+    private ImageButton decreaseBtn, increaseBtn, backBtn, saveForLaterBtn;
     private Button addToCartBtn, writeReviewBtn;
     private RecyclerView productReviewsRv;
     
@@ -44,6 +45,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ProductRepository productRepository;
     private CartRepository cartRepository;
     private ReviewRepository reviewRepository;
+    private WishlistRepository wishlistRepository;
 
     
     private Product product;
@@ -70,6 +72,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         productRepository = new ProductRepository(this);
         cartRepository = new CartRepository(this);
         reviewRepository = new ReviewRepository(this);
+        wishlistRepository = new WishlistRepository(this);
 
 
         initViews();
@@ -91,6 +94,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         increaseBtn = findViewById(R.id.productDetailIncreaseBtn);
         backBtn = findViewById(R.id.productDetailBackBtn);
         addToCartBtn = findViewById(R.id.productDetailAddToCartBtn);
+        // saveForLaterBtn = findViewById(R.id.productDetailSaveForLaterBtn); // TODO: Add to layout
         
         writeReviewBtn = findViewById(R.id.writeReviewBtn);
         productAvgRatingTv = findViewById(R.id.productAvgRatingTv);
@@ -121,8 +125,10 @@ public class ProductDetailActivity extends AppCompatActivity {
                 }
                 quantityTv.setText(String.valueOf(quantity));
 
-                int imageResource = getImageResource(product.getImage());
-                productImageIv.setImageResource(imageResource != 0 ? imageResource : R.drawable.product_icon);
+                ProductImageLoader.load(this, productImageIv, product.getImage(), R.drawable.product_icon);
+
+                // Update save for later button icon
+                updateSaveForLaterIcon();
             } else {
                 finish();
             }
@@ -216,18 +222,28 @@ public class ProductDetailActivity extends AppCompatActivity {
     private void addToCart() {
         if (cartRepository.addToCart(userId, productId, quantity)) {
             Toast.makeText(ProductDetailActivity.this, "Added to cart", Toast.LENGTH_SHORT).show();
-            finish();
         } else {
             Toast.makeText(ProductDetailActivity.this, "Failed to add to cart", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private int getImageResource(String imageName) {
-        if (imageName == null || imageName.isEmpty()) return R.drawable.product_icon;
-        try {
-            return getResources().getIdentifier(imageName, "drawable", getPackageName());
-        } catch (Exception e) {
-            return R.drawable.product_icon;
+    private void toggleSaveForLater() {
+        if (wishlistRepository.isInWishlist(userId, productId)) {
+            wishlistRepository.removeFromWishlist(userId, productId);
+            Toast.makeText(ProductDetailActivity.this, "Removed from wishlist", Toast.LENGTH_SHORT).show();
+        } else {
+            wishlistRepository.addToWishlist(userId, productId);
+            Toast.makeText(ProductDetailActivity.this, "Added to wishlist", Toast.LENGTH_SHORT).show();
+        }
+        updateSaveForLaterIcon();
+    }
+
+    private void updateSaveForLaterIcon() {
+        // TODO: Uncomment when saveForLaterBtn is added to layout
+        if (wishlistRepository.isInWishlist(userId, productId)) {
+            // saveForLaterBtn.setImageResource(R.drawable.ic_save_for_later_filled);
+        } else {
+            // saveForLaterBtn.setImageResource(R.drawable.ic_save_for_later);
         }
     }
 }

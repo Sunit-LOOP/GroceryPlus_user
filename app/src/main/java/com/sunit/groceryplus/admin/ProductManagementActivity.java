@@ -1,30 +1,41 @@
 package com.sunit.groceryplus.admin;
 
 import android.app.AlertDialog;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.sunit.groceryplus.CategoryRepository;
+import com.sunit.groceryplus.DatabaseHelper;
 import com.sunit.groceryplus.ProductRepository;
 import com.sunit.groceryplus.R;
 import com.sunit.groceryplus.adapters.AdminProductAdapter;
+import com.sunit.groceryplus.adapters.DrawableImageAdapter;
 import com.sunit.groceryplus.models.Category;
-import com.sunit.groceryplus.DatabaseHelper;
 import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.models.Vendor;
+import com.sunit.groceryplus.utils.ProductImageLoader;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +51,13 @@ public class ProductManagementActivity extends AppCompatActivity {
     private List<Category> categories;
     private List<Vendor> vendors;
     private DatabaseHelper dbHelper;
+
+    private ActivityResultLauncher<String[]> pickImageLauncher;
+    private ActivityResultLauncher<Uri> takePictureLauncher;
+    private Uri pendingCameraUri;
+
+    private ImageView activeImagePreview;
+    private String selectedImageValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +82,33 @@ public class ProductManagementActivity extends AppCompatActivity {
         setupRecyclerView();
         setClickListeners();
         loadProducts();
+
+        initImagePickers();
+    }
+
+    private void initImagePickers() {
+        pickImageLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(), uri -> {
+            if (uri == null) return;
+            try {
+                final int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+                getContentResolver().takePersistableUriPermission(uri, flags);
+            } catch (Exception ignored) {
+            }
+
+            selectedImageValue = uri.toString();
+            if (activeImagePreview != null) {
+                ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+            }
+        });
+
+        takePictureLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+            if (success != null && success && pendingCameraUri != null) {
+                selectedImageValue = pendingCameraUri.toString();
+                if (activeImagePreview != null) {
+                    ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                }
+            }
+        });
     }
 
     private void initViews() {
@@ -93,10 +138,33 @@ public class ProductManagementActivity extends AppCompatActivity {
     private void loadProducts() {
         List<Product> products = productRepository.getAllProducts();
         adapter.updateProducts(products);
+        
+        // Debug: Log product count
+        android.util.Log.d("ProductManagement", "Loaded " + products.size() + " products");
+        
+        // If no products, force refresh sample data
+        if (products.isEmpty()) {
+            android.util.Log.d("ProductManagement", "No products found, forcing sample data refresh...");
+            DatabaseHelper dbHelper = new DatabaseHelper(this);
+            dbHelper.forceRefreshSampleData();
+            
+            // Reload products after refresh
+            products = productRepository.getAllProducts();
+            adapter.updateProducts(products);
+            android.util.Log.d("ProductManagement", "After refresh: " + products.size() + " products");
+        }
     }
 
     private void setClickListeners() {
         addProductFab.setOnClickListener(v -> showProductDialog(null));
+        
+        // Add test notification button for debugging
+        findViewById(R.id.toolbar).setOnLongClickListener(v -> {
+            // Test notification when toolbar is long-pressed
+            com.sunit.groceryplus.utils.GroceryNotificationManager.testNotification(this, 1);
+            Toast.makeText(this, "Test notification sent!", Toast.LENGTH_SHORT).show();
+            return true;
+        });
     }
 
     public void showProductDialog(Product product) {
@@ -121,11 +189,18 @@ public class ProductManagementActivity extends AppCompatActivity {
         Spinner categorySpinner = dialogView.findViewById(R.id.categorySpinner);
         TextInputEditText priceEt = dialogView.findViewById(R.id.productPriceEt);
         TextInputEditText descriptionEt = dialogView.findViewById(R.id.productDescriptionEt);
+        ImageView imagePreviewIv = dialogView.findViewById(R.id.productImagePreviewIv);
+        Button pickImageGalleryBtn = dialogView.findViewById(R.id.pickImageGalleryBtn);
+        Button pickImageCameraBtn = dialogView.findViewById(R.id.pickImageCameraBtn);
+        Button pickImageStockBtn = dialogView.findViewById(R.id.pickImageStockBtn);
         Spinner imageSpinner = dialogView.findViewById(R.id.productImageSpinner);
         TextInputEditText stockEt = dialogView.findViewById(R.id.productStockEt);
         Spinner vendorSpinner = dialogView.findViewById(R.id.vendorSpinner);
         Button cancelBtn = dialogView.findViewById(R.id.cancelBtn);
         Button saveBtn = dialogView.findViewById(R.id.saveBtn);
+
+        activeImagePreview = imagePreviewIv;
+        selectedImageValue = null;
 
         // Setup Category Spinner
         List<String> categoryNames = new ArrayList<>();
@@ -158,12 +233,34 @@ public class ProductManagementActivity extends AppCompatActivity {
         imageSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         imageSpinner.setAdapter(imageSpinnerAdapter);
 
+        imageSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                String selected = (String) imageSpinner.getSelectedItem();
+                if (selected != null) {
+                    selectedImageValue = selected;
+                    if (imagePreviewIv != null) {
+                        ProductImageLoader.load(ProductManagementActivity.this, imagePreviewIv, selectedImageValue, R.drawable.product_icon);
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+            }
+        });
+
         // Populate if editing
         if (product != null) {
             nameEt.setText(product.getProductName());
             priceEt.setText(String.valueOf(product.getPrice()));
             descriptionEt.setText(product.getDescription());
             stockEt.setText(String.valueOf(product.getStockQuantity()));
+
+            selectedImageValue = product.getImage();
+            if (imagePreviewIv != null) {
+                ProductImageLoader.load(this, imagePreviewIv, selectedImageValue, R.drawable.product_icon);
+            }
 
             // Set category spinner selection
             for (int i = 0; i < categories.size(); i++) {
@@ -182,12 +279,59 @@ public class ProductManagementActivity extends AppCompatActivity {
             }
 
             // Set image spinner selection
-            for (int i = 0; i < drawableNames.size(); i++) {
-                if (drawableNames.get(i).equals(product.getImage())) {
-                    imageSpinner.setSelection(i);
-                    break;
+            String img = product.getImage();
+            if (img != null && !img.startsWith("content://") && !img.startsWith("file://") && !img.startsWith("android.resource://") && !img.startsWith("http://") && !img.startsWith("https://")) {
+                for (int i = 0; i < drawableNames.size(); i++) {
+                    if (drawableNames.get(i).equals(img)) {
+                        imageSpinner.setSelection(i);
+                        break;
+                    }
                 }
             }
+        }
+
+        if (product == null) {
+            selectedImageValue = (String) imageSpinner.getSelectedItem();
+            if (imagePreviewIv != null) {
+                ProductImageLoader.load(this, imagePreviewIv, selectedImageValue, R.drawable.product_icon);
+            }
+        }
+
+        if (pickImageGalleryBtn != null) {
+            pickImageGalleryBtn.setOnClickListener(v -> {
+                if (pickImageLauncher != null) {
+                    pickImageLauncher.launch(new String[]{"image/*"});
+                }
+            });
+        }
+
+        if (pickImageCameraBtn != null) {
+            pickImageCameraBtn.setOnClickListener(v -> {
+                if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{android.Manifest.permission.CAMERA}, 501);
+                    Toast.makeText(this, "Please allow camera permission", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                try {
+                    File imagesDir = new File(getCacheDir(), "images");
+                    if (!imagesDir.exists()) {
+                        imagesDir.mkdirs();
+                    }
+
+                    File imageFile = File.createTempFile("product_", ".jpg", imagesDir);
+                    pendingCameraUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", imageFile);
+                    if (takePictureLauncher != null) {
+                        takePictureLauncher.launch(pendingCameraUri);
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(this, "Failed to open camera", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if (pickImageStockBtn != null) {
+            pickImageStockBtn.setOnClickListener(v -> showDrawableSelectorDialog());
         }
 
         cancelBtn.setOnClickListener(v -> dialog.dismiss());
@@ -196,7 +340,7 @@ public class ProductManagementActivity extends AppCompatActivity {
             String name = nameEt.getText().toString().trim();
             String priceStr = priceEt.getText().toString().trim();
             String description = descriptionEt.getText().toString().trim();
-            String image = (String) imageSpinner.getSelectedItem();
+            String image = selectedImageValue != null ? selectedImageValue : (String) imageSpinner.getSelectedItem();
             String stockStr = stockEt.getText().toString().trim();
 
             if (name.isEmpty() || priceStr.isEmpty() || description.isEmpty()) {
@@ -249,6 +393,18 @@ public class ProductManagementActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 501) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Camera permission granted. Tap Camera again.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     public void showDeleteConfirmationDialog(Product product) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Product")
@@ -287,6 +443,92 @@ public class ProductManagementActivity extends AppCompatActivity {
         builder.setView(dialogView);
         builder.setPositiveButton("Close", null);
         builder.show();
+    }
+
+    private void showDrawableSelectorDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_drawable_selector, null);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+
+        // Get drawable images
+        List<DrawableImageAdapter.DrawableImage> drawableImages = getDrawableImages();
+        
+        // Setup adapter
+        DrawableImageAdapter adapter = new DrawableImageAdapter(this, drawableImages);
+        android.widget.ListView listView = dialogView.findViewById(R.id.drawableGridView);
+        listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            adapter.setSelectedPosition(position);
+        });
+
+        // Set up dialog buttons properly
+        builder.setPositiveButton("Select", (dialogInterface, which) -> {
+            DrawableImageAdapter.DrawableImage selectedImage = adapter.getSelectedImage();
+            if (selectedImage != null) {
+                selectedImageValue = selectedImage.getResourceName();
+                if (activeImagePreview != null) {
+                    ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                }
+            }
+        });
+
+        builder.setNegativeButton("Cancel", (dialogInterface, which) -> {
+            // Do nothing, just dismiss
+        });
+
+        builder.show();
+    }
+
+    private List<DrawableImageAdapter.DrawableImage> getDrawableImages() {
+        List<DrawableImageAdapter.DrawableImage> images = new ArrayList<>();
+        
+        try {
+            Field[] drawables = R.drawable.class.getFields();
+            for (Field field : drawables) {
+                String name = field.getName();
+                
+                // Only skip the most obvious system/internal drawables
+                // Keep everything else - PNG, JPEG, XML vectors, backgrounds, etc.
+                if (name.startsWith("abc_") || 
+                    name.startsWith("design_") || name.startsWith("mtrl_") ||
+                    name.startsWith("googleg_") || name.startsWith("common_") ||
+                    name.startsWith("avd_")) {
+                    continue;
+                }
+                
+                // Include ALL remaining drawables - PNG, JPEG, XML, everything!
+                images.add(new DrawableImageAdapter.DrawableImage(name, name));
+            }
+        } catch (Exception e) {
+            android.util.Log.e("ProductManagement", "Error loading drawable images", e);
+        }
+        
+        return images;
+    }
+
+    private String formatName(String drawableName) {
+        // Convert drawable_name to Display Name
+        String formatted = drawableName.replaceAll("_", " ")
+                .replaceAll("([A-Z])", " $1")
+                .trim();
+        
+        // Capitalize first letter of each word
+        String[] words = formatted.split(" ");
+        StringBuilder result = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                if (result.length() > 0) {
+                    result.append(" ");
+                }
+                result.append(Character.toUpperCase(word.charAt(0)))
+                       .append(word.substring(1).toLowerCase());
+            }
+        }
+        
+        return result.toString();
     }
 
     @Override

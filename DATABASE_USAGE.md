@@ -44,7 +44,7 @@ DatabaseHelper dbHelper = new DatabaseHelper(context);
 
 ### Adding a New User
 ```java
-long userId = dbHelper.addUser("John Doe", "john@example.com", "1234567890", "password123", "customer");
+long userId = dbHelper.addUser("Ram", "ram@gmail.com", "1234567890", "password123", "customer");
 if (userId != -1) {
     // User added successfully
 } else {
@@ -54,7 +54,7 @@ if (userId != -1) {
 
 ### Authenticating a User
 ```java
-User authenticatedUser = dbHelper.authenticateUser("admin@groceryplus.com", "admin123");
+User authenticatedUser = dbHelper.authenticateUser("admin@gmail.com", "admin123");
 if (authenticatedUser != null) {
     // Authentication successful
     if (authenticatedUser.isAdmin()) {
@@ -69,12 +69,12 @@ if (authenticatedUser != null) {
 
 ### Checking if User Exists
 ```java
-boolean exists = dbHelper.isUserExists("john@example.com");
+boolean exists = dbHelper.isUserExists("ram@gmail.com");
 ```
 
 ### Getting User by Email
 ```java
-User user = dbHelper.getUserByEmail("john@example.com");
+User user = dbHelper.getUserByEmail("ram@gmail.com");
 if (user != null) {
     // User found
 }
@@ -83,7 +83,7 @@ if (user != null) {
 ## Default Admin User
 
 A default admin user is automatically created:
-- Email: admin@groceryplus.com
+- Email: admin@gmail.com
 - Password: admin123
 - Type: admin
 

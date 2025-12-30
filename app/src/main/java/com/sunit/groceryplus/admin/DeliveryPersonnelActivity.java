@@ -18,6 +18,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.sunit.groceryplus.DatabaseContract;
 import com.sunit.groceryplus.DatabaseHelper;
+import com.sunit.groceryplus.DeliveryPersonRepository;
 import com.sunit.groceryplus.R;
 import com.sunit.groceryplus.adapters.DeliveryPersonnelAdapter;
 import com.sunit.groceryplus.models.DeliveryPerson;
@@ -30,7 +31,8 @@ public class DeliveryPersonnelActivity extends AppCompatActivity {
     private RecyclerView personnelRv;
     private FloatingActionButton addPersonFab;
     private DeliveryPersonnelAdapter adapter;
-    private DatabaseHelper dbHelper;
+    private DeliveryPersonRepository repository;
+    private List<DeliveryPerson> personnelList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,96 +41,102 @@ public class DeliveryPersonnelActivity extends AppCompatActivity {
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Delivery Personnel");
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
 
-        dbHelper = new DatabaseHelper(this);
-        
+        repository = new DeliveryPersonRepository(this);
         personnelRv = findViewById(R.id.personnelRv);
         addPersonFab = findViewById(R.id.addPersonFab);
 
-        setupRecyclerView();
-        loadPersonnel();
-
-        addPersonFab.setOnClickListener(v -> showAddPersonDialog());
-    }
-
-    private void setupRecyclerView() {
         personnelRv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new DeliveryPersonnelAdapter(this, new ArrayList<>(), new DeliveryPersonnelAdapter.OnStatusToggleListener() {
-            @Override
-            public void onToggleStatus(DeliveryPerson person) {
-                togglePersonStatus(person);
-            }
-        });
+        adapter = new DeliveryPersonnelAdapter(this, new ArrayList<>(), this::onToggleAvailability);
         personnelRv.setAdapter(adapter);
+
+        addPersonFab.setOnClickListener(v -> showAddDialog());
+
+        loadData();
     }
 
-    private void loadPersonnel() {
-        List<DeliveryPerson> personnel = new ArrayList<>();
-        Cursor cursor = dbHelper.getAllDeliveryPersonnel();
-        
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                int id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.DeliveryPersonEntry.COLUMN_NAME_PERSON_ID));
-                String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.DeliveryPersonEntry.COLUMN_NAME_NAME));
-                String phone = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.DeliveryPersonEntry.COLUMN_NAME_PHONE));
-                String status = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.DeliveryPersonEntry.COLUMN_NAME_STATUS));
-                
-                personnel.add(new DeliveryPerson(id, name, phone, status));
-            } while (cursor.moveToNext());
-            cursor.close();
+    private void loadData() {
+        personnelList = repository.getAllDeliveryPersonnel();
+        adapter.updateList(personnelList);
+    }
+
+    private void onToggleAvailability(DeliveryPerson person) {
+        boolean newAvailability = !person.isAvailable();
+        boolean updated = repository.setAvailability(person.getPersonId(), newAvailability);
+        if (updated) {
+            Toast.makeText(this, person.getName() + " is now " + (newAvailability ? "Available" : "Unavailable"), Toast.LENGTH_SHORT).show();
+            loadData();
+        } else {
+            Toast.makeText(this, "Failed to update availability", Toast.LENGTH_SHORT).show();
         }
-        
-        adapter.updateList(personnel);
     }
 
-    private void showAddPersonDialog() {
+    private void showAddDialog() {
+        showDeliveryPersonDialog(null);
+    }
+
+    private void showDeliveryPersonDialog(DeliveryPerson person) {
+        boolean isEdit = person != null;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_delivery_person, null);
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View dialogView = inflater.inflate(R.layout.dialog_add_delivery_person, null);
         builder.setView(dialogView);
+
+        // TODO: Add these fields to dialog_add_delivery_person layout
+        // TextInputEditText nameEt = dialogView.findViewById(R.id.nameEt);
+        // TextInputEditText phoneEt = dialogView.findViewById(R.id.phoneEt);
+        Button saveBtn = dialogView.findViewById(R.id.saveBtn);
+        Button cancelBtn = dialogView.findViewById(R.id.cancelBtn);
+
+        if (isEdit) {
+            // nameEt.setText(person.getName());
+            // phoneEt.setText(person.getPhone());
+        }
+
         AlertDialog dialog = builder.create();
 
-        TextInputEditText nameEt = dialogView.findViewById(R.id.personNameEt);
-        TextInputEditText phoneEt = dialogView.findViewById(R.id.personPhoneEt);
-        Button cancelBtn = dialogView.findViewById(R.id.cancelBtn);
-        Button saveBtn = dialogView.findViewById(R.id.saveBtn);
-
-        cancelBtn.setOnClickListener(v -> dialog.dismiss());
-
         saveBtn.setOnClickListener(v -> {
-            String name = nameEt.getText().toString().trim();
-            String phone = phoneEt.getText().toString().trim();
+            // TODO: Uncomment when EditText fields are added to layout
+            // String name = nameEt.getText().toString().trim();
+            // String phone = phoneEt.getText().toString().trim();
+            String name = ""; // Placeholder
+            String phone = ""; // Placeholder
 
             if (name.isEmpty() || phone.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            long result = dbHelper.addDeliveryPerson(name, phone, "Available");
-            if (result != -1) {
-                Toast.makeText(this, "Person added", Toast.LENGTH_SHORT).show();
-                loadPersonnel();
-                dialog.dismiss();
+            if (isEdit) {
+                boolean updated = repository.updateDeliveryPerson(person.getPersonId(), name, phone);
+                if (updated) {
+                    Toast.makeText(this, "Delivery person updated", Toast.LENGTH_SHORT).show();
+                    loadData();
+                } else {
+                    Toast.makeText(this, "Failed to update", Toast.LENGTH_SHORT).show();
+                }
             } else {
-                Toast.makeText(this, "Error adding person", Toast.LENGTH_SHORT).show();
+                long id = repository.addDeliveryPerson(name, phone);
+                if (id != -1) {
+                    Toast.makeText(this, "Delivery person added", Toast.LENGTH_SHORT).show();
+                    loadData();
+                } else {
+                    Toast.makeText(this, "Failed to add", Toast.LENGTH_SHORT).show();
+                }
             }
+            dialog.dismiss();
         });
+
+        cancelBtn.setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
     }
 
-    private void togglePersonStatus(DeliveryPerson person) {
-        String newStatus = "Available".equalsIgnoreCase(person.getStatus()) ? "Busy" : "Available";
-        if (dbHelper.updateDeliveryPersonStatus(person.getPersonId(), newStatus)) {
-            Toast.makeText(this, "Status updated", Toast.LENGTH_SHORT).show();
-            loadPersonnel();
-        } else {
-            Toast.makeText(this, "Error updating status", Toast.LENGTH_SHORT).show();
-        }
-    }
-    
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

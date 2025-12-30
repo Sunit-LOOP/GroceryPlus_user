@@ -23,6 +23,67 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_CREATED_AT = "created_at";
     }
 
+    /* Inner class that defines the admin_settings table contents */
+    public static class AdminSettingsEntry implements BaseColumns {
+        public static final String TABLE_NAME = "admin_settings";
+        public static final String COLUMN_NAME_SETTINGS_ID = "settings_id";
+        public static final String COLUMN_NAME_STORE_NAME = "store_name";
+        public static final String COLUMN_NAME_STORE_EMAIL = "store_email";
+        public static final String COLUMN_NAME_STORE_PHONE = "store_phone";
+        public static final String COLUMN_NAME_STORE_ADDRESS = "store_address";
+        public static final String COLUMN_NAME_STORE_CITY = "store_city";
+        public static final String COLUMN_NAME_STORE_STATE = "store_state";
+        public static final String COLUMN_NAME_STORE_POSTAL_CODE = "store_postal_code";
+        public static final String COLUMN_NAME_STORE_COUNTRY = "store_country";
+        public static final String COLUMN_NAME_TAX_RATE = "tax_rate";
+        public static final String COLUMN_NAME_DELIVERY_FEE = "delivery_fee";
+        public static final String COLUMN_NAME_FREE_DELIVERY_ABOVE = "free_delivery_above";
+        public static final String COLUMN_NAME_FREE_DELIVERY_THRESHOLD = "free_delivery_threshold";
+        public static final String COLUMN_NAME_CURRENCY_SYMBOL = "currency_symbol";
+        public static final String COLUMN_NAME_TIMEZONE = "timezone";
+        public static final String COLUMN_NAME_ENABLE_NOTIFICATIONS = "enable_notifications";
+        public static final String COLUMN_NAME_ENABLE_EMAIL_NOTIFICATIONS = "enable_email_notifications";
+        public static final String COLUMN_NAME_SMTP_HOST = "smtp_host";
+        public static final String COLUMN_NAME_SMTP_PORT = "smtp_port";
+        public static final String COLUMN_NAME_SMTP_USERNAME = "smtp_username";
+        public static final String COLUMN_NAME_SMTP_PASSWORD = "smtp_password";
+        public static final String COLUMN_NAME_STRIPE_ENABLED = "stripe_enabled";
+        public static final String COLUMN_NAME_STRIPE_PUBLISHABLE_KEY = "stripe_publishable_key";
+        public static final String COLUMN_NAME_STRIPE_SECRET_KEY = "stripe_secret_key";
+        public static final String COLUMN_NAME_COD_ENABLED = "cod_enabled";
+        public static final String COLUMN_NAME_BUSINESS_HOURS = "business_hours";
+        public static final String COLUMN_NAME_SUPPORT_EMAIL = "support_email";
+        public static final String COLUMN_NAME_SUPPORT_PHONE = "support_phone";
+        public static final String COLUMN_NAME_LOGO_URL = "logo_url";
+        public static final String COLUMN_NAME_FAVICON_URL = "favicon_url";
+        public static final String COLUMN_NAME_PRIMARY_COLOR = "primary_color";
+        public static final String COLUMN_NAME_ACCENT_COLOR = "accent_color";
+        public static final String COLUMN_NAME_MAINTENANCE_MODE = "maintenance_mode";
+        public static final String COLUMN_NAME_MAINTENANCE_MESSAGE = "maintenance_message";
+        public static final String COLUMN_NAME_CREATED_AT = "created_at";
+        public static final String COLUMN_NAME_UPDATED_AT = "updated_at";
+    }
+
+    /* Inner class that defines the wishlists table contents */
+    public static class WishlistEntry implements BaseColumns {
+        public static final String TABLE_NAME = "wishlists";
+        public static final String COLUMN_NAME_WISHLIST_ID = "wishlist_id";
+        public static final String COLUMN_NAME_USER_ID = "user_id";
+        public static final String COLUMN_NAME_PRODUCT_ID = "product_id";
+        public static final String COLUMN_NAME_ADDED_AT = "added_at";
+    }
+
+    /* Inner class that defines the delivery_boys table contents */
+    public static class DeliveryBoyEntry implements BaseColumns {
+        public static final String TABLE_NAME = "delivery_boys";
+        public static final String COLUMN_NAME_DELIVERY_BOY_ID = "delivery_boy_id";
+        public static final String COLUMN_NAME_NAME = "name";
+        public static final String COLUMN_NAME_PHONE = "phone";
+        public static final String COLUMN_NAME_AVAILABLE = "available";
+        public static final String COLUMN_NAME_CURRENT_ORDER_ID = "current_order_id";
+        public static final String COLUMN_NAME_CREATED_AT = "created_at";
+    }
+
     /* Inner class that defines the categories table contents */
     public static class CategoryEntry implements BaseColumns {
         public static final String TABLE_NAME = "categories";
@@ -124,6 +185,8 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_NAME = "name";
         public static final String COLUMN_NAME_PHONE = "phone";
         public static final String COLUMN_NAME_STATUS = "status";
+        public static final String COLUMN_NAME_AVAILABLE = "available";
+        public static final String COLUMN_NAME_CURRENT_ORDER_ID = "current_order_id";
     }
 
     public static class PaymentEntry implements BaseColumns {
@@ -275,36 +338,54 @@ public final class DatabaseContract {
                     "FOREIGN KEY(" + ReviewEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + ")," +
                     "FOREIGN KEY(" + ReviewEntry.COLUMN_NAME_PRODUCT_ID + ") REFERENCES " + ProductEntry.TABLE_NAME + "(" + ProductEntry.COLUMN_NAME_PRODUCT_ID + "))";
 
-    public static final String SQL_CREATE_DELIVERY_PERSONNEL_TABLE =
-            "CREATE TABLE " + DeliveryPersonEntry.TABLE_NAME + " (" +
-                    DeliveryPersonEntry.COLUMN_NAME_PERSON_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    DeliveryPersonEntry.COLUMN_NAME_NAME + " TEXT," +
-                    DeliveryPersonEntry.COLUMN_NAME_PHONE + " TEXT," +
-                    DeliveryPersonEntry.COLUMN_NAME_STATUS + " TEXT)";
+    public static final String SQL_CREATE_ADMIN_SETTINGS_TABLE =
+            "CREATE TABLE " + AdminSettingsEntry.TABLE_NAME + " (" +
+                    AdminSettingsEntry.COLUMN_NAME_SETTINGS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    AdminSettingsEntry.COLUMN_NAME_STORE_NAME + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_STORE_EMAIL + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_STORE_PHONE + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_STORE_ADDRESS + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_STORE_CITY + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_STORE_STATE + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_STORE_POSTAL_CODE + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_STORE_COUNTRY + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_TAX_RATE + " REAL DEFAULT 0.0," +
+                    AdminSettingsEntry.COLUMN_NAME_DELIVERY_FEE + " REAL DEFAULT 0.0," +
+                    AdminSettingsEntry.COLUMN_NAME_FREE_DELIVERY_ABOVE + " INTEGER DEFAULT 0," +
+                    AdminSettingsEntry.COLUMN_NAME_FREE_DELIVERY_THRESHOLD + " REAL DEFAULT 0.0," +
+                    AdminSettingsEntry.COLUMN_NAME_CURRENCY_SYMBOL + " TEXT DEFAULT '₹'," +
+                    AdminSettingsEntry.COLUMN_NAME_TIMEZONE + " TEXT DEFAULT 'UTC'," +
+                    AdminSettingsEntry.COLUMN_NAME_ENABLE_NOTIFICATIONS + " INTEGER DEFAULT 1," +
+                    AdminSettingsEntry.COLUMN_NAME_ENABLE_EMAIL_NOTIFICATIONS + " INTEGER DEFAULT 1," +
+                    AdminSettingsEntry.COLUMN_NAME_SMTP_HOST + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_SMTP_PORT + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_SMTP_USERNAME + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_SMTP_PASSWORD + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_STRIPE_ENABLED + " INTEGER DEFAULT 0," +
+                    AdminSettingsEntry.COLUMN_NAME_STRIPE_PUBLISHABLE_KEY + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_STRIPE_SECRET_KEY + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_COD_ENABLED + " INTEGER DEFAULT 1," +
+                    AdminSettingsEntry.COLUMN_NAME_BUSINESS_HOURS + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_SUPPORT_EMAIL + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_SUPPORT_PHONE + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_LOGO_URL + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_FAVICON_URL + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_PRIMARY_COLOR + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_ACCENT_COLOR + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_MAINTENANCE_MODE + " INTEGER DEFAULT 0," +
+                    AdminSettingsEntry.COLUMN_NAME_MAINTENANCE_MESSAGE + " TEXT," +
+                    AdminSettingsEntry.COLUMN_NAME_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    AdminSettingsEntry.COLUMN_NAME_UPDATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP)";
 
-    public static final String SQL_CREATE_PAYMENTS_TABLE =
-            "CREATE TABLE " + PaymentEntry.TABLE_NAME + " (" +
-                    PaymentEntry.COLUMN_NAME_PAYMENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    PaymentEntry.COLUMN_NAME_ORDER_ID + " INTEGER," +
-                    PaymentEntry.COLUMN_NAME_AMOUNT + " REAL," +
-                    PaymentEntry.COLUMN_NAME_PAYMENT_METHOD + " TEXT," +
-                    PaymentEntry.COLUMN_NAME_TRANSACTION_ID + " TEXT," +
-                    PaymentEntry.COLUMN_NAME_PAYMENT_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
-                    "FOREIGN KEY(" + PaymentEntry.COLUMN_NAME_ORDER_ID + ") REFERENCES " + OrderEntry.TABLE_NAME + "(" + OrderEntry.COLUMN_NAME_ORDER_ID + "))";
-            
-    public static final String SQL_CREATE_ADDRESSES_TABLE =
-            "CREATE TABLE " + AddressEntry.TABLE_NAME + " (" +
-                    AddressEntry.COLUMN_NAME_ADDRESS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    AddressEntry.COLUMN_NAME_USER_ID + " INTEGER," +
-                    AddressEntry.COLUMN_NAME_TYPE + " TEXT," +
-                    AddressEntry.COLUMN_NAME_FULL_ADDRESS + " TEXT," +
-                    AddressEntry.COLUMN_NAME_LANDMARK + " TEXT," +
-                    AddressEntry.COLUMN_NAME_CITY + " TEXT," +
-                    AddressEntry.COLUMN_NAME_AREA + " TEXT," +
-                    AddressEntry.COLUMN_NAME_LATITUDE + " REAL," +
-                    AddressEntry.COLUMN_NAME_LONGITUDE + " REAL," +
-                    AddressEntry.COLUMN_NAME_IS_DEFAULT + " INTEGER DEFAULT 0," +
-                    "FOREIGN KEY(" + AddressEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + "))";
+    public static final String SQL_CREATE_WISHLISTS_TABLE =
+            "CREATE TABLE " + WishlistEntry.TABLE_NAME + " (" +
+                    WishlistEntry.COLUMN_NAME_WISHLIST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    WishlistEntry.COLUMN_NAME_USER_ID + " INTEGER," +
+                    WishlistEntry.COLUMN_NAME_PRODUCT_ID + " INTEGER," +
+                    WishlistEntry.COLUMN_NAME_ADDED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    "UNIQUE(" + WishlistEntry.COLUMN_NAME_USER_ID + ", " + WishlistEntry.COLUMN_NAME_PRODUCT_ID + ")," +
+                    "FOREIGN KEY(" + WishlistEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + ")," +
+                    "FOREIGN KEY(" + WishlistEntry.COLUMN_NAME_PRODUCT_ID + ") REFERENCES " + ProductEntry.TABLE_NAME + "(" + ProductEntry.COLUMN_NAME_PRODUCT_ID + "))";
 
     public static final String SQL_CREATE_VENDORS_TABLE =
             "CREATE TABLE " + VendorEntry.TABLE_NAME + " (" +
@@ -323,77 +404,81 @@ public final class DatabaseContract {
                     SearchHistoryEntry.COLUMN_NAME_QUERY + " TEXT," +
                     SearchHistoryEntry.COLUMN_NAME_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
                     "FOREIGN KEY(" + SearchHistoryEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + "))";
-            
-            public static class NotificationEntry implements BaseColumns {
-        public static final String TABLE_NAME = "notifications";
-        public static final String COLUMN_NAME_NOTIFICATION_ID = "notification_id";
-        public static final String COLUMN_NAME_USER_ID = "user_id";
-        public static final String COLUMN_NAME_TITLE = "title";
-        public static final String COLUMN_NAME_MESSAGE = "message";
-        public static final String COLUMN_NAME_TYPE = "type"; // ORDER, PAYMENT, ACCOUNT, PROMO
-        public static final String COLUMN_NAME_REF_ID = "ref_id"; // Order ID, Product ID, etc.
-        public static final String COLUMN_NAME_IS_READ = "is_read";
-        public static final String COLUMN_NAME_CREATED_AT = "created_at";
-    }
 
-    public static final String SQL_CREATE_NOTIFICATIONS_TABLE =
-            "CREATE TABLE " + NotificationEntry.TABLE_NAME + " (" +
-                    NotificationEntry.COLUMN_NAME_NOTIFICATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    NotificationEntry.COLUMN_NAME_USER_ID + " INTEGER," +
-                    NotificationEntry.COLUMN_NAME_TITLE + " TEXT," +
-                    NotificationEntry.COLUMN_NAME_MESSAGE + " TEXT," +
-                    NotificationEntry.COLUMN_NAME_TYPE + " TEXT," +
-                    NotificationEntry.COLUMN_NAME_REF_ID + " TEXT," +
-                    NotificationEntry.COLUMN_NAME_IS_READ + " INTEGER DEFAULT 0," +
-                    NotificationEntry.COLUMN_NAME_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
-                    "FOREIGN KEY(" + NotificationEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + "))";
+    public static final String SQL_CREATE_DELIVERY_PERSONNEL_TABLE =
+            "CREATE TABLE " + DeliveryPersonEntry.TABLE_NAME + " (" +
+                    DeliveryPersonEntry.COLUMN_NAME_PERSON_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    DeliveryPersonEntry.COLUMN_NAME_NAME + " TEXT," +
+                    DeliveryPersonEntry.COLUMN_NAME_PHONE + " TEXT," +
+                    DeliveryPersonEntry.COLUMN_NAME_STATUS + " TEXT," +
+                    DeliveryPersonEntry.COLUMN_NAME_AVAILABLE + " INTEGER DEFAULT 0," +
+                    DeliveryPersonEntry.COLUMN_NAME_CURRENT_ORDER_ID + " INTEGER)";
+public static final String SQL_CREATE_PAYMENTS_TABLE =
+        "CREATE TABLE " + PaymentEntry.TABLE_NAME + " (" +
+                PaymentEntry.COLUMN_NAME_PAYMENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                PaymentEntry.COLUMN_NAME_ORDER_ID + " INTEGER," +
+                PaymentEntry.COLUMN_NAME_AMOUNT + " REAL," +
+                PaymentEntry.COLUMN_NAME_PAYMENT_METHOD + " TEXT," +
+                PaymentEntry.COLUMN_NAME_TRANSACTION_ID + " TEXT," +
+                PaymentEntry.COLUMN_NAME_PAYMENT_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                "FOREIGN KEY(" + PaymentEntry.COLUMN_NAME_ORDER_ID + ") REFERENCES " + OrderEntry.TABLE_NAME + "(" + OrderEntry.COLUMN_NAME_ORDER_ID + "))";
 
-    public static final String SQL_DELETE_NOTIFICATIONS_TABLE =
-            "DROP TABLE IF EXISTS " + NotificationEntry.TABLE_NAME;
+public static final String SQL_CREATE_ADDRESSES_TABLE =
+        "CREATE TABLE " + AddressEntry.TABLE_NAME + " (" +
+                AddressEntry.COLUMN_NAME_ADDRESS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                AddressEntry.COLUMN_NAME_USER_ID + " INTEGER," +
+                AddressEntry.COLUMN_NAME_TYPE + " TEXT," +
+                AddressEntry.COLUMN_NAME_FULL_ADDRESS + " TEXT," +
+                AddressEntry.COLUMN_NAME_LANDMARK + " TEXT," +
+                AddressEntry.COLUMN_NAME_CITY + " TEXT," +
+                AddressEntry.COLUMN_NAME_AREA + " TEXT," +
+                AddressEntry.COLUMN_NAME_LATITUDE + " REAL," +
+                AddressEntry.COLUMN_NAME_LONGITUDE + " REAL," +
+                AddressEntry.COLUMN_NAME_IS_DEFAULT + " INTEGER DEFAULT 0," +
+                "FOREIGN KEY(" + AddressEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + "))";
 
-    // SQL statements to delete tables
-    public static final String SQL_DELETE_USERS_TABLE =
-            "DROP TABLE IF EXISTS " + UserEntry.TABLE_NAME;
-            
-    public static final String SQL_DELETE_CATEGORIES_TABLE =
-            "DROP TABLE IF EXISTS " + CategoryEntry.TABLE_NAME;
-            
-    public static final String SQL_DELETE_PRODUCTS_TABLE =
-            "DROP TABLE IF EXISTS " + ProductEntry.TABLE_NAME;
-            
-    public static final String SQL_DELETE_ORDERS_TABLE =
-            "DROP TABLE IF EXISTS " + OrderEntry.TABLE_NAME;
-            
-    public static final String SQL_DELETE_ORDER_ITEMS_TABLE =
-            "DROP TABLE IF EXISTS " + OrderItemEntry.TABLE_NAME;
-            
-    public static final String SQL_DELETE_CART_ITEMS_TABLE =
-            "DROP TABLE IF EXISTS " + CartItemEntry.TABLE_NAME;
+public static final String SQL_CREATE_NOTIFICATIONS_TABLE =
+        "CREATE TABLE " + NotificationEntry.TABLE_NAME + " (" +
+                NotificationEntry.COLUMN_NAME_NOTIFICATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                NotificationEntry.COLUMN_NAME_USER_ID + " INTEGER," +
+                NotificationEntry.COLUMN_NAME_TITLE + " TEXT," +
+                NotificationEntry.COLUMN_NAME_MESSAGE + " TEXT," +
+                NotificationEntry.COLUMN_NAME_TYPE + " TEXT," +
+                NotificationEntry.COLUMN_NAME_REF_ID + " TEXT," +
+                NotificationEntry.COLUMN_NAME_IS_READ + " INTEGER DEFAULT 0," +
+                NotificationEntry.COLUMN_NAME_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                "FOREIGN KEY(" + NotificationEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + "))";
 
-    public static final String SQL_DELETE_FAVORITES_TABLE =
-            "DROP TABLE IF EXISTS " + FavoriteEntry.TABLE_NAME;
+public static final String SQL_DELETE_USERS_TABLE = "DROP TABLE IF EXISTS " + UserEntry.TABLE_NAME;
+public static final String SQL_DELETE_ADMIN_SETTINGS_TABLE = "DROP TABLE IF EXISTS " + AdminSettingsEntry.TABLE_NAME;
+public static final String SQL_DELETE_WISHLISTS_TABLE = "DROP TABLE IF EXISTS " + WishlistEntry.TABLE_NAME;
+public static final String SQL_DELETE_CATEGORIES_TABLE = "DROP TABLE IF EXISTS " + CategoryEntry.TABLE_NAME;
+public static final String SQL_DELETE_PRODUCTS_TABLE = "DROP TABLE IF EXISTS " + ProductEntry.TABLE_NAME;
+public static final String SQL_DELETE_ORDERS_TABLE = "DROP TABLE IF EXISTS " + OrderEntry.TABLE_NAME;
+public static final String SQL_DELETE_ORDER_ITEMS_TABLE = "DROP TABLE IF EXISTS " + OrderItemEntry.TABLE_NAME;
+public static final String SQL_DELETE_CART_ITEMS_TABLE = "DROP TABLE IF EXISTS " + CartItemEntry.TABLE_NAME;
+public static final String SQL_DELETE_FAVORITES_TABLE = "DROP TABLE IF EXISTS " + FavoriteEntry.TABLE_NAME;
+public static final String SQL_DELETE_MESSAGES_TABLE = "DROP TABLE IF EXISTS " + MessageEntry.TABLE_NAME;
+public static final String SQL_DELETE_PROMOTIONS_TABLE = "DROP TABLE IF EXISTS " + PromotionEntry.TABLE_NAME;
+public static final String SQL_DELETE_REVIEWS_TABLE = "DROP TABLE IF EXISTS " + ReviewEntry.TABLE_NAME;
+public static final String SQL_DELETE_DELIVERY_PERSONNEL_TABLE = "DROP TABLE IF EXISTS " + DeliveryPersonEntry.TABLE_NAME;
+public static final String SQL_DELETE_PAYMENTS_TABLE = "DROP TABLE IF EXISTS " + PaymentEntry.TABLE_NAME;
+public static final String SQL_DELETE_ADDRESSES_TABLE = "DROP TABLE IF EXISTS " + AddressEntry.TABLE_NAME;
+public static final String SQL_DELETE_VENDORS_TABLE = "DROP TABLE IF EXISTS " + VendorEntry.TABLE_NAME;
+public static final String SQL_DELETE_SEARCH_HISTORY_TABLE = "DROP TABLE IF EXISTS " + SearchHistoryEntry.TABLE_NAME;
 
-    public static final String SQL_DELETE_MESSAGES_TABLE =
-            "DROP TABLE IF EXISTS " + MessageEntry.TABLE_NAME;
+public static class NotificationEntry implements BaseColumns {
+    public static final String TABLE_NAME = "notifications";
+    public static final String COLUMN_NAME_NOTIFICATION_ID = "notification_id";
+    public static final String COLUMN_NAME_USER_ID = "user_id";
+    public static final String COLUMN_NAME_TITLE = "title";
+    public static final String COLUMN_NAME_MESSAGE = "message";
+    public static final String COLUMN_NAME_TYPE = "type"; // ORDER, PAYMENT, ACCOUNT, PROMO
+    public static final String COLUMN_NAME_REF_ID = "ref_id"; // Order ID, Product ID, etc.
+    public static final String COLUMN_NAME_IS_READ = "is_read";
+    public static final String COLUMN_NAME_CREATED_AT = "created_at";
+}
 
-    public static final String SQL_DELETE_PROMOTIONS_TABLE =
-            "DROP TABLE IF EXISTS " + PromotionEntry.TABLE_NAME;
-
-    public static final String SQL_DELETE_REVIEWS_TABLE =
-            "DROP TABLE IF EXISTS " + ReviewEntry.TABLE_NAME;
-            
-    public static final String SQL_DELETE_DELIVERY_PERSONNEL_TABLE =
-            "DROP TABLE IF EXISTS " + DeliveryPersonEntry.TABLE_NAME;
-
-    public static final String SQL_DELETE_PAYMENTS_TABLE =
-            "DROP TABLE IF EXISTS " + PaymentEntry.TABLE_NAME;
-
-    public static final String SQL_DELETE_VENDORS_TABLE =
-            "DROP TABLE IF EXISTS " + VendorEntry.TABLE_NAME;
-
-    public static final String SQL_DELETE_ADDRESSES_TABLE =
-            "DROP TABLE IF EXISTS " + AddressEntry.TABLE_NAME;
-
-    public static final String SQL_DELETE_SEARCH_HISTORY_TABLE =
-            "DROP TABLE IF EXISTS " + SearchHistoryEntry.TABLE_NAME;
+public static final String SQL_DELETE_NOTIFICATIONS_TABLE =
+        "DROP TABLE IF EXISTS " + NotificationEntry.TABLE_NAME;
 }

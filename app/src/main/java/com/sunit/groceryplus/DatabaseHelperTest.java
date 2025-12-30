@@ -14,7 +14,7 @@ public class DatabaseHelperTest {
         DatabaseHelper dbHelper = new DatabaseHelper(context);
         
         // Test adding a new user
-        long userId = dbHelper.addUser("John Doe", "john@example.com", "1234567890", "password123", "customer");
+        long userId = dbHelper.addUser("Ram", "ram@gmail.com", "1234567890", "password123", "customer");
         if (userId != -1) {
             Log.d(TAG, "User added successfully with ID: " + userId);
         } else {
@@ -22,7 +22,7 @@ public class DatabaseHelperTest {
         }
         
         // Test user authentication
-        User authenticatedUser = dbHelper.authenticateUser("admin@groceryplus.com", "admin123");
+        User authenticatedUser = dbHelper.authenticateUser("admin@gmail.com", "admin123");
         if (authenticatedUser != null) {
             Log.d(TAG, "Admin authentication successful: " + authenticatedUser.getName());
         } else {
@@ -30,11 +30,11 @@ public class DatabaseHelperTest {
         }
         
         // Test checking if user exists
-        boolean exists = dbHelper.isUserExists("john@example.com");
+        boolean exists = dbHelper.isUserExists("ram@gmail.com");
         Log.d(TAG, "User exists: " + exists);
         
         // Test getting user by email
-        User user = dbHelper.getUserByEmail("john@example.com");
+        User user = dbHelper.getUserByEmail("ram@gmail.com");
         if (user != null) {
             Log.d(TAG, "Retrieved user: " + user.getName());
         } else {
