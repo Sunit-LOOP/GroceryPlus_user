@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.sunit.groceryplus.DatabaseHelper;
 import com.sunit.groceryplus.DeliveryPersonRepository;
 import com.sunit.groceryplus.OrderRepository;
 import com.sunit.groceryplus.R;
@@ -76,36 +77,69 @@ public class OrderManagementActivity extends AppCompatActivity {
                 .setTitle("Update Order Status")
                 .setSingleChoiceItems(statuses, -1, (dialog, which) -> {
                     String newStatus = statuses[which];
-                    // Update in DB
-                    boolean success = orderRepository.updateOrderStatus(order.getOrderId(), order.getUserId(), newStatus);
-                    if (success) {
-                        Toast.makeText(this, "Order updated to " + newStatus, Toast.LENGTH_SHORT).show();
-                        loadOrders();
-
-                        // Send notification to user
-                        String title = "Order Update";
-                        String message = "Your order #" + order.getOrderId() + " is now " + newStatus;
+                    
+                    // Show progress dialog
+                    android.app.AlertDialog progressDialog = new android.app.AlertDialog.Builder(this)
+                            .setTitle("Updating Order")
+                            .setMessage("Please wait...")
+                            .setCancelable(false)
+                            .create();
+                    progressDialog.show();
+                    
+                    // Run database operations in background
+                    new android.os.AsyncTask<Void, Void, Boolean>() {
+                        private boolean paymentUpdateSuccess = false;
                         
-                        if ("Processing".equalsIgnoreCase(newStatus)) {
-                            title = "Order Accepted";
-                            message = "The store has accepted your order #" + order.getOrderId();
-                        } else if ("Shipped".equalsIgnoreCase(newStatus)) {
-                            title = "Out for Delivery";
-                            message = "Your order #" + order.getOrderId() + " is out for delivery!";
-                        } else if ("Delivered".equalsIgnoreCase(newStatus)) {
-                            title = "Order Delivered";
-                            message = "Your order #" + order.getOrderId() + " has been delivered successfully. Enjoy!";
-                        } else if ("Cancelled".equalsIgnoreCase(newStatus)) {
-                            title = "Order Cancelled";
-                            message = "Your order #" + order.getOrderId() + " has been cancelled.";
+                        @Override
+                        protected Boolean doInBackground(Void... voids) {
+                            // Update order status in DB
+                            boolean success = orderRepository.updateOrderStatus(order.getOrderId(), order.getUserId(), newStatus);
+                            
+                            if (success && "Delivered".equalsIgnoreCase(newStatus)) {
+                                // Update COD payment status to Completed
+                                DatabaseHelper dbHelper = new DatabaseHelper(OrderManagementActivity.this);
+                                paymentUpdateSuccess = dbHelper.updatePaymentStatusByOrderId(order.getOrderId(), "Completed");
+                                android.util.Log.d("OrderManagement", "COD payment status updated to Completed for order #" + order.getOrderId());
+                            }
+                            
+                            return success;
                         }
                         
-                        notificationManager.sendNotification(order.getUserId(), title, message, GroceryNotificationManager.TYPE_ORDER, String.valueOf(order.getOrderId()));
+                        @Override
+                        protected void onPostExecute(Boolean success) {
+                            // Dismiss progress dialog
+                            progressDialog.dismiss();
+                            
+                            if (success) {
+                                Toast.makeText(OrderManagementActivity.this, "Order updated to " + newStatus, Toast.LENGTH_SHORT).show();
+                                loadOrders();
 
-                    } else {
-                        Toast.makeText(this, "Failed to update status", Toast.LENGTH_SHORT).show();
-                    }
-                    dialog.dismiss();
+                                // Send notification to user
+                                String title = "Order Update";
+                                String message = "Your order #" + order.getOrderId() + " is now " + newStatus;
+                                
+                                if ("Processing".equalsIgnoreCase(newStatus)) {
+                                    title = "Order Accepted";
+                                    message = "The store has accepted your order #" + order.getOrderId();
+                                } else if ("Shipped".equalsIgnoreCase(newStatus)) {
+                                    title = "Out for Delivery";
+                                    message = "Your order #" + order.getOrderId() + " is out for delivery!";
+                                } else if ("Delivered".equalsIgnoreCase(newStatus)) {
+                                    title = "Order Delivered";
+                                    message = "Your order #" + order.getOrderId() + " has been delivered successfully. Enjoy!";
+                                } else if ("Cancelled".equalsIgnoreCase(newStatus)) {
+                                    title = "Order Cancelled";
+                                    message = "Your order #" + order.getOrderId() + " has been cancelled.";
+                                }
+                                
+                                notificationManager.sendNotification(order.getUserId(), title, message, GroceryNotificationManager.TYPE_ORDER, String.valueOf(order.getOrderId()));
+
+                            } else {
+                                Toast.makeText(OrderManagementActivity.this, "Failed to update status", Toast.LENGTH_SHORT).show();
+                            }
+                            dialog.dismiss();
+                        }
+                    }.execute();
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -144,21 +178,42 @@ public class OrderManagementActivity extends AppCompatActivity {
                 .setTitle("Assign Delivery Person")
                 .setSingleChoiceItems(displayNames, suggestedIndex, (dialog, which) -> {
                     DeliveryPerson selectedPerson = finalPersonnel.get(which);
+                    
+                    // Show progress dialog
+                    android.app.AlertDialog progressDialog = new android.app.AlertDialog.Builder(this)
+                            .setTitle("Assigning Delivery Person")
+                            .setMessage("Please wait...")
+                            .setCancelable(false)
+                            .create();
+                    progressDialog.show();
 
-                    boolean success = orderRepository.assignDeliveryPerson(order.getOrderId(), selectedPerson.getPersonId());
-                    if (success) {
-                        Toast.makeText(this, "Assigned to " + selectedPerson.getName(), Toast.LENGTH_SHORT).show();
+                    // Run database operations in background
+                    new android.os.AsyncTask<Void, Void, Boolean>() {
+                        @Override
+                        protected Boolean doInBackground(Void... voids) {
+                            return orderRepository.assignDeliveryPerson(order.getOrderId(), selectedPerson.getPersonId());
+                        }
+                        
+                        @Override
+                        protected void onPostExecute(Boolean success) {
+                            // Dismiss progress dialog
+                            progressDialog.dismiss();
+                            
+                            if (success) {
+                                Toast.makeText(OrderManagementActivity.this, "Assigned to " + selectedPerson.getName(), Toast.LENGTH_SHORT).show();
 
-                        // Send notification to user
-                        String title = "Delivery Update";
-                        String message = "Your order #" + order.getOrderId() + " has been assigned to " + selectedPerson.getName() + ". They will be arriving soon!";
-                        notificationManager.sendNotification(order.getUserId(), title, message, GroceryNotificationManager.TYPE_ORDER, String.valueOf(order.getOrderId()));
+                                // Send notification to user
+                                String title = "Delivery Update";
+                                String message = "Your order #" + order.getOrderId() + " has been assigned to " + selectedPerson.getName() + ". They will be arriving soon!";
+                                notificationManager.sendNotification(order.getUserId(), title, message, GroceryNotificationManager.TYPE_ORDER, String.valueOf(order.getOrderId()));
 
-                        loadOrders();
-                    } else {
-                        Toast.makeText(this, "Failed to assign", Toast.LENGTH_SHORT).show();
-                    }
-                    dialog.dismiss();
+                                loadOrders();
+                            } else {
+                                Toast.makeText(OrderManagementActivity.this, "Failed to assign", Toast.LENGTH_SHORT).show();
+                            }
+                            dialog.dismiss();
+                        }
+                    }.execute();
                 })
                 .setNegativeButton("Cancel", null)
                 .show();

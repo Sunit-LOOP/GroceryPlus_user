@@ -1794,6 +1794,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(DatabaseContract.PaymentEntry.TABLE_NAME, null, null, null, null, null, DatabaseContract.PaymentEntry.COLUMN_NAME_PAYMENT_DATE + " DESC");
     }
+    
+    public boolean updatePaymentStatus(int paymentId, String status) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.PaymentEntry.COLUMN_NAME_STATUS, status);
+        
+        int rowsAffected = db.update(DatabaseContract.PaymentEntry.TABLE_NAME, values, 
+                DatabaseContract.PaymentEntry.COLUMN_NAME_PAYMENT_ID + " = ?", 
+                new String[]{String.valueOf(paymentId)});
+        
+        return rowsAffected > 0;
+    }
+    
+    public boolean updatePaymentStatusByOrderId(int orderId, String status) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.PaymentEntry.COLUMN_NAME_STATUS, status);
+        
+        int rowsAffected = db.update(DatabaseContract.PaymentEntry.TABLE_NAME, values, 
+                DatabaseContract.PaymentEntry.COLUMN_NAME_ORDER_ID + " = ?", 
+                new String[]{String.valueOf(orderId)});
+        
+        return rowsAffected > 0;
+    }
 
     // ==================== MESSAGING METHODS ====================
     

@@ -197,6 +197,7 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_PAYMENT_METHOD = "payment_method";
         public static final String COLUMN_NAME_TRANSACTION_ID = "transaction_id";
         public static final String COLUMN_NAME_PAYMENT_DATE = "payment_date";
+        public static final String COLUMN_NAME_STATUS = "status";
     }
     
     public static class AddressEntry implements BaseColumns {
@@ -413,41 +414,43 @@ public final class DatabaseContract {
                     DeliveryPersonEntry.COLUMN_NAME_STATUS + " TEXT," +
                     DeliveryPersonEntry.COLUMN_NAME_AVAILABLE + " INTEGER DEFAULT 0," +
                     DeliveryPersonEntry.COLUMN_NAME_CURRENT_ORDER_ID + " INTEGER)";
-public static final String SQL_CREATE_PAYMENTS_TABLE =
-        "CREATE TABLE " + PaymentEntry.TABLE_NAME + " (" +
-                PaymentEntry.COLUMN_NAME_PAYMENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                PaymentEntry.COLUMN_NAME_ORDER_ID + " INTEGER," +
-                PaymentEntry.COLUMN_NAME_AMOUNT + " REAL," +
-                PaymentEntry.COLUMN_NAME_PAYMENT_METHOD + " TEXT," +
-                PaymentEntry.COLUMN_NAME_TRANSACTION_ID + " TEXT," +
-                PaymentEntry.COLUMN_NAME_PAYMENT_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
-                "FOREIGN KEY(" + PaymentEntry.COLUMN_NAME_ORDER_ID + ") REFERENCES " + OrderEntry.TABLE_NAME + "(" + OrderEntry.COLUMN_NAME_ORDER_ID + "))";
 
-public static final String SQL_CREATE_ADDRESSES_TABLE =
-        "CREATE TABLE " + AddressEntry.TABLE_NAME + " (" +
-                AddressEntry.COLUMN_NAME_ADDRESS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                AddressEntry.COLUMN_NAME_USER_ID + " INTEGER," +
-                AddressEntry.COLUMN_NAME_TYPE + " TEXT," +
-                AddressEntry.COLUMN_NAME_FULL_ADDRESS + " TEXT," +
-                AddressEntry.COLUMN_NAME_LANDMARK + " TEXT," +
-                AddressEntry.COLUMN_NAME_CITY + " TEXT," +
-                AddressEntry.COLUMN_NAME_AREA + " TEXT," +
-                AddressEntry.COLUMN_NAME_LATITUDE + " REAL," +
-                AddressEntry.COLUMN_NAME_LONGITUDE + " REAL," +
-                AddressEntry.COLUMN_NAME_IS_DEFAULT + " INTEGER DEFAULT 0," +
-                "FOREIGN KEY(" + AddressEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + "))";
+    public static final String SQL_CREATE_PAYMENTS_TABLE =
+            "CREATE TABLE " + PaymentEntry.TABLE_NAME + " (" +
+                    PaymentEntry.COLUMN_NAME_PAYMENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    PaymentEntry.COLUMN_NAME_ORDER_ID + " INTEGER," +
+                    PaymentEntry.COLUMN_NAME_AMOUNT + " REAL," +
+                    PaymentEntry.COLUMN_NAME_PAYMENT_METHOD + " TEXT," +
+                    PaymentEntry.COLUMN_NAME_TRANSACTION_ID + " TEXT," +
+                    PaymentEntry.COLUMN_NAME_PAYMENT_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    PaymentEntry.COLUMN_NAME_STATUS + " TEXT DEFAULT 'Pending'," +
+                    "FOREIGN KEY(" + PaymentEntry.COLUMN_NAME_ORDER_ID + ") REFERENCES " + OrderEntry.TABLE_NAME + "(" + OrderEntry.COLUMN_NAME_ORDER_ID + "))";
 
-public static final String SQL_CREATE_NOTIFICATIONS_TABLE =
-        "CREATE TABLE " + NotificationEntry.TABLE_NAME + " (" +
-                NotificationEntry.COLUMN_NAME_NOTIFICATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                NotificationEntry.COLUMN_NAME_USER_ID + " INTEGER," +
-                NotificationEntry.COLUMN_NAME_TITLE + " TEXT," +
-                NotificationEntry.COLUMN_NAME_MESSAGE + " TEXT," +
-                NotificationEntry.COLUMN_NAME_TYPE + " TEXT," +
-                NotificationEntry.COLUMN_NAME_REF_ID + " TEXT," +
-                NotificationEntry.COLUMN_NAME_IS_READ + " INTEGER DEFAULT 0," +
-                NotificationEntry.COLUMN_NAME_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
-                "FOREIGN KEY(" + NotificationEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + "))";
+    public static final String SQL_CREATE_ADDRESSES_TABLE =
+            "CREATE TABLE " + AddressEntry.TABLE_NAME + " (" +
+                    AddressEntry.COLUMN_NAME_ADDRESS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    AddressEntry.COLUMN_NAME_USER_ID + " INTEGER," +
+                    AddressEntry.COLUMN_NAME_TYPE + " TEXT," +
+                    AddressEntry.COLUMN_NAME_FULL_ADDRESS + " TEXT," +
+                    AddressEntry.COLUMN_NAME_LANDMARK + " TEXT," +
+                    AddressEntry.COLUMN_NAME_CITY + " TEXT," +
+                    AddressEntry.COLUMN_NAME_AREA + " TEXT," +
+                    AddressEntry.COLUMN_NAME_LATITUDE + " REAL," +
+                    AddressEntry.COLUMN_NAME_LONGITUDE + " REAL," +
+                    AddressEntry.COLUMN_NAME_IS_DEFAULT + " INTEGER DEFAULT 0," +
+                    "FOREIGN KEY(" + AddressEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + "))";
+
+    public static final String SQL_CREATE_NOTIFICATIONS_TABLE =
+            "CREATE TABLE " + NotificationEntry.TABLE_NAME + " (" +
+                    NotificationEntry.COLUMN_NAME_NOTIFICATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    NotificationEntry.COLUMN_NAME_USER_ID + " INTEGER," +
+                    NotificationEntry.COLUMN_NAME_TITLE + " TEXT," +
+                    NotificationEntry.COLUMN_NAME_MESSAGE + " TEXT," +
+                    NotificationEntry.COLUMN_NAME_TYPE + " TEXT," +
+                    NotificationEntry.COLUMN_NAME_REF_ID + " TEXT," +
+                    NotificationEntry.COLUMN_NAME_IS_READ + " INTEGER DEFAULT 0," +
+                    NotificationEntry.COLUMN_NAME_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    "FOREIGN KEY(" + NotificationEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + "))";
 
 public static final String SQL_DELETE_USERS_TABLE = "DROP TABLE IF EXISTS " + UserEntry.TABLE_NAME;
 public static final String SQL_DELETE_ADMIN_SETTINGS_TABLE = "DROP TABLE IF EXISTS " + AdminSettingsEntry.TABLE_NAME;

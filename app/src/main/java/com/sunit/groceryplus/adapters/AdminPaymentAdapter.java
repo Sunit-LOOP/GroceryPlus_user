@@ -66,7 +66,38 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
         holder.txnIdTv.setText(payment.getTransactionId());
         
         // Set status chip
-        holder.statusChip.setText("Completed");
+        String status = payment.getStatus();
+        holder.statusChip.setText(status);
+        
+        // Set chip color based on status
+        if ("Pending".equalsIgnoreCase(status)) {
+            holder.statusChip.setChipBackgroundColorResource(android.R.color.holo_orange_light);
+            holder.statusChip.setTextColor(context.getResources().getColor(android.R.color.black));
+        } else if ("Completed".equalsIgnoreCase(status)) {
+            holder.statusChip.setChipBackgroundColorResource(android.R.color.holo_green_light);
+            holder.statusChip.setTextColor(context.getResources().getColor(android.R.color.black));
+        } else if ("Failed".equalsIgnoreCase(status)) {
+            holder.statusChip.setChipBackgroundColorResource(android.R.color.holo_red_light);
+            holder.statusChip.setTextColor(context.getResources().getColor(android.R.color.white));
+        }
+        
+        // Show "Mark as Received" button only for COD payments with "Pending" status
+        if ("cod".equalsIgnoreCase(payment.getPaymentMethod()) && "Pending".equalsIgnoreCase(status)) {
+            holder.markReceivedBtn.setVisibility(View.VISIBLE);
+            holder.markReceivedBtn.setOnClickListener(v -> {
+                // Update payment status to "Completed"
+                payment.setStatus("Completed");
+                holder.statusChip.setText("Completed");
+                holder.statusChip.setChipBackgroundColorResource(android.R.color.holo_green_light);
+                holder.statusChip.setTextColor(context.getResources().getColor(android.R.color.black));
+                holder.markReceivedBtn.setVisibility(View.GONE);
+                
+                // Show confirmation message
+                android.widget.Toast.makeText(context, "Payment for Order #" + payment.getOrderId() + " marked as received", android.widget.Toast.LENGTH_SHORT).show();
+            });
+        } else {
+            holder.markReceivedBtn.setVisibility(View.GONE);
+        }
     }
     
     private String formatDateForDisplay(String dateStr) {
@@ -111,6 +142,7 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
         TextView orderIdTv, amountTv, methodTv, dateTv, txnIdTv;
         ImageView methodIcon;
         Chip statusChip;
+        com.google.android.material.button.MaterialButton markReceivedBtn;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -121,6 +153,7 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
             txnIdTv = itemView.findViewById(R.id.paymentTransactionIdTv);
             methodIcon = itemView.findViewById(R.id.paymentMethodIcon);
             statusChip = itemView.findViewById(R.id.statusChip);
+            markReceivedBtn = itemView.findViewById(R.id.markReceivedBtn);
         }
     }
 }

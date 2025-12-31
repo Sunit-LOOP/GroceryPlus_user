@@ -7,6 +7,7 @@ public class Payment {
     private String paymentMethod;
     private String transactionId;
     private String paymentDate;
+    private String status; // "Pending", "Completed", "Failed"
 
     public Payment(int paymentId, int orderId, double amount, String paymentMethod, String transactionId, String paymentDate) {
         this.paymentId = paymentId;
@@ -15,6 +16,18 @@ public class Payment {
         this.paymentMethod = paymentMethod;
         this.transactionId = transactionId;
         this.paymentDate = paymentDate;
+        // Set status based on payment method
+        this.status = "cod".equalsIgnoreCase(paymentMethod) ? "Pending" : "Completed";
+    }
+
+    public Payment(int paymentId, int orderId, double amount, String paymentMethod, String transactionId, String paymentDate, String status) {
+        this.paymentId = paymentId;
+        this.orderId = orderId;
+        this.amount = amount;
+        this.paymentMethod = paymentMethod;
+        this.transactionId = transactionId;
+        this.paymentDate = paymentDate;
+        this.status = status;
     }
 
     public int getPaymentId() {
@@ -39,5 +52,13 @@ public class Payment {
 
     public String getPaymentDate() {
         return paymentDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
