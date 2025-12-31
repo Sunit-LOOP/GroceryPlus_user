@@ -10,7 +10,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.sunit.groceryplus.admin.AnalyticsDashboardActivity;
 import com.sunit.groceryplus.admin.CategoryManagementActivity;
 import com.sunit.groceryplus.admin.CustomerManagementActivity;
+import com.sunit.groceryplus.admin.DeliveryPersonnelActivity;
 import com.sunit.groceryplus.admin.OrderManagementActivity;
+import com.sunit.groceryplus.admin.PaymentTrackingActivity;
 import com.sunit.groceryplus.admin.ProductManagementActivity;
 import com.sunit.groceryplus.admin.PromotionManagementActivity;
 import com.sunit.groceryplus.admin.ReviewsManagementActivity;
@@ -66,6 +68,16 @@ public class AdminDashboardActivity extends AppCompatActivity {
         // Reviews Management
         findViewById(R.id.reviewsManagementCard).setOnClickListener(v -> {
             startActivity(new Intent(this, ReviewsManagementActivity.class));
+        });
+
+        // Payment Management
+        findViewById(R.id.paymentReceivedCard).setOnClickListener(v -> {
+            startActivity(new Intent(this, PaymentTrackingActivity.class));
+        });
+
+        // Delivery Management
+        findViewById(R.id.deliveryManagementCard).setOnClickListener(v -> {
+            startActivity(new Intent(this, DeliveryPersonnelActivity.class));
         });
 
         // Logout Button
