@@ -39,31 +39,88 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * UserHomeActivity - Main customer interface for GroceryPlus
+ * 
+ * This activity serves as the primary interface for customers to browse products,
+ * view categories, manage their cart, and interact with various grocery shopping
+ * features. It provides a comprehensive shopping experience with personalized
+ * recommendations and order management.
+ * 
+ * Key Features:
+ * - Product browsing with categories and search
+ * - Featured products display
+ * - Personalized product recommendations
+ * - Buy again section for reordering
+ * - Recent orders tracking
+ * - Recently viewed products
+ * - Banner carousel with promotions
+ * - Free delivery progress tracking
+ * - Swipe-to-refresh functionality
+ * - Shopping cart integration
+ * - Bottom navigation
+ * 
+ * UI Components:
+ * - Multiple RecyclerViews for different product sections
+ * - ViewPager2 for promotional banners
+ * - SwipeRefreshLayout for content refresh
+ * - Progress indicators for delivery tracking
+ * - Material Design components
+ * 
+ * Data Management:
+ * - CategoryRepository for product categories
+ * - ProductRepository for product data
+ * - CartRepository for shopping cart
+ * - OrderRepository for order history
+ * - RecommendationEngine for personalized suggestions
+ * - ApiService for network operations
+ * 
+ * User Experience:
+ * - Smooth animations and transitions
+ * - Loading indicators for async operations
+ * - Error handling with user feedback
+ * - Responsive design for different screen sizes
+ * - Intuitive navigation patterns
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class UserHomeActivity extends AppCompatActivity {
 
+    // Tag for logging and debugging
     private static final String TAG = "UserHomeActivity";
 
+    // RecyclerView components for different product sections
     private RecyclerView categoriesRv, featuredRecyclerView, allProductsRecyclerView, buyAgainRecyclerView, recommendedRecyclerView, recentOrdersRecyclerView, recentlyViewedRecyclerView;
+    
+    // Adapters for managing RecyclerView data
     private CategoryAdapter categoryAdapter;
     private ProductAdapter featuredAdapter, allProductsAdapter, buyAgainAdapter, recommendedAdapter, recentlyViewedAdapter;
     private com.sunit.groceryplus.adapters.RecentOrderAdapter recentOrdersAdapter;
 
+    // UI components for delivery tracking and user feedback
     private TextView deliveryTimeTv, freeDeliveryTv;
     private com.google.android.material.progressindicator.LinearProgressIndicator freeDeliveryProgress;
     private View freeDeliveryGoalCard, buyAgainSection, recommendationSection, recentOrdersSection, recentlyViewedSection;
     private ImageView sortIcon;
     private SwipeRefreshLayout swipeRefreshLayout;
 
+    // Banner carousel components
     private ViewPager2 bannerViewPager;
     private TabLayout bannerIndicator;
     private BannerAdapter bannerAdapter;
     private Handler bannerHandler = new Handler();
     private Runnable bannerRunnable;
-    private static final long BANNER_DELAY = 30000; // 30 seconds
+    private static final long BANNER_DELAY = 30000; // 30 seconds for auto-scroll
 
+    // Database and API management
     private DatabaseHelper dbHelper;
 
+    // User session data
     private int userId;
+    
+    // Repository classes for data management
     private CategoryRepository categoryRepository;
     private ProductRepository productRepository;
     private CartRepository cartRepository;
@@ -71,6 +128,7 @@ public class UserHomeActivity extends AppCompatActivity {
     private RecommendationEngine recommendationEngine;
     private ApiService apiService;
 
+    // Data collections for different product sections
     private List<Category> categories = new ArrayList<>();
     private List<Product> featuredProducts = new ArrayList<>();
     private List<Product> allProducts = new ArrayList<>();
@@ -578,6 +636,12 @@ public class UserHomeActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Test collaborative filtering system
+     */
+    private void testCollaborativeFiltering() {
+        com.sunit.groceryplus.utils.CollaborativeFilteringTest.testCollaborativeFiltering(this);
+    }
     private void applySortAndNotify() {
         List<Product> sortedList = new ArrayList<>(allProducts);
         if ("price_low_high".equals(currentSortOrder)) {

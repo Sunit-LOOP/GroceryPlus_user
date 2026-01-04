@@ -1,15 +1,43 @@
 package com.sunit.groceryplus.models;
 
+/**
+ * User Model Class
+ * 
+ * Represents a registered user in the application.
+ * Can be either a regular 'customer' or an 'admin'.
+ */
 public class User {
+    
+    // Unique ID for the user
     private int userId;
+    
+    // Full Name
     private String name;
+    
+    // Email Address (Login credential)
     private String email;
+    
+    // Phone Number (Login credential)
     private String phone;
-    private String userType; // 'admin' or 'customer'
+    
+    // User Role: 'admin' or 'customer'
+    private String userType; 
 
+    /**
+     * Default Constructor
+     */
     public User() {
     }
 
+    /**
+     * Full Constructor
+     * 
+     * @param userId Unique ID
+     * @param name Full Name
+     * @param email Email Address
+     * @param phone Phone Number
+     * @param userType Role (admin/customer)
+     */
     public User(int userId, String name, String email, String phone, String userType) {
         this.userId = userId;
         this.name = name;
@@ -18,7 +46,8 @@ public class User {
         this.userType = userType;
     }
 
-    // Getters
+    // ================= GETTERS =================
+
     public int getUserId() {
         return userId;
     }
@@ -39,13 +68,16 @@ public class User {
         return userType;
     }
 
-    // Alias methods for consistency
+    // ================= ALIAS METHODS =================
+    // For consistency with other parts of the app
+
     public int getId() { return userId; }
     public String getUserName() { return name; }
     public String getUserEmail() { return email; }
     public String getUserPhone() { return phone; }
 
-    // Setters
+    // ================= SETTERS =================
+
     public void setUserId(int userId) {
         this.userId = userId;
     }
@@ -68,6 +100,7 @@ public class User {
 
     /**
      * Check if user is an admin
+     * @return true if userType is "admin", false otherwise
      */
     public boolean isAdmin() {
         return "admin".equals(this.userType);
@@ -75,9 +108,10 @@ public class User {
 
     /**
      * Get created at timestamp (placeholder for compatibility)
+     * Currently returns empty string as User table created_at is not always fetched.
      */
     public String getCreatedAt() {
-        return ""; // User table doesn't have created_at field exposed in model
+        return ""; 
     }
 
     @Override

@@ -11,6 +11,23 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.sunit.groceryplus.adapters.NotificationAdapter;
 
+
+/**
+ * NotificationActivity - Displays a list of user notifications.
+ * 
+ * This activity provides a history of notifications sent to the user, including order updates,
+ * promotional messages, and system alerts. It fetches notifications from the database
+ * and displays them in a scrollable list.
+ * 
+ * Key Features:
+ * - List view of notifications
+ * - Integration with DatabaseHelper for fetching notifications
+ * - Simple, clean UI
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class NotificationActivity extends AppCompatActivity {
 
     private RecyclerView notificationsRv;

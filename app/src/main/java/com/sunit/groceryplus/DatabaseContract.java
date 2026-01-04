@@ -90,6 +90,7 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_CATEGORY_ID = "category_id";
         public static final String COLUMN_NAME_CATEGORY_NAME = "category_name";
         public static final String COLUMN_NAME_CATEGORY_DESCRIPTION = "category_description";
+        public static final String COLUMN_NAME_IMAGE = "image";
     }
 
     /* Inner class that defines the products table contents */
@@ -249,7 +250,8 @@ public final class DatabaseContract {
             "CREATE TABLE " + CategoryEntry.TABLE_NAME + " (" +
                     CategoryEntry.COLUMN_NAME_CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                     CategoryEntry.COLUMN_NAME_CATEGORY_NAME + " TEXT," +
-                    CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION + " TEXT)";
+                    CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION + " TEXT," +
+                    CategoryEntry.COLUMN_NAME_IMAGE + " TEXT)";
 
     public static final String SQL_CREATE_PRODUCTS_TABLE =
             "CREATE TABLE " + ProductEntry.TABLE_NAME + " (" +

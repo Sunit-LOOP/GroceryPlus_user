@@ -18,7 +18,8 @@ import java.util.Map;
  * - Write-through: on SQLite insert/update/delete, also push to Firestore.
  * - Read-through: optionally refresh from Firestore on app start.
  *
- * This helper does NOT replace SQLite; it just mirrors selected collections.
+ * This helper does NOT replace SQLite; it just mirrors selected collections to allow for 
+ * cloud backup or multi-device synchronization in future.
  */
 public class FirestoreSyncHelper {
 
@@ -38,6 +39,12 @@ public class FirestoreSyncHelper {
     }
 
     // ==== PRODUCTS ====
+    
+    /**
+     * Syncs product changes to Firestore.
+     * @param product The product object.
+     * @param action "add", "update", or "delete".
+     */
     public void syncProduct(Product product, String action) {
         CollectionReference ref = db.collection("products");
         Map<String, Object> doc = productToMap(product);
@@ -57,6 +64,10 @@ public class FirestoreSyncHelper {
     }
 
     // ==== USERS ====
+    
+    /**
+     * Syncs user changes to Firestore.
+     */
     public void syncUser(User user, String action) {
         CollectionReference ref = db.collection("users");
         Map<String, Object> doc = userToMap(user);
@@ -76,6 +87,10 @@ public class FirestoreSyncHelper {
     }
 
     // ==== ORDERS ====
+    
+    /**
+     * Syncs order changes to Firestore.
+     */
     public void syncOrder(Order order, String action) {
         CollectionReference ref = db.collection("orders");
         Map<String, Object> doc = orderToMap(order);
@@ -164,7 +179,8 @@ public class FirestoreSyncHelper {
     }
 
     /**
-     * Clear all Firestore collections
+     * Clear all Firestore collections.
+     * Use with caution!
      */
     public void clearAllCollections() {
         WriteBatch batch = db.batch();

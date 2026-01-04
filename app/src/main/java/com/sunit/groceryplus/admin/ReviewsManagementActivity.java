@@ -20,6 +20,22 @@ import com.sunit.groceryplus.models.Review;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * ReviewsManagementActivity - Admin interface for moderating product reviews.
+ * 
+ * This activity allows administrators to view all product reviews submitted by users.
+ * It provides functionality to monitor feedback and delete inappropriate or spam reviews.
+ * 
+ * Key Features:
+ * - List all reviews
+ * - View review details (Product, User, Rating, Comment)
+ * - Delete review moderation
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class ReviewsManagementActivity extends AppCompatActivity {
 
     private RecyclerView reviewsRv;

@@ -16,6 +16,11 @@ import com.sunit.groceryplus.models.Message;
 
 import java.util.List;
 
+/**
+ * Adapter for displaying list of recent conversations in the Admin Panel.
+ * Shows a summary of the last message from each user.
+ * Highlights unread messages with Bold text.
+ */
 public class AdminMessageAdapter extends RecyclerView.Adapter<AdminMessageAdapter.ViewHolder> {
 
     private Context context;
@@ -25,6 +30,7 @@ public class AdminMessageAdapter extends RecyclerView.Adapter<AdminMessageAdapte
     public AdminMessageAdapter(Context context, List<Message> messages) {
         this.context = context;
         this.messages = messages;
+        // Fetch current Admin ID helper for identifying "Me" vs "Them"
         this.adminId = new com.sunit.groceryplus.DatabaseHelper(context).getAdminId();
     }
 
@@ -48,10 +54,12 @@ public class AdminMessageAdapter extends RecyclerView.Adapter<AdminMessageAdapte
         holder.senderTv.setText(message.getSenderName() != null ? message.getSenderName() : "User #" + message.getSenderId());
         holder.dateTv.setText(message.getCreatedAt());
         
+        // Add "You:" prefix if the last message was sent by Admin
         String prefix = (message.getSenderId() == adminId) ? "You: " : "";
         holder.contentTv.setText(prefix + message.getMessageText());
 
-        // Bold unread messages (received by admin and not read)
+        // Visual Indicator for Unread Messages
+        // Bold if message is received by Admin and NOT read
         boolean isUnread = !message.isRead() && message.getReceiverId() == adminId;
         if (isUnread) {
             holder.senderTv.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -63,7 +71,9 @@ public class AdminMessageAdapter extends RecyclerView.Adapter<AdminMessageAdapte
             holder.contentTv.setTextColor(context.getResources().getColor(android.R.color.darker_gray));
         }
 
+        // Click to open full chat conversation
         holder.itemView.setOnClickListener(v -> {
+            // Determine the ID of the other person in the conversation
             int partnerId = (message.getSenderId() == adminId) ? message.getReceiverId() : message.getSenderId();
             Intent intent = new Intent(context, AdminChatActivity.class);
             intent.putExtra("user_id", partnerId);

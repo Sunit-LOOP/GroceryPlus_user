@@ -7,6 +7,24 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import com.sunit.groceryplus.models.User;
 
+
+/**
+ * UserProfileActivity - Main profile dashboard for the user.
+ * 
+ * This activity serves as the command center for user account management.
+ * It provides entry points for editing profile details, managing saved addresses,
+ * viewing order history, and other account-related settings.
+ * 
+ * Key Features:
+ * - Profile overview
+ * - Navigation to Edit Profile
+ * - Navigation to Address Management
+ * - Integration with NavigationHelper for bottom bar
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class UserProfileActivity extends AppCompatActivity {
 
     private static final String TAG = "UserProfileActivity";

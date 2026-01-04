@@ -16,6 +16,10 @@ import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import java.util.List;
 
+/**
+ * Adapter for displaying items within a specific Order (Order Details).
+ * Shows product image, name, quantity, unit price, and subtotal.
+ */
 public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.ViewHolder> {
 
     private Context context;
@@ -71,7 +75,7 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.View
             unitPriceTextView.setText("रु " + String.format("%.2f", item.getPrice()));
             subtotalTextView.setText("रु " + String.format("%.2f", item.getSubtotal()));
 
-            // Set product image with improved handling
+            // Set product image with improved handling via ProductImageLoader
             String imageName = item.getImage();
             int fallback = getSpecificImageForProduct(item.getProductName());
             ProductImageLoader.load(context, productImageView, imageName, fallback);
@@ -79,6 +83,7 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.View
 
         /**
          * Get specific image resource based on product name
+         * Ensures consistent visual placeholders.
          */
         private int getSpecificImageForProduct(String productName) {
             if (productName == null) {
@@ -87,7 +92,7 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.View
             
             String lowerName = productName.toLowerCase();
             
-            // Match specific products to images
+            // Match specific products to images based on keywords
             if (lowerName.contains("milk") || lowerName.contains("dairy")) {
                 return R.drawable.bottle_milk;
             } else if (lowerName.contains("cheese")) {

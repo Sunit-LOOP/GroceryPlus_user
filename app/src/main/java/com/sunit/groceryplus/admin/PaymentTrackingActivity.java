@@ -19,6 +19,23 @@ import com.sunit.groceryplus.models.Payment;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * PaymentTrackingActivity - Admin dashboard for monitoring financial transactions.
+ * 
+ * This activity displays a comprehensive list of all payments received by the system.
+ * It includes filtering options (All, Stripe, COD) and displays aggregated financial statistics
+ * such as Total Revenue and Monthly Revenue.
+ * 
+ * Key Features:
+ * - Payment History List
+ * - Filter by Payment Method (Stripe vs COD)
+ * - Financial Statistics (Total collected, Monthly stats)
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class PaymentTrackingActivity extends AppCompatActivity {
 
     private RecyclerView paymentsRv;

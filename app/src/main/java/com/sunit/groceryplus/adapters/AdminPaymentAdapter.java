@@ -17,6 +17,11 @@ import com.sunit.groceryplus.models.Payment;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Adapter for managing view of Payment entries in the Admin Panel.
+ * Displays Payment details, Transaction IDs, and status.
+ * Special Feature: Allows marking COD payments as "Received" manually.
+ */
 public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapter.ViewHolder> {
 
     private Context context;
@@ -42,6 +47,8 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Payment payment = payments.get(position);
+        
+        // Display Basic Details
         holder.orderIdTv.setText("Order #" + payment.getOrderId());
         holder.amountTv.setText(String.format(Locale.US, "Rs. %.2f", payment.getAmount()));
         
@@ -53,7 +60,7 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
         String method = payment.getPaymentMethod();
         holder.methodTv.setText(getPaymentMethodDisplayName(method));
         
-        // Set appropriate icon
+        // Set appropriate icon based on Method
         if ("stripe".equalsIgnoreCase(method)) {
             holder.methodIcon.setImageResource(R.drawable.stripe_icon);
         } else if ("cod".equalsIgnoreCase(method)) {
@@ -65,7 +72,7 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
         // Set transaction ID
         holder.txnIdTv.setText(payment.getTransactionId());
         
-        // Set status chip
+        // Set status chip (Pending, Completed, Failed)
         String status = payment.getStatus();
         holder.statusChip.setText(status);
         
@@ -82,6 +89,7 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
         }
         
         // Show "Mark as Received" button only for COD payments with "Pending" status
+        // This allows Admin to manually confirm cash receipt
         if ("cod".equalsIgnoreCase(payment.getPaymentMethod()) && "Pending".equalsIgnoreCase(status)) {
             holder.markReceivedBtn.setVisibility(View.VISIBLE);
             holder.markReceivedBtn.setOnClickListener(v -> {
@@ -100,6 +108,9 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
         }
     }
     
+    /**
+     * Helper to prettify date strings.
+     */
     private String formatDateForDisplay(String dateStr) {
         // Simplified date formatting - in a real app you'd parse the date properly
         // Assuming dateStr is in format "YYYY-MM-DD HH:MM:SS"

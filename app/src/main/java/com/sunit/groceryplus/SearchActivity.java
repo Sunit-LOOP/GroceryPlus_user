@@ -24,15 +24,36 @@ import com.sunit.groceryplus.utils.SearchSortAlgorithms;
 import android.widget.ImageButton;
 import androidx.appcompat.app.AlertDialog;
 
+
+/**
+ * SearchActivity - Product search interface with advanced filtering and history.
+ * 
+ * This activity allows users to search for products using keywords. It features
+ * fuzzy search capabilities (handling typos), history tracking, and sorting options.
+ * The interface includes a search bar, recent search history list, and a grid of search results.
+ * 
+ * Key Features:
+ * - Real-time or explicit search execution
+ * - Search history management (save, display, clear)
+ * - Sorting options (Name, Price, Rating)
+ * - Fuzzy search implementation for robust matching
+ * - "No results" handling
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class SearchActivity extends AppCompatActivity {
 
     private static final String TAG = "SearchActivity";
     
+    // UI Components
     private EditText searchEt;
     private ImageButton sortBtn;
     private RecyclerView searchResultsRv;
     private TextView noResultsTv;
     
+    // Data & Repositories
     private int userId;
     private ProductRepository productRepository;
     private CartRepository cartRepository;
@@ -41,7 +62,7 @@ public class SearchActivity extends AppCompatActivity {
     private List<Product> allProducts = new ArrayList<>();
     private List<Product> searchResults = new ArrayList<>();
     
-    // History
+    // Search History Components
     private View historyLayout;
     private RecyclerView historyRv;
     private com.sunit.groceryplus.adapters.SearchHistoryAdapter historyAdapter;

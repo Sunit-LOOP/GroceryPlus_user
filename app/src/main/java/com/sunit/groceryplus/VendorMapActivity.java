@@ -26,6 +26,24 @@ import org.osmdroid.views.overlay.Marker;
 
 import java.util.List;
 
+
+/**
+ * VendorMapActivity - Map interface for locating nearby vendors.
+ * 
+ * This activity displays a map populated with markers representing registered vendors/stores.
+ * Users can view vendor locations relative to their own or a center point (default: Kathmandu).
+ * Tapping a marker shows a summary card with the vendor's details and ratings.
+ * 
+ * Key Features:
+ * - Multi-vendor map visualization
+ * - Vendor markers with custom icons
+ * - Vendor information card (Name, Address, Rating)
+ * - Navigation to specific vendor store (simulated)
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class VendorMapActivity extends AppCompatActivity {
 
     private MapView map;

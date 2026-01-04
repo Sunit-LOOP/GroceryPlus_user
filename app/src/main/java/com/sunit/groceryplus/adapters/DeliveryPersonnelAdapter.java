@@ -16,12 +16,20 @@ import com.sunit.groceryplus.models.DeliveryPerson;
 
 import java.util.List;
 
+/**
+ * Adapter for managing Delivery Personnel in the Admin Panel.
+ * Shows list of drivers, their phone numbers, and Availability status.
+ * Allows Admin to toggle their availability manually.
+ */
 public class DeliveryPersonnelAdapter extends RecyclerView.Adapter<DeliveryPersonnelAdapter.ViewHolder> {
 
     private Context context;
     private List<DeliveryPerson> personnel;
     private OnStatusToggleListener listener;
 
+    /**
+     * Interface for toggling driver availability.
+     */
     public interface OnStatusToggleListener {
         void onToggleStatus(DeliveryPerson person);
     }
@@ -50,7 +58,7 @@ public class DeliveryPersonnelAdapter extends RecyclerView.Adapter<DeliveryPerso
         holder.nameTv.setText(person.getName());
         holder.phoneTv.setText(person.getPhone());
 
-        // Show availability instead of status
+        // Show availability instead of status text
         boolean available = person.isAvailable();
         holder.statusTv.setText(available ? "Available" : "Unavailable");
         holder.statusTv.setTextColor(available ? Color.parseColor("#4CAF50") : Color.parseColor("#F44336"));

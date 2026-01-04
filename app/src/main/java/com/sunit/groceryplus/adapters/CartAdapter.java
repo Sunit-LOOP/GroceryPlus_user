@@ -17,12 +17,21 @@ import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import java.util.List;
 
+/**
+ * Adapter for managing and displaying items in the Shopping Cart.
+ * Handles quantity updates (+/-) and removal of items.
+ * Also calculates total price for the cart summary.
+ */
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
 
     private Context context;
     private List<CartItem> cartItems;
     private OnQuantityChangeListener quantityChangeListener;
 
+    /**
+     * Interface for listening to quantity changes.
+     * Activities/Fragments implementing this can update total price UI in real-time.
+     */
     public interface OnQuantityChangeListener {
         void onQuantityChanged(int cartItemId, int newQuantity);
         void onItemRemoved(int cartItemId);
@@ -52,6 +61,9 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
         return cartItems.size();
     }
 
+    /**
+     * Updates the list of cart items and refreshes view.
+     */
     public void updateCartItems(List<CartItem> items) {
         this.cartItems = items;
         notifyDataSetChanged();
@@ -68,9 +80,16 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
     
     // Method to calculate total price including delivery fee
     public double getTotalPriceWithDelivery() {
-        return getTotalPrice() + com.sunit.groceryplus.utils.PaymentConfig.DELIVERY_FEE;
+        double subtotal = getTotalPrice();
+        if (subtotal >= com.sunit.groceryplus.utils.PaymentConfig.FREE_DELIVERY_THRESHOLD) {
+            return subtotal;
+        }
+        return subtotal + com.sunit.groceryplus.utils.PaymentConfig.DELIVERY_FEE;
     }
 
+    /**
+     * ViewHolder for Cart Items.
+     */
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView productNameTv, priceTv, quantityTv, subtotalTv;
         ImageButton increaseBtn, decreaseBtn, removeBtn;
@@ -91,15 +110,16 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
 
         public void bind(CartItem item) {
             productNameTv.setText(item.getProductName());
-            priceTv.setText("रु " + String.format("%.2f", item.getPrice()));
+            priceTv.setText("Rs. " + String.format("%.2f", item.getPrice()));
             quantityTv.setText(String.valueOf(item.getQuantity()));
-            subtotalTv.setText("Subtotal: रु " + String.format("%.2f", item.getSubtotal()));
+            subtotalTv.setText("Subtotal: Rs. " + String.format("%.2f", item.getSubtotal()));
 
             // Set product image with improved handling
             String imageName = item.getImage();
             int fallback = getSpecificImageForProduct(item.getProductName());
             ProductImageLoader.load(context, productImageIv, imageName, fallback);
 
+            // Handle Quantity Increase
             increaseBtn.setOnClickListener(v -> {
                 int newQuantity = item.getQuantity() + 1;
                 if (quantityChangeListener != null) {
@@ -107,6 +127,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
                 }
             });
 
+            // Handle Quantity Decrease
             decreaseBtn.setOnClickListener(v -> {
                 int newQuantity = item.getQuantity() - 1;
                 if (newQuantity > 0) {
@@ -121,6 +142,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
                 }
             });
 
+            // Handle Explicit Remove Button
             removeBtn.setOnClickListener(v -> {
                 if (quantityChangeListener != null) {
                     quantityChangeListener.onItemRemoved(item.getCartId());
@@ -130,6 +152,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
 
         /**
          * Get specific image resource based on product name
+         * Used as a fallback if the main image fails or isn't set.
          */
         private int getSpecificImageForProduct(String productName) {
             if (productName == null) {

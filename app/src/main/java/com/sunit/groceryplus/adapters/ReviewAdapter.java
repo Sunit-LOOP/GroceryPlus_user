@@ -15,6 +15,10 @@ import com.sunit.groceryplus.models.Review;
 
 import java.util.List;
 
+/**
+ * Adapter for displaying Product Reviews in the User App (e.g. on Product Detail page).
+ * Shows user name, date, rating bar, and comment text.
+ */
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder> {
 
     private Context context;

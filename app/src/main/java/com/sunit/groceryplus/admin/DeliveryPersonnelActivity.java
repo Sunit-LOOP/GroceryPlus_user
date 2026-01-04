@@ -26,6 +26,23 @@ import com.sunit.groceryplus.models.DeliveryPerson;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * DeliveryPersonnelActivity - Admin interface for managing delivery staff.
+ * 
+ * This activity allows the admin to recruit (add), update, and manage the availability of delivery personnel.
+ * It serves as a fleet management tool.
+ * 
+ * Key Features:
+ * - List delivery personnel
+ * - Add/Edit delivery person
+ * - Toggle availability (Online/Offline)
+ * - Integration with DeliveryOptimizer for assignment (via availability status)
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class DeliveryPersonnelActivity extends AppCompatActivity {
 
     private RecyclerView personnelRv;

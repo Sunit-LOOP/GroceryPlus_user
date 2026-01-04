@@ -15,12 +15,20 @@ import com.sunit.groceryplus.models.Promotion;
 
 import java.util.List;
 
+/**
+ * Adapter for managing Promotions in the Admin Panel.
+ * Admin can view existing promo codes, their discount values, and valid dates.
+ * Admin can also delete expired or unwanted promotions.
+ */
 public class AdminPromotionAdapter extends RecyclerView.Adapter<AdminPromotionAdapter.ViewHolder> {
 
     private Context context;
     private List<Promotion> promotions;
     private OnPromotionActionListener listener;
 
+    /**
+     * Interface for Admin Promotion actions.
+     */
     public interface OnPromotionActionListener {
         void onDeleteClick(Promotion promotion);
     }

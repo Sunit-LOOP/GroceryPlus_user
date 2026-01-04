@@ -1,14 +1,43 @@
 package com.sunit.groceryplus.models;
 
+/**
+ * Vendor Model Class
+ * 
+ * Represents a store or supplier of products.
+ * Includes location details and performance rating.
+ */
 public class Vendor {
+    
+    // Unique ID for the vendor
     private int vendorId;
+    
+    // Display Name
     private String vendorName;
+    
+    // Physical Address
     private String address;
+    
+    // Geo-location for map
     private double latitude;
     private double longitude;
+    
+    // Icon/Logo resource
     private String icon;
+    
+    // Average rating
     private double rating;
 
+    /**
+     * Full Constructor
+     * 
+     * @param vendorId Unique ID
+     * @param vendorName Name
+     * @param address Text Address
+     * @param latitude Geo-Lat
+     * @param longitude Geo-Long
+     * @param icon Icon URL/Asset
+     * @param rating Rating (0-5)
+     */
     public Vendor(int vendorId, String vendorName, String address, double latitude, double longitude, String icon, double rating) {
         this.vendorId = vendorId;
         this.vendorName = vendorName;
@@ -18,6 +47,8 @@ public class Vendor {
         this.icon = icon;
         this.rating = rating;
     }
+
+    // ================= GETTERS AND SETTERS =================
 
     public int getVendorId() { return vendorId; }
     public String getVendorName() { return vendorName; }

@@ -10,6 +10,24 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.sunit.groceryplus.DatabaseHelper;
 import com.sunit.groceryplus.R;
 
+
+/**
+ * AnalyticsDashboardActivity - Visual overview of business performance.
+ * 
+ * This activity displays key business metrics such as Total Revenue, Total Orders,
+ * Customer Count, and Product Count. It fetches aggregated data from the database
+ * to provide a snapshot of the store's health.
+ * 
+ * Key Features:
+ * - Revenue Tracking
+ * - Order Counts (Total, Delivered)
+ * - Customer Growth Metric
+ * - Inventory Stats
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class AnalyticsDashboardActivity extends AppCompatActivity {
 
     private DatabaseHelper dbHelper;

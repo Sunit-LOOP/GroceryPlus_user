@@ -15,6 +15,24 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.sunit.groceryplus.models.User;
 import com.sunit.groceryplus.utils.ValidationUtils;
 
+
+/**
+ * AdminLoginActivity - Secure login interface for Administrators.
+ * 
+ * This activity handles the authentication of admin users. It differs from the standard
+ * login by explicitly checking the user role (isAdmin flag) after successful credential validation.
+ * It prevents non-admin users from accessing the dashboard.
+ * 
+ * Key Features:
+ * - Email/Password Authentication
+ * - Role Verification (Admin Check)
+ * - Session Management (SharedPreferences)
+ * - Navigation to User Login (for non-admins)
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class AdminLoginActivity extends AppCompatActivity {
 
     private static final String TAG = "AdminLoginActivity";

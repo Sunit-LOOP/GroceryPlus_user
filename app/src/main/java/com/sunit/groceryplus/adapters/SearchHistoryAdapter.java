@@ -13,16 +13,26 @@ import com.sunit.groceryplus.R;
 
 import java.util.List;
 
+/**
+ * Adapter for displaying Search History.
+ * Shows previous search queries in a list with an option to remove individual items.
+ */
 public class SearchHistoryAdapter extends RecyclerView.Adapter<SearchHistoryAdapter.ViewHolder> {
 
     private List<String> historyItems;
     private OnItemClickListener listener;
     private OnDeleteClickListener deleteListener;
 
+    /**
+     * Interface for clicking a history item (to search it again).
+     */
     public interface OnItemClickListener {
         void onItemClick(String query);
     }
 
+    /**
+     * Interface for clicking the delete button on a history item.
+     */
     public interface OnDeleteClickListener {
         void onDeleteClick(String query);
     }

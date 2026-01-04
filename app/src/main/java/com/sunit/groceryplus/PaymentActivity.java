@@ -6,20 +6,55 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.card.MaterialCardView;
-import android.widget.RadioButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.gson.JsonObject;
+import com.stripe.android.PaymentConfiguration;
+import com.stripe.android.paymentsheet.PaymentSheet;
+import com.stripe.android.paymentsheet.PaymentSheetResult;
+import com.sunit.groceryplus.models.Address;
 import com.sunit.groceryplus.models.CartItem;
+import com.sunit.groceryplus.models.PaymentIntentParams;
+import com.sunit.groceryplus.network.RetrofitClient;
+import com.sunit.groceryplus.network.StripeService;
 import com.sunit.groceryplus.utils.GroceryNotificationManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+/**
+ * PaymentActivity - Handles order payment and placement.
+ * 
+ * This activity is the final step in the checkout process. It allows users to review their order totals,
+ * select a delivery address, apply promo codes, and choose a payment method (Stripe or Cash on Delivery).
+ * Upon successful payment or order placement, it creates the order record and notifies the user.
+ * 
+ * Key Features:
+ * - Order summary display (Subtotal, Delivery Fee, Discount, Total)
+ * - Address selection and management
+ * - Promo code application
+ * - Payment method selection (Card vs COD)
+ * - INTEGRATION with REAL Stripe PaymentSheet
+ * - Order creation and inventory management
+ * - Notification triggers upon order success
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class PaymentActivity extends AppCompatActivity {
 
     private static final String TAG = "PaymentActivity";
@@ -36,35 +71,44 @@ public class PaymentActivity extends AppCompatActivity {
     private View changeAddressBtn;
     private View pickOnMapBtn;
 
-    private com.google.android.material.textfield.TextInputEditText promoCodeEt;
+    private TextInputEditText promoCodeEt;
     private Button applyPromoBtn;
     private View discountRow;
     private TextView summaryDiscount;
 
+    // Transaction Data
     private double finalAmount = 0.0;
     private double baseSubtotal = 0.0;
     private double deliveryFee = 0.0;
     private double discountAmount = 0.0;
     private String appliedPromoCode = null;
 
+    // User & Session
     private int userId = -1;
     private GroceryNotificationManager notificationManager;
 
     private AddressRepository addressRepository;
-    private com.sunit.groceryplus.models.Address selectedAddress;
+    private Address selectedAddress;
     private int selectedAddressId = -1;
 
     // Database helper
-    private com.sunit.groceryplus.DatabaseHelper dbHelper;
+    private DatabaseHelper dbHelper;
+    
+    // Stripe
+    private PaymentSheet paymentSheet;
+    private String paymentClientSecret;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_payment);
 
-        // Initialize Stripe
+        // Initialize Stripe with centralized key
+        PaymentConfiguration.init(getApplicationContext(), com.sunit.groceryplus.utils.PaymentConfig.STRIPE_PUBLISHABLE_KEY);
+        paymentSheet = new PaymentSheet(this, this::onPaymentSheetResult);
+
         // Initialize database helper
-        dbHelper = new com.sunit.groceryplus.DatabaseHelper(this);
+        dbHelper = new DatabaseHelper(this);
         notificationManager = GroceryNotificationManager.getInstance(this);
 
         addressRepository = new AddressRepository(this);
@@ -140,9 +184,9 @@ public class PaymentActivity extends AppCompatActivity {
         appliedPromoCode = null;
 
         // Update UI
-        summarySubtotal.setText("₹" + String.format("%.2f", baseSubtotal));
+        summarySubtotal.setText("Rs. " + String.format("%.2f", baseSubtotal));
         if (summaryDeliveryFee != null) {
-            summaryDeliveryFee.setText("₹" + String.format("%.2f", deliveryFee));
+            summaryDeliveryFee.setText("Rs. " + String.format("%.2f", deliveryFee));
         }
         totalAmountTv.setText("Rs. " + String.format("%.2f", finalAmount));
 
@@ -158,12 +202,12 @@ public class PaymentActivity extends AppCompatActivity {
 
     private void loadSelectedAddress() {
         try {
-            java.util.List<com.sunit.groceryplus.models.Address> addresses = addressRepository.getUserAddresses(userId);
+            List<Address> addresses = addressRepository.getUserAddresses(userId);
             selectedAddress = null;
             selectedAddressId = -1;
 
             if (addresses != null) {
-                for (com.sunit.groceryplus.models.Address a : addresses) {
+                for (Address a : addresses) {
                     if (a != null && a.isDefault()) {
                         selectedAddress = a;
                         break;
@@ -262,17 +306,17 @@ public class PaymentActivity extends AppCompatActivity {
 
     private void updateTotalsUi() {
         if (summarySubtotal != null) {
-            summarySubtotal.setText("₹" + String.format("%.2f", baseSubtotal));
+            summarySubtotal.setText("Rs. " + String.format("%.2f", baseSubtotal));
         }
 
         if (summaryDeliveryFee != null) {
-            summaryDeliveryFee.setText("₹" + String.format("%.2f", deliveryFee));
+            summaryDeliveryFee.setText("Rs. " + String.format("%.2f", deliveryFee));
         }
 
         if (discountRow != null && summaryDiscount != null) {
             if (discountAmount > 0.0) {
                 discountRow.setVisibility(View.VISIBLE);
-                summaryDiscount.setText("-₹" + String.format("%.2f", discountAmount));
+                summaryDiscount.setText("-Rs. " + String.format("%.2f", discountAmount));
             } else {
                 discountRow.setVisibility(View.GONE);
             }
@@ -316,18 +360,90 @@ public class PaymentActivity extends AppCompatActivity {
     }
 
     private void startStripePayment() {
-        Log.d(TAG, "Starting Fake Stripe payment redirection");
+        // Safety check for placeholder key
+        String secretKeyRaw = com.sunit.groceryplus.utils.PaymentConfig.STRIPE_SECRET_KEY;
+        if (secretKeyRaw == null || secretKeyRaw.contains("...") || secretKeyRaw.isEmpty()) {
+            Toast.makeText(this, "Please set your actual Stripe Secret Key in PaymentConfig.java", Toast.LENGTH_LONG).show();
+            return;
+        }
 
-        Intent intent = new Intent(this, FakePaymentActivity.class);
-        intent.putExtra("user_id", userId);
-        intent.putExtra("amount", finalAmount);
-        intent.putExtra("subtotal_amount", baseSubtotal);
-        intent.putExtra("delivery_fee", deliveryFee);
-        intent.putExtra("address_id", selectedAddressId);
-        intent.putExtra("promo_code", appliedPromoCode);
-        intent.putExtra("discount_amount", discountAmount);
-        intent.putExtra("delivery_instructions", instructionsEt.getText().toString().trim());
-        startActivity(intent);
+        payNowBtn.setEnabled(false);
+        payNowBtn.setText("Processing...");
+        
+        // Use centralized Stripe Secret Key from PaymentConfig
+        String secretKey = "Bearer " + secretKeyRaw;
+        
+        // Use Math.round to avoid precision issues with floating point
+        int amountInSmallestUnit = (int) Math.round(finalAmount * 100); 
+        
+        // Use centralized Stripe Secret Key and Currency from PaymentConfig
+        String currency = com.sunit.groceryplus.utils.PaymentConfig.CURRENCY;
+        Log.d(TAG, "Starting Stripe Payment: Amount=" + amountInSmallestUnit + ", Currency=" + currency);
+        
+        com.sunit.groceryplus.network.StripeApiClient.getClient().create(StripeService.class).createPaymentIntent(
+            secretKey,
+            amountInSmallestUnit,
+            currency,
+            true
+        ).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().has("client_secret")) {
+                    paymentClientSecret = response.body().get("client_secret").getAsString();
+                    Log.d(TAG, "Successfully received client secret");
+                    
+                    // 2. Present Payment Sheet
+                    PaymentSheet.Configuration configuration = new PaymentSheet.Configuration.Builder("GroceryPlus")
+                        .allowsDelayedPaymentMethods(true)
+                        .build();
+                        
+                    paymentSheet.presentWithPaymentIntent(paymentClientSecret, configuration);
+                    
+                    payNowBtn.setEnabled(true);
+                    updatePayButtonText();
+                } else {
+                    String errorMsg = "Failed to initialize payment.";
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBody = response.errorBody().string();
+                            Log.e(TAG, "Stripe Error Body: " + errorBody);
+                            if (errorBody.contains("invalid_api_key")) {
+                                errorMsg += " (Invalid API Key)";
+                            } else if (errorBody.contains("invalid_request_error")) {
+                                errorMsg += " (Invalid Request)";
+                            }
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error reading error body", e);
+                    }
+                    
+                    Log.e(TAG, "Stripe API Error: " + response.code() + " " + response.message());
+                    Toast.makeText(PaymentActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                    payNowBtn.setEnabled(true);
+                    updatePayButtonText();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
+                Log.e(TAG, "Network Error: " + t.getMessage());
+                Toast.makeText(PaymentActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                payNowBtn.setEnabled(true);
+                updatePayButtonText();
+            }
+        });
+    }
+
+    private void onPaymentSheetResult(PaymentSheetResult paymentSheetResult) {
+        if (paymentSheetResult instanceof PaymentSheetResult.Completed) {
+            Toast.makeText(this, "Payment Successful!", Toast.LENGTH_LONG).show();
+            createOrder("stripe");
+        } else if (paymentSheetResult instanceof PaymentSheetResult.Canceled) {
+            Toast.makeText(this, "Payment Canceled", Toast.LENGTH_SHORT).show();
+        } else if (paymentSheetResult instanceof PaymentSheetResult.Failed) {
+            PaymentSheetResult.Failed error = (PaymentSheetResult.Failed) paymentSheetResult;
+            Toast.makeText(this, "Payment Failed: " + error.getError().getLocalizedMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void createOrder(String paymentMethod) {
@@ -335,7 +451,7 @@ public class PaymentActivity extends AppCompatActivity {
 
         // Get cart items from database
         CartRepository cartRepo = new CartRepository(this);
-        java.util.List<CartItem> cartItems = cartRepo.getCartItems(userId);
+        List<CartItem> cartItems = cartRepo.getCartItems(userId);
         if (cartItems == null || cartItems.isEmpty()) {
             Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show();
             return;
@@ -353,14 +469,21 @@ public class PaymentActivity extends AppCompatActivity {
 
         if (orderId != -1) {
             // Add payment record for tracking
-            long paymentId = dbHelper.addPayment((int) orderId, finalAmount, paymentMethod, "TXN_" + System.currentTimeMillis());
+            // For Stripe, we can use the paymentClientSecret (or its ID) as transaction ID if we want, but unique timestamp is fine for local.
+            String txnId = "TXN_" + System.currentTimeMillis();
+            if (paymentMethod.equals("stripe") && paymentClientSecret != null) {
+                // Shorten client secret to just ID if possible, or leave as is.
+                txnId = "STRIPE_" + System.currentTimeMillis(); 
+            }
+            
+            long paymentId = dbHelper.addPayment((int) orderId, finalAmount, paymentMethod, txnId);
             if (paymentId == -1) {
                 Log.e(TAG, "Failed to add payment record for order: " + orderId);
             }
 
             try {
                 CartRepository cartRepo = new CartRepository(this);
-                java.util.List<CartItem> cartItems = cartRepo.getCartItems(userId);
+                List<CartItem> cartItems = cartRepo.getCartItems(userId);
                 if (cartItems != null) {
                     for (CartItem item : cartItems) {
                         dbHelper.addOrderItem((int) orderId, item.getProductId(), item.getQuantity(), item.getPrice());

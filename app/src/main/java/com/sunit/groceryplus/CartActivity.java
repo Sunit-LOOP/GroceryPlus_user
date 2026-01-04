@@ -22,10 +22,33 @@ import com.sunit.groceryplus.CartRepository;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * CartActivity - Manages the user's shopping cart.
+ * 
+ * This activity displays the items currently in the user's cart, calculates totals (including delivery fees),
+ * and handles quantity adjustments or item removals. It also enforces minimum order values
+ * and guides the user towards the checkout process.
+ * 
+ * Key Features:
+ * - List view of cart items
+ * - Real-time total calculation
+ * - Quantity adjustment (increment/decrement)
+ * - Item removal
+ * - Clear cart functionality
+ * - Free delivery progress tracking
+ * - Minimum order value check
+ * - Navigation to Payment
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class CartActivity extends AppCompatActivity {
 
     private static final String TAG = "CartActivity";
     
+    // UI Components
     private RecyclerView cartRecyclerView;
     private TextView emptyCartTv;
     private TextView totalPriceTv;
@@ -34,9 +57,11 @@ public class CartActivity extends AppCompatActivity {
     private View freeDeliveryGoalCard;
     private Button checkoutBtn;
     
+    // Repositories & Adapters
     private CartRepository cartRepository;
     private CartAdapter cartAdapter;
 
+    // Data State
     private List<CartItem> cartItems;
     private int userId;
 
@@ -262,12 +287,12 @@ public class CartActivity extends AppCompatActivity {
     private void updateTotalPrice() {
         double total = cartAdapter.getTotalPrice();
         double totalWithDelivery = cartAdapter.getTotalPriceWithDelivery();
-        totalPriceTv.setText("Total: रु " + String.format("%.2f", total) + " (Including Delivery: रु " + String.format("%.2f", totalWithDelivery) + ")");
+        totalPriceTv.setText("Total: Rs. " + String.format("%.2f", total) + " (Including Delivery: Rs. " + String.format("%.2f", totalWithDelivery) + ")");
         updateFreeDeliveryGoal(total);
     }
 
     private void updateFreeDeliveryGoal(double total) {
-        double threshold = 500.0;
+        double threshold = com.sunit.groceryplus.utils.PaymentConfig.FREE_DELIVERY_THRESHOLD;
         if (total <= 0) {
             freeDeliveryGoalCard.setVisibility(View.GONE);
         } else if (total >= threshold) {
@@ -318,7 +343,7 @@ public class CartActivity extends AppCompatActivity {
         if (total < minOrder) {
             new androidx.appcompat.app.AlertDialog.Builder(this)
                     .setTitle("Minimum Order Value")
-                    .setMessage("A minimum order of रु " + String.format("%.2f", minOrder) + " is required to checkout. Your current total is रु " + String.format("%.2f", total))
+                    .setMessage("A minimum order of Rs. " + String.format("%.2f", minOrder) + " is required to checkout. Your current total is Rs. " + String.format("%.2f", total))
                     .setPositiveButton("Add More Items", null)
                     .show();
             return;
@@ -326,6 +351,7 @@ public class CartActivity extends AppCompatActivity {
 
         try {
             // Calculate total with delivery fee
+            double subtotal = cartAdapter.getTotalPrice();
             double totalWithDelivery = cartAdapter.getTotalPriceWithDelivery();
             int itemCount = cartItems.size();
             
@@ -333,7 +359,7 @@ public class CartActivity extends AppCompatActivity {
             Intent intent = new Intent(CartActivity.this, PaymentActivity.class);
             intent.putExtra("user_id", userId);
             intent.putExtra("total_amount", totalWithDelivery);
-            intent.putExtra("subtotal_amount", cartAdapter.getTotalPrice());
+            intent.putExtra("subtotal_amount", subtotal);
             intent.putExtra("total_items", itemCount);
             startActivity(intent);
             

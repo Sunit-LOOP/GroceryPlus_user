@@ -8,12 +8,18 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import com.sunit.groceryplus.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Adapter for selecting drawable images in the Admin Panel (e.g. for Products/Categories).
+ * Displays a simple list of image filenames available in the app resources.
+ * Highlights the currently selected image.
+ */
 public class DrawableImageAdapter extends BaseAdapter {
     private Context context;
     private List<DrawableImage> drawableImages;
@@ -46,9 +52,10 @@ public class DrawableImageAdapter extends BaseAdapter {
         ViewHolder holder;
         
         if (convertView == null) {
-            convertView = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+            convertView = inflater.inflate(R.layout.grid_item_drawable_image, parent, false);
             holder = new ViewHolder();
-            holder.textView = convertView.findViewById(android.R.id.text1);
+            holder.textView = convertView.findViewById(R.id.drawableNameText);
+            holder.imageView = convertView.findViewById(R.id.drawableImageView);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -56,15 +63,16 @@ public class DrawableImageAdapter extends BaseAdapter {
 
         DrawableImage drawableImage = drawableImages.get(position);
         
-        // Show as numbered list: "1. apple.jpg"
-        String numberedText = (position + 1) + ". " + drawableImage.getResourceName();
-        holder.textView.setText(numberedText);
+        holder.textView.setText(drawableImage.getResourceName());
+        
+        // Load actual drawable image
+        ProductImageLoader.load(context, holder.imageView, drawableImage.getResourceName(), R.drawable.product_icon);
         
         // Set background for selected item
         if (position == selectedPosition) {
-            holder.textView.setBackgroundColor(context.getResources().getColor(android.R.color.holo_blue_light));
+            convertView.setBackgroundColor(context.getResources().getColor(android.R.color.holo_blue_light));
         } else {
-            holder.textView.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
+            convertView.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
         }
 
         return convertView;
@@ -84,8 +92,12 @@ public class DrawableImageAdapter extends BaseAdapter {
 
     private static class ViewHolder {
         TextView textView;
+        ImageView imageView;
     }
 
+    /**
+     * Helper model class for holding drawable resource info.
+     */
     public static class DrawableImage {
         private String name;
         private String resourceName;

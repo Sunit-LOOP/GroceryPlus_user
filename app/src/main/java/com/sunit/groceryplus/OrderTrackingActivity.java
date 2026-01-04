@@ -17,6 +17,26 @@ import org.osmdroid.views.overlay.Polyline;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * OrderTrackingActivity - Live tracking interface for active orders.
+ * 
+ * This activity provides real-time visualization of the order's status and delivery progress.
+ * It integrates with OSMDroid to display a map showing the vendor location, delivery destination,
+ * and the route path. It also estimates the delivery time based on distance and order status.
+ * Crucially, it provides the "Cancel Order" functionality for orders that are still pending.
+ * 
+ * Key Features:
+ * - Interactive Map using OpenStreetMap (OSMDroid)
+ * - Vendor and Delivery markers with route line
+ * - Live Status updates (Pending, Confirm, Shipped, Delivered, Cancelled)
+ * - ETA Calculation based on distance
+ * - Order Cancellation (for 'PENDING' orders) with refund policy warning
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class OrderTrackingActivity extends AppCompatActivity {
 
     private MapView map;
@@ -115,8 +135,78 @@ public class OrderTrackingActivity extends AppCompatActivity {
         line.setWidth(5f);
         map.getOverlays().add(line);
 
+        // Initialize Cancel Button
+        // This button allows users to cancel their order if it is still in PENDING state
+        android.widget.Button btnCancel = findViewById(R.id.btnCancelOrder);
+
+        // Check if order status allows cancellation (Only PENDING)
+        if ("PENDING".equalsIgnoreCase(orderStatus)) {
+            // Make button visible
+            btnCancel.setVisibility(android.view.View.VISIBLE);
+            
+            // Set OnClickListener for cancellation
+            btnCancel.setOnClickListener(v -> {
+                // Show confirmation dialog to user explaining the 15% deduction policy
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Cancel Order?")
+                    .setMessage("Are you sure you want to cancel this order?\n\nNOTE: A 15% cancellation fee will be deducted from your refund amount.")
+                    .setPositiveButton("Yes, Cancel", (dialog, which) -> {
+                        // User confirmed cancellation
+                        // Proceed with cancellation logic in background
+                        cancelOrder(orderId);
+                    })
+                    .setNegativeButton("No", null) // Dismiss dialog on "No"
+                    .show();
+            });
+        } else {
+            // Hide button if status is not PENDING (e.g., Processing, Shipped, Delivered)
+            btnCancel.setVisibility(android.view.View.GONE);
+        }
+
         // Calculate and display ETA
         calculateAndDisplayEta(vendorPoint, deliveryPoint, orderStatus);
+    }
+
+    /**
+     * Method to handle order cancellation process.
+     * Calls the Repository to update status and calculate refund.
+     * 
+     * @param orderId The ID of the order to cancel
+     */
+    private void cancelOrder(int orderId) {
+        // Show progress indicator
+        android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
+        progressDialog.setMessage("Cancelling Order...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        // Execute DB operation in background thread to avoid UI freezing
+        new Thread(() -> {
+            // Get current User ID from shared preferences
+            int userId = PreferenceManager.getDefaultSharedPreferences(this).getInt("user_id", -1);
+            
+            // Call repository to verify and cancel order
+            // This method handles:
+            // 1. Status update to "Cancelled"
+            // 2. Refund calculation (Total - 15%)
+            // 3. Chat message to user
+            OrderRepository repo = new OrderRepository(this);
+            boolean success = repo.cancelOrder(orderId, userId);
+
+            // Update UI on Main Thread
+            runOnUiThread(() -> {
+                progressDialog.dismiss();
+                if (success) {
+                    // Show success message
+                    android.widget.Toast.makeText(this, "Order Cancelled. Refund initiated.", android.widget.Toast.LENGTH_LONG).show();
+                    // Refresh Activity to update status and hide button
+                    recreate(); 
+                } else {
+                    // Show error message
+                    android.widget.Toast.makeText(this, "Failed to cancel order. Please try again.", android.widget.Toast.LENGTH_SHORT).show();
+                }
+            });
+        }).start();
     }
 
     private void calculateAndDisplayEta(GeoPoint p1, GeoPoint p2, String status) {

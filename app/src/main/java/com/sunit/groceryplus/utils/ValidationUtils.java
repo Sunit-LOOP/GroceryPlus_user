@@ -12,7 +12,11 @@ import com.sunit.groceryplus.R;
 import java.util.regex.Pattern;
 
 /**
- * Utility class for validation and common helper functions
+ * ValidationUtils - Utility class for validation and common helper functions.
+ * 
+ * This class provides a collection of static methods for validating user input,
+ * such as email addresses, phone numbers, passwords, and form fields.
+ * It also includes helper methods for showing toast messages and formatting strings.
  */
 public class ValidationUtils {
     private static final String TAG = "ValidationUtils";
@@ -28,35 +32,50 @@ public class ValidationUtils {
     );
     
     /**
-     * Validate email address
+     * Validate email address.
+     * 
+     * @param email The email address to validate
+     * @return true if valid, false otherwise
      */
     public static boolean isValidEmail(String email) {
         return email != null && EMAIL_PATTERN.matcher(email).matches();
     }
     
     /**
-     * Validate phone number (Indian format)
+     * Validate phone number (Indian format).
+     * 
+     * @param phone The phone number to validate
+     * @return true if valid (10 digits starting with 6-9), false otherwise
      */
     public static boolean isValidPhone(String phone) {
         return phone != null && PHONE_PATTERN.matcher(phone.replaceAll("[^0-9]", "")).matches();
     }
     
     /**
-     * Validate password (minimum 6 characters)
+     * Validate password (minimum 6 characters).
+     * 
+     * @param password The password to validate
+     * @return true if valid, false otherwise
      */
     public static boolean isValidPassword(String password) {
         return password != null && password.length() >= 6;
     }
     
     /**
-     * Validate name (alphabets and spaces only)
+     * Validate name (alphabets and spaces only).
+     * 
+     * @param name The name to validate
+     * @return true if valid, false otherwise
      */
     public static boolean isValidName(String name) {
         return name != null && name.trim().length() >= 2 && name.matches("[a-zA-Z\\s]+");
     }
     
     /**
-     * Validate price (positive number)
+     * Validate price (positive number).
+     * 
+     * @param priceStr The price string to validate
+     * @return true if valid positive number, false otherwise
      */
     public static boolean isValidPrice(String priceStr) {
         try {
@@ -68,7 +87,10 @@ public class ValidationUtils {
     }
     
     /**
-     * Validate quantity (positive integer)
+     * Validate quantity (positive integer).
+     * 
+     * @param quantityStr The quantity string to validate
+     * @return true if valid positive integer, false otherwise
      */
     public static boolean isValidQuantity(String quantityStr) {
         try {
@@ -80,7 +102,12 @@ public class ValidationUtils {
     }
     
     /**
-     * Validate product stock
+     * Validate product stock using DatabaseHelper.
+     * 
+     * @param context Application context
+     * @param productId Product ID to check
+     * @param requestedQuantity Quantity requested
+     * @return true if stock is sufficient, false otherwise
      */
     public static boolean validateStock(Context context, int productId, int requestedQuantity) {
         try {
@@ -93,7 +120,10 @@ public class ValidationUtils {
     }
     
     /**
-     * Show validation error on EditText
+     * Show validation error on EditText and request focus.
+     * 
+     * @param editText The EditText to show error on
+     * @param errorMessage The error message to display
      */
     public static void showValidationError(EditText editText, String errorMessage) {
         editText.setError(errorMessage);
@@ -101,14 +131,21 @@ public class ValidationUtils {
     }
     
     /**
-     * Clear validation error
+     * Clear validation error from EditText.
+     * 
+     * @param editText The EditText to clear error from
      */
     public static void clearValidationError(EditText editText) {
         editText.setError(null);
     }
     
     /**
-     * Validate login form
+     * Validate login form fields.
+     * 
+     * @param context Application context
+     * @param emailEt Email EditText
+     * @param passwordEt Password EditText
+     * @return true if all fields are valid, false otherwise
      */
     public static boolean validateLoginForm(Context context, EditText emailEt, EditText passwordEt) {
         String email = emailEt.getText().toString().trim();
@@ -138,7 +175,15 @@ public class ValidationUtils {
     }
     
     /**
-     * Validate signup form
+     * Validate signup form fields.
+     * 
+     * @param context Application context
+     * @param nameEt Name EditText
+     * @param emailEt Email EditText
+     * @param phoneEt Phone EditText
+     * @param passwordEt Password EditText
+     * @param confirmPasswordEt Confirm Password EditText
+     * @return true if all fields are valid, false otherwise
      */
     public static boolean validateSignupForm(Context context, EditText nameEt, EditText emailEt, 
                                             EditText phoneEt, EditText passwordEt, EditText confirmPasswordEt) {
@@ -202,7 +247,14 @@ public class ValidationUtils {
     }
     
     /**
-     * Validate product form
+     * Validate product form fields.
+     * 
+     * @param context Application context
+     * @param nameEt Product Name EditText
+     * @param priceEt Product Price EditText
+     * @param stockEt Product Stock EditText
+     * @param descriptionEt Product Description EditText
+     * @return true if all fields are valid, false otherwise
      */
     public static boolean validateProductForm(Context context, EditText nameEt, EditText priceEt, 
                                               EditText stockEt, EditText descriptionEt) {
@@ -245,7 +297,14 @@ public class ValidationUtils {
     }
     
     /**
-     * Validate address form
+     * Validate address form fields.
+     * 
+     * @param context Application context
+     * @param addressEt Address EditText
+     * @param cityEt City EditText
+     * @param stateEt State EditText
+     * @param postalCodeEt Postal Code EditText
+     * @return true if all fields are valid, false otherwise
      */
     public static boolean validateAddressForm(Context context, EditText addressEt, EditText cityEt, 
                                              EditText stateEt, EditText postalCodeEt) {
@@ -278,49 +337,71 @@ public class ValidationUtils {
     }
     
     /**
-     * Show toast message
+     * Show short toast message.
+     * 
+     * @param context Application context
+     * @param message Message to display
      */
     public static void showToast(Context context, String message) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
     }
     
     /**
-     * Show success toast
+     * Show success toast message with checkmark.
+     * 
+     * @param context Application context
+     * @param message Message to display
      */
     public static void showSuccessToast(Context context, String message) {
         Toast.makeText(context, "✓ " + message, Toast.LENGTH_SHORT).show();
     }
     
     /**
-     * Show error toast
+     * Show error toast message with cross mark.
+     * 
+     * @param context Application context
+     * @param message Message to display
      */
     public static void showErrorToast(Context context, String message) {
         Toast.makeText(context, "✗ " + message, Toast.LENGTH_SHORT).show();
     }
     
     /**
-     * Check if string is empty or null
+     * Check if string is empty or null.
+     * 
+     * @param str The string to check
+     * @return true if null or empty/whitespace only
      */
     public static boolean isEmpty(String str) {
         return str == null || str.trim().isEmpty();
     }
     
     /**
-     * Get safe string (null-safe)
+     * Get safe string (null-safe).
+     * 
+     * @param str The string to check
+     * @param defaultValue The default value if null
+     * @return The original string or default value
      */
     public static String safeString(String str, String defaultValue) {
         return str == null ? defaultValue : str;
     }
     
     /**
-     * Get safe string (null-safe, empty default)
+     * Get safe string (null-safe, empty default).
+     * 
+     * @param str The string to check
+     * @return The original string or empty string if null
      */
     public static String safeString(String str) {
         return safeString(str, "");
     }
     
     /**
-     * Capitalize first letter
+     * Capitalize first letter of string.
+     * 
+     * @param str The string to capitalize
+     * @return Capitalized string
      */
     public static String capitalize(String str) {
         if (isEmpty(str)) {
@@ -330,28 +411,41 @@ public class ValidationUtils {
     }
     
     /**
-     * Format currency
+     * Format currency amount (e.g., "Rs. 100.00").
+     * 
+     * @param amount The amount to format
+     * @return Formatted currency string
      */
     public static String formatCurrency(double amount) {
-        return String.format("रु %.2f", amount);
+        return String.format("Rs. %.2f", amount);
     }
     
     /**
-     * Format currency with symbol
+     * Format currency with custom symbol.
+     * 
+     * @param amount The amount to format
+     * @param symbol The currency symbol to use
+     * @return Formatted currency string
      */
     public static String formatCurrency(double amount, String symbol) {
         return String.format("%s %.2f", symbol, amount);
     }
     
     /**
-     * Validate search query
+     * Validate search query.
+     * 
+     * @param query The search query to validate
+     * @return true if valid (not null and length >= 2)
      */
     public static boolean isValidSearchQuery(String query) {
         return query != null && query.trim().length() >= 2;
     }
     
     /**
-     * Sanitize search query
+     * Sanitize search query by removing special characters.
+     * 
+     * @param query The query to sanitize
+     * @return Sanitized alphanumeric string
      */
     public static String sanitizeSearchQuery(String query) {
         if (query == null) {
@@ -361,42 +455,59 @@ public class ValidationUtils {
     }
     
     /**
-     * Check if user is admin
+     * Check if user type is admin.
+     * 
+     * @param userType The user type string
+     * @return true if user is admin
      */
     public static boolean isAdmin(String userType) {
         return "admin".equalsIgnoreCase(userType);
     }
     
     /**
-     * Check if user is customer
+     * Check if user type is customer.
+     * 
+     * @param userType The user type string
+     * @return true if user is customer
      */
     public static boolean isCustomer(String userType) {
         return "customer".equalsIgnoreCase(userType);
     }
     
     /**
-     * Generate random ID
+     * Generate random ID based on current timestamp.
+     * 
+     * @return String representation of current time in millis
      */
     public static String generateRandomId() {
         return String.valueOf(System.currentTimeMillis());
     }
     
     /**
-     * Check if string contains only digits
+     * Check if string contains only digits.
+     * 
+     * @param str The string to check
+     * @return true if numeric only
      */
     public static boolean isNumeric(String str) {
         return str != null && str.matches("\\d+");
     }
     
     /**
-     * Check if string contains only alphabets
+     * Check if string contains only alphabets.
+     * 
+     * @param str The string to check
+     * @return true if alphabets only
      */
     public static boolean isAlpha(String str) {
         return str != null && str.matches("[a-zA-Z]+");
     }
     
     /**
-     * Check if string contains alphabets and numbers
+     * Check if string contains alphabets and numbers.
+     * 
+     * @param str The string to check
+     * @return true if alphanumeric
      */
     public static boolean isAlphaNumeric(String str) {
         return str != null && str.matches("[a-zA-Z0-9]+");

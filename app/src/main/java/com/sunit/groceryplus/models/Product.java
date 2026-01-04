@@ -1,27 +1,70 @@
 package com.sunit.groceryplus.models;
 
 /**
- * Product model class representing a product in the grocery store
+ * Product Model Class
+ * 
+ * Represents an item available for sale in the store.
+ * Contains all display information (name, image, description) and 
+ * inventory data (price, stock, vendor).
  */
 public class Product {
+    
+    // Unique ID for the product in the database
     private int productId;
+    
+    // Display name of the product
     private String productName;
+    
+    // ID of the category this product belongs to
     private int categoryId;
+    
+    // Name of the category (for display convenience)
     private String categoryName;
+    
+    // Sale price per unit
     private double price;
+    
+    // Detailed product description
     private String description;
+    
+    // URL or identifier for the product image
     private String image;
+    
+    // Current available stock count
     private int stockQuantity;
+    
+    // Average user rating (0.0 to 5.0)
     private double rating;
+    
+    // ID of the vendor supplying this product
     private int vendorId;
+    
+    // Name of the vendor
     private String vendorName;
 
-    // Default constructor
+    /**
+     * Default Constructor
+     */
     public Product() {
         this.rating = 0.0;
     }
 
-    // Constructor with all fields
+    /**
+     * Full Constructor
+     * Used when retrieving full product details from the database.
+     * 
+     * @param productId Unique ID
+     * @param productName Product Name
+     * @param categoryId Category ID
+     * @param categoryName Category Name
+     * @param price Unit Price
+     * @param description Details
+     * @param image Image URL
+     * @param rating Avg Rating
+     * @param stockQuantity Stock Count
+     * @param vendorId Vendor ID
+     * @param vendorName Vendor Name
+     */
     public Product(int productId, String productName, int categoryId, String categoryName, 
                    double price, String description, String image, double rating, int stockQuantity, int vendorId, String vendorName) {
         this.productId = productId;
@@ -37,7 +80,11 @@ public class Product {
         this.vendorName = vendorName;
     }
 
-    // Constructor used by DatabaseHelper
+    /**
+     * Legacy/DB Helper Constructor
+     * Similar to the full constructor but defaults rating to 0.0.
+     * Primarily used during database population or simple queries.
+     */
     public Product(int productId, String productName, int categoryId, String categoryName, 
                    double price, String description, String image, int stockQuantity, int vendorId, String vendorName) {
         this.productId = productId;
@@ -52,8 +99,27 @@ public class Product {
         this.vendorName = vendorName;
         this.rating = 0.0;
     }
+    
+    /**
+     * Simplified Constructor
+     * Used in contexts where names (Vendor/Category) are not yet fetched or needed.
+     */
+    public Product(int productId, String productName, int categoryId, double price, String description, String image, int stockQuantity, int vendorId) {
+        this.productId = productId;
+        this.productName = productName;
+        this.categoryId = categoryId;
+        this.categoryName = "";
+        this.price = price;
+        this.description = description;
+        this.image = image;
+        this.stockQuantity = stockQuantity;
+        this.vendorId = vendorId;
+        this.vendorName = "";
+        this.rating = 0.0;
+    }
 
-    // Getters and Setters
+    // ================= GETTERS AND SETTERS =================
+
     public int getProductId() { return productId; }
     public void setProductId(int productId) { this.productId = productId; }
 
@@ -78,7 +144,7 @@ public class Product {
     public int getStockQuantity() { return stockQuantity; }
     public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
     
-    // Alias methods for consistency
+    // Alias methods for compatibility or semantic clarity
     public int getStock() { return stockQuantity; }
     public void setStock(int stock) { this.stockQuantity = stock; }
     
@@ -103,20 +169,5 @@ public class Product {
                 ", vendorName='" + vendorName + '\'' +
                 '}';
     }
-
-    public Product(int productId, String productName, int categoryId, double price, String description, String image, int stockQuantity, int vendorId) {
-        this.productId = productId;
-        this.productName = productName;
-        this.categoryId = categoryId;
-        this.categoryName = "";
-        this.price = price;
-        this.description = description;
-        this.image = image;
-        this.stockQuantity = stockQuantity;
-        this.vendorId = vendorId;
-        this.vendorName = "";
-        this.rating = 0.0;
-    }
-
 }
 

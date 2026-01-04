@@ -1,8 +1,18 @@
 package com.sunit.groceryplus.utils;
 
+/**
+ * PaymentConfig - Configuration constants for payment and backend integration.
+ * 
+ * This class holds all configuration values related to payment processing,
+ * backend API endpoints, and fees. It allows for easy switching between
+ * development and production environments.
+ */
 public class PaymentConfig {
+    
     // Stripe Configuration
-    public static final String STRIPE_PUBLISHABLE_KEY = "pk_test_51SgF3yPO7nc2IchGlfjWqbL7xMwkQiUckMME4qxQke5xUNsDjnHRpGOsFB9fKXOJiFkLUc2eKjDmqBvXOgOfqWGq00w6HSkYFq";
+    public static final String STRIPE_PUBLISHABLE_KEY = "pk_test_51SdBfzD0CBYYErpfvgC0r6IPOkh5Ey6g5ju5IOmoGR4nUISi5p8TXgfX75wjLuV8kXW7xoZWq3tBk9Z9svkMqIym0005By6JFh";
+    // WARNING: Storing secret key in app is insecure. Use a proper backend in production.
+    public static final String STRIPE_SECRET_KEY = "sk_test_51SdBfzD0CBYYErpfg5pIH7DiWP8rBpMVdxMpZm0YexTCbMtA1WQismaPAKlowryeCXFYZIaBkmPV8MAh4ZGWnZ5G00DLnFaJtS";
     
     // Backend Configuration
     // For development: Android Emulator localhost (PHP backend)
@@ -24,6 +34,7 @@ public class PaymentConfig {
     
     // Delivery Configuration
     public static final double DELIVERY_FEE = 100.0; // Delivery fee in NPR
+    public static final double FREE_DELIVERY_THRESHOLD = 500.0; // Free delivery for orders above this
     
     // Timeout Configuration
     public static final int PAYMENT_TIMEOUT_SECONDS = 300; // 5 minutes

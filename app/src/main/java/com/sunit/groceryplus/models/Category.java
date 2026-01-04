@@ -1,19 +1,38 @@
 package com.sunit.groceryplus.models;
 
 /**
- * Category model class representing a product category
+ * Category Model Class
+ * 
+ * Represents a product category (e.g., "Vegetables", "Fruits", "Dairy").
+ * Categories are used to organize products and help users browse the catalog.
  */
 public class Category {
+    // Unique ID for the category
     private int categoryId;
+    
+    // Display name of the category
     private String categoryName;
+    
+    // Brief description of what this category contains
     private String categoryDescription;
+    
+    // URL or resource name for the category icon/image
     private String imageUrl;
 
-    // Default constructor
+    /**
+     * Default Constructor
+     */
     public Category() {
     }
 
-    // Constructor with all fields
+    /**
+     * Full Constructor
+     * 
+     * @param categoryId Unique ID
+     * @param categoryName Name of the category
+     * @param categoryDescription Description text
+     * @param imageUrl Image identifier
+     */
     public Category(int categoryId, String categoryName, String categoryDescription, String imageUrl) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
@@ -21,21 +40,28 @@ public class Category {
         this.imageUrl = imageUrl;
     }
 
-    // Constructor without ID (for new categories)
+    /**
+     * Constructor without ID
+     * Used when creating a new category that hasn't been saved to DB yet.
+     */
     public Category(String categoryName, String categoryDescription, String imageUrl) {
         this.categoryName = categoryName;
         this.categoryDescription = categoryDescription;
         this.imageUrl = imageUrl;
     }
 
-    // Constructor without image
+    /**
+     * Simple Constructor
+     * Used when image is not available or relevant.
+     */
     public Category(int categoryId, String categoryName, String categoryDescription) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.categoryDescription = categoryDescription;
     }
 
-    // Getters and Setters
+    // ================= GETTERS AND SETTERS =================
+
     public int getCategoryId() {
         return categoryId;
     }

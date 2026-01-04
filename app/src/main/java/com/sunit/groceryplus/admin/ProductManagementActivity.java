@@ -40,6 +40,25 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * ProductManagementActivity - Core admin interface for CRUD operations on Products.
+ * 
+ * This activity allows administrators to view, add, edit, and delete products.
+ * It handles image selection (Gallery, Camera, Stock Drawables) and manages
+ * relationships with Categories and Vendors.
+ * 
+ * Key Features:
+ * - List all Products
+ * - Add/Edit Product Form (Name, Price, Desc, Stock, Image, Vendor, Category)
+ * - Image Picker Integration (Camera/Gallery/Drawable)
+ * - Deletion with confirmation
+ * - View Reviews for a product
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class ProductManagementActivity extends AppCompatActivity {
 
     private RecyclerView productsRv;
@@ -457,10 +476,10 @@ public class ProductManagementActivity extends AppCompatActivity {
         
         // Setup adapter
         DrawableImageAdapter adapter = new DrawableImageAdapter(this, drawableImages);
-        android.widget.ListView listView = dialogView.findViewById(R.id.drawableGridView);
-        listView.setAdapter(adapter);
+        android.widget.GridView gridView = dialogView.findViewById(R.id.drawableGridView);
+        gridView.setAdapter(adapter);
 
-        listView.setOnItemClickListener((parent, view, position, id) -> {
+        gridView.setOnItemClickListener((parent, view, position, id) -> {
             adapter.setSelectedPosition(position);
         });
 

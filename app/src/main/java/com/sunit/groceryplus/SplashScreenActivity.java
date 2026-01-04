@@ -15,6 +15,33 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+
+/**
+ * SplashScreenActivity - Application entry point with branding and initialization
+ * 
+ * This activity serves as the launch screen for the GroceryPlus application.
+ * It displays the brand logo with animations, performs initial system checks,
+ * initializes the database with sample data if needed, and handles navigation
+ * to the login screen.
+ * 
+ * Key Features:
+ * - Animated delivery branding
+ * - Database connection testing
+ * - Sample data insertion on first run
+ * - Permission handling for notifications (Android 13+)
+ * - Timed transition to LoginActivity
+ * 
+ * Initialization Flow:
+ * 1. Request necessary permissions (Post Notifications)
+ * 2. Test database connectivity
+ * 3. Seed database with sample products/users if empty
+ * 4. Animate branding elements
+ * 5. Navigate to LoginActivity after delay
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class SplashScreenActivity extends AppCompatActivity {
 
     private static final String TAG = "SplashScreenActivity";
@@ -22,39 +49,51 @@ public class SplashScreenActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<String> postNotificationsPermissionLauncher;
 
+    /**
+     * Called when the activity is first created
+     * 
+     * Initializes the splash screen UI, registers permission launchers,
+     * triggers database startup tasks, starts animations, and schedules
+     * the navigation to the next screen.
+     *
+     * @param savedInstanceState Previously saved state data
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        // Register permission launcher for notification permission
         postNotificationsPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> Log.d(TAG, "POST_NOTIFICATIONS granted: " + isGranted)
         );
 
+        // Request notification permission for Android 13+
         requestPostNotificationsIfNeeded();
 
-        // Test database connection
+        // Test database connection to ensure system readiness
         DatabaseConnectionTest.testDatabaseConnection(this);
 
         // Insert sample data on first run
+        // This ensures the app has content for demonstration purposes
         Log.d(TAG, "Inserting sample data");
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         dbHelper.insertSampleData();
         dbHelper.ensureAllProductsHaveStock(); // Ensure all products have stock
         Log.d(TAG, "Sample data insertion completed");
         
-        // Animate the delivery guy
+        // Start the delivery guy animation
         animateDeliveryGuy();
 
-        // Move to login screen after delay
+        // usage of Handler to delay transition to LoginActivity
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 Log.d(TAG, "Redirecting to LoginActivity");
                 Intent intent = new Intent(SplashScreenActivity.this, LoginActivity.class);
                 startActivity(intent);
-                finish();
+                finish(); // Prevent user from returning to splash screen
             }
         }, SPLASH_DURATION);
     }

@@ -18,6 +18,23 @@ import com.sunit.groceryplus.models.Message;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * AdminMessagesActivity - Inbox for customer support.
+ * 
+ * This activity lists all users who have initiated a chat with the admin.
+ * It acts as an inbox, displaying the latest message from each conversation,
+ * allowing the admin to select a conversation to view details.
+ * 
+ * Key Features:
+ * - List of conversations
+ * - Status indicators (Read/Unread)
+ * - Navigation to individual chats
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class AdminMessagesActivity extends AppCompatActivity {
 
     private RecyclerView messagesRv;

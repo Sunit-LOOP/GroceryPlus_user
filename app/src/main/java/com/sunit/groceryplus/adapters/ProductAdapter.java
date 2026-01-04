@@ -26,6 +26,15 @@ import com.sunit.groceryplus.utils.UIComponents;
 
 import java.util.List;
 
+/**
+ * Adapter for displaying the main product catalog grid.
+ * Features:
+ * - Dynamic product data binding (Image, Price, Stock)
+ * - Add to Cart / Quantity adjustments directly from grid
+ * - Wishlist toggling
+ * - Stock validation logic
+ * - Modern UI animations (Entrance slide, pulse effects)
+ */
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder> {
 
     private static final String TAG = "ProductAdapter";
@@ -36,6 +45,10 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     private int userId;
     private OnCartUpdateListener cartUpdateListener;
 
+    /**
+     * Interface to notify parent activity/fragment when cart contents change.
+     * Useful for updating cart badge or totals.
+     */
     public interface OnCartUpdateListener {
         void onCartUpdated();
     }
@@ -52,6 +65,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         this.cartUpdateListener = listener;
     }
 
+    /**
+     * Updates the displayed list (used for Search filtering).
+     */
     public void setFilteredList(List<Product> filteredList) {
         this.productList = filteredList;
         notifyDataSetChanged();
@@ -83,7 +99,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         AnimationUtils.slideInFromBottom(holder.itemView, 300 + (position * 50));
         
         holder.productName.setText(product.getProductName() != null ? product.getProductName() : "Unknown Product");
-        holder.productPrice.setText(String.format("रु %.2f", product.getPrice()));
+        holder.productPrice.setText(String.format("Rs. %.2f", product.getPrice()));
         
         // Apply modern UI components
         UIComponents.createStockIndicator(holder.stockBadge, product.getStockQuantity());
@@ -143,6 +159,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         }
         updateQuantityUI(holder, currentQty);
 
+        // Add to Cart Button Logic
         holder.addToCartBtn.setOnClickListener(v -> {
             if (userId == -1) {
                 Toast.makeText(context, "Please login to add items", Toast.LENGTH_SHORT).show();
@@ -174,6 +191,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             }
         });
 
+        // Increase Quantity Button
         holder.btnPlus.setOnClickListener(v -> {
             AnimationUtils.buttonPressAnimation(v);
             try {
@@ -195,6 +213,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             }
         });
 
+        // Decrease Quantity Button
         holder.btnMinus.setOnClickListener(v -> {
             AnimationUtils.buttonPressAnimation(v);
             try {
@@ -213,6 +232,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             }
         });
 
+        // Navigate to Product Detail
         holder.itemView.setOnClickListener(v -> {
             AnimationUtils.scaleUp(v, 200);
             Intent intent = new Intent(context, ProductDetailActivity.class);
@@ -325,6 +345,10 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         return productList.size();
     }
 
+    /**
+     * ViewHolder for Product Item.
+     * Caches references to all UI elements in the card layout.
+     */
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView productImage;
         TextView productName, productPrice, productCategory, stockBadge, tvQuantity, productRatingBadge, productVendor;

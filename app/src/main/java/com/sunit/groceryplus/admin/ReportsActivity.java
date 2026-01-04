@@ -24,6 +24,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+
+/**
+ * ReportsActivity - Data export center for the application.
+ * 
+ * This activity provides functionality to export various system datasets (Orders, Sales, Inventory, Customers)
+ * into CSV format for external analysis. It handles file permission requests and writes files
+ * to the device's Downloads directory.
+ * 
+ * Key Features:
+ * - CSV Export for: Orders, Sales, Inventory, Customers
+ * - Permission Handling (Write External Storage)
+ * - Intent to view exported files immediately
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class ReportsActivity extends AppCompatActivity {
 
     private Button exportOrdersBtn, exportSalesBtn, exportInventoryBtn, exportCustomersBtn;

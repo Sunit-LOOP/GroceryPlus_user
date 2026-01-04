@@ -16,12 +16,20 @@ import com.sunit.groceryplus.models.Order;
 
 import java.util.List;
 
+/**
+ * Adapter for managing customer Orders in the Admin Panel.
+ * Allows Admin to view order details, update status (Pending, Shipped, Delivered, etc.),
+ * and assign delivery personnel.
+ */
 public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.OrderViewHolder> {
 
     private Context context;
     private List<Order> orders;
     private OnOrderActionListener listener;
 
+    /**
+     * Interface for Admin Order actions.
+     */
     public interface OnOrderActionListener {
         void onUpdateStatusClick(Order order);
         void onAssignDeliveryClick(Order order);
@@ -103,6 +111,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
             }
             orderStatusTv.setText(order.getStatus());
 
+            // Status Color Coding for better visualization
             String status = order.getStatus();
             if ("Pending".equalsIgnoreCase(status)) {
                 orderStatusTv.setTextColor(Color.parseColor("#FF9800")); // Orange
@@ -118,6 +127,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
                 orderStatusTv.setTextColor(Color.DKGRAY);
             }
 
+            // Payment Status Color Coding
             String paymentMethod = order.getPaymentMethod();
             if (paymentMethod != null && !paymentMethod.isEmpty()) {
                 paymentStatusTv.setText(String.format("Received (%s)", paymentMethod));
@@ -130,6 +140,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
                 paymentStatusTv.setTextColor(Color.parseColor("#F44336")); // Red
             }
             
+            // Show Delivery Assignment Info
             if (order.getDeliveryPersonName() != null) {
                 deliveryPersonTv.setText(order.getDeliveryPersonName());
             } else {

@@ -4,18 +4,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.sunit.groceryplus.utils.GroceryNotificationManager;
 
+/**
+ * OrderSuccessActivity - Displays a success message after order placement.
+ */
 public class OrderSuccessActivity extends AppCompatActivity {
 
     private Handler handler = new Handler(Looper.getMainLooper());
-    private Runnable navigateRunnable = () -> {
-        navigateToHome();
-    };
+    private Runnable navigateRunnable = this::navigateToHome;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

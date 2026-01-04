@@ -20,6 +20,22 @@ import com.sunit.groceryplus.adapters.AdminChatAdapter;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * AdminChatActivity - Admin-side chat interface.
+ * 
+ * This activity allows the admin to reply to messages fro specific users.
+ * It provides a view of the conversation history and an input field for sending replies.
+ * 
+ * Key Features:
+ * - Conversation view with user
+ * - Send reply functionality
+ * - Message status tracking (read/unread)
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class AdminChatActivity extends AppCompatActivity {
 
     private RecyclerView chatRv;

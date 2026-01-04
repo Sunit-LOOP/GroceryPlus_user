@@ -40,6 +40,22 @@
             android:text="Estimated Delivery: 20-30 mins"
             android:textSize="14sp"
             android:textColor="@color/text_secondary" />
+
+        <!-- 
+             Cancel Order Button 
+             Visible only when order status is "Pending"
+             Triggers order cancellation process with 15% penalty
+        -->
+        <Button
+            android:id="@+id/btnCancelOrder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Cancel Order"
+            android:backgroundTint="#F44336"
+            android:textColor="@android:color/white"
+            android:visibility="gone" />
+
     </LinearLayout>
 
     <org.osmdroid.views.MapView

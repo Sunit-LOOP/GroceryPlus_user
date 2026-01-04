@@ -11,10 +11,29 @@ import com.sunit.groceryplus.models.User;
 
 import com.google.android.material.textfield.TextInputEditText;
 
+
+/**
+ * EditProfileActivity - Input form for updating user personal information.
+ * 
+ * This activity allows users to modify their personal details such as name, email, and phone number.
+ * It pre-loads the current user information and validates inputs before saving changes
+ * to the UserRepository.
+ * 
+ * Key Features:
+ * - Edit Name, Email, Phone
+ * - Input validation (Email format, Phone length)
+ * - Pre-filling existing data
+ * - Save and Cancel actions
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class EditProfileActivity extends AppCompatActivity {
 
     private static final String TAG = "EditProfileActivity";
     
+    // UI Components
     private TextInputEditText nameEt;
     private TextInputEditText emailEt;
     private TextInputEditText phoneEt;
@@ -22,6 +41,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private Button saveBtn;
     private Button cancelBtn;
     
+    // Data & Repositories
     private int userId;
     private UserRepository userRepository;
     private User currentUser;

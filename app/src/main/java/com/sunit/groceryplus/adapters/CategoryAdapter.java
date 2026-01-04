@@ -16,7 +16,9 @@ import com.sunit.groceryplus.models.Category;
 import java.util.List;
 
 /**
- * Adapter for displaying categories in a horizontal RecyclerView
+ * Adapter for displaying categories in a horizontal RecyclerView.
+ * Used primarily on the Home Screen.
+ * Assigns specific icons based on category names if image URLs are not available.
  */
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
 
@@ -24,6 +26,9 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     private List<Category> categories;
     private OnCategoryClickListener listener;
 
+    /**
+     * Interface to handle category selection.
+     */
     public interface OnCategoryClickListener {
         void onCategoryClick(Category category);
     }
@@ -58,6 +63,10 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         notifyDataSetChanged();
     }
 
+    /**
+     * ViewHolder for Category item.
+     * Maps category name to static drawable resources for visual appeal.
+     */
     class CategoryViewHolder extends RecyclerView.ViewHolder {
         TextView categoryNameTv;
         ImageView categoryIcon;
@@ -78,6 +87,8 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         public void bind(Category category) {
             categoryNameTv.setText(category.getCategoryName());
             
+            // Hardcoded Logic to set icons based on known category names
+            // This is a fallback/enhancement when dynamic images are not fully implemented for categories
             String name = category.getCategoryName();
             if (name == null) {
                 categoryIcon.setImageResource(R.drawable.category_icon);

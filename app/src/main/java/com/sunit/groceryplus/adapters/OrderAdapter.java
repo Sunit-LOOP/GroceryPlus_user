@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Adapter for displaying order history
+ * Adapter for displaying user's order history.
+ * Displays order summary card with ID, status, amount, and actions.
+ * Supports: Realtime countdown timer for shipped orders, Cancellation (if pending), and Reordering.
  */
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
 
@@ -27,10 +29,13 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     private List<Order> orders;
     private OnOrderClickListener listener;
 
+    /**
+     * Interface for order interactions
+     */
     public interface OnOrderClickListener {
-        void onOrderClick(Order order);
-        void onReorderClick(Order order);
-        void onCancelOrderClick(Order order);
+        void onOrderClick(Order order);     // View details
+        void onReorderClick(Order order);   // Add items back to cart
+        void onCancelOrderClick(Order order); // Cancel pending order
     }
 
     public OrderAdapter(Context context, List<Order> orders, OnOrderClickListener listener) {
@@ -62,6 +67,10 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         notifyDataSetChanged();
     }
 
+    /**
+     * ViewHolder component for Order item.
+     * Manages a countdown timer for delivery estimation.
+     */
     class OrderViewHolder extends RecyclerView.ViewHolder {
         TextView orderIdTv;
         TextView orderDateTv;
@@ -70,8 +79,11 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         private TextView deliveryFeeTv;
         private TextView orderItemCountTv;
         private TextView orderTimerTv;
+        
+        // Timer Logic for Shipped -> Delivered Countdown
         private Handler timerHandler = new Handler();
         private Runnable timerRunnable;
+        
         View reorderBtn;
         View cancelBtn;
 
@@ -140,6 +152,10 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             setupTimer(order);
         }
 
+        /**
+         * Sets up a mock countdown timer if the order is Shipped.
+         * Assumes a 30-minute delivery window from shipping start.
+         */
         private void setupTimer(final Order order) {
             if (timerRunnable != null) {
                 timerHandler.removeCallbacks(timerRunnable);

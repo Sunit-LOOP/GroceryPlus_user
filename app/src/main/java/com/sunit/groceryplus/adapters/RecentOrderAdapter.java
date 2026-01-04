@@ -15,6 +15,11 @@ import com.sunit.groceryplus.models.Order;
 
 import java.util.List;
 
+/**
+ * Adapter for displaying a user's recent orders in their Order History.
+ * Shows order summary including ID, Status, Date, total items, and cost.
+ * Click navigates to OrderTrackingActivity for full details.
+ */
 public class RecentOrderAdapter extends RecyclerView.Adapter<RecentOrderAdapter.ViewHolder> {
 
     private Context context;
@@ -80,7 +85,7 @@ public class RecentOrderAdapter extends RecyclerView.Adapter<RecentOrderAdapter.
             orderItemsTv.setText(order.getItemCount() + " Items");
             orderTotalTv.setText("Rs. " + String.format("%.2f", order.getTotalAmount()));
 
-            // Simple status color logic
+            // Simple status color logic for visual distinction
             int statusColor;
             switch (order.getStatus().toLowerCase()) {
                 case "pending": statusColor = context.getResources().getColor(android.R.color.holo_orange_dark); break;

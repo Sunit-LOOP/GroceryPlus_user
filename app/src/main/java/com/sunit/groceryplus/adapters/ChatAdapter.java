@@ -15,12 +15,23 @@ import com.sunit.groceryplus.models.Message;
 
 import java.util.List;
 
+/**
+ * Adapter for displaying Instant Messages in a chat conversation.
+ * Determines if a message was sent by the current user or received from another,
+ * and chooses the appropriate layout alignment.
+ */
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
 
     private Context context;
     private List<Message> messages;
     private int currentUserId;
 
+    /**
+     * Constructor
+     * @param context App context
+     * @param messages List of chat messages
+     * @param currentUserId ID of logged-in user to determine alignment (Sent vs Received)
+     */
     public ChatAdapter(Context context, List<Message> messages, int currentUserId) {
         this.context = context;
         this.messages = messages;
@@ -48,14 +59,15 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
     public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
         Message message = messages.get(position);
 
+        // Logic to toggle visibility of Sent vs Received bubbles
         if (message.getSenderId() == currentUserId) {
-            // Sent by me
+            // Sent by me: Show Right-aligned bubble
             holder.layoutSent.setVisibility(View.VISIBLE);
             holder.layoutReceived.setVisibility(View.GONE);
             holder.tvSentMessage.setText(message.getMessageText());
             holder.tvSentTime.setText(message.getCreatedAt());
         } else {
-            // Received
+            // Received: Show Left-aligned bubble
             holder.layoutSent.setVisibility(View.GONE);
             holder.layoutReceived.setVisibility(View.VISIBLE);
             holder.tvReceivedMessage.setText(message.getMessageText());

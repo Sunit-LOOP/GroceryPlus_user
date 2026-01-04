@@ -16,12 +16,19 @@ import com.sunit.groceryplus.models.Vendor;
 
 import java.util.List;
 
+/**
+ * Adapter for managing Vendors in the Admin Panel.
+ * Admin can view, edit, or delete vendors.
+ */
 public class AdminVendorAdapter extends RecyclerView.Adapter<AdminVendorAdapter.VendorViewHolder> {
 
     private Context context;
     private List<Vendor> vendorList;
     private OnVendorActionListener listener;
 
+    /**
+     * Interface for Admin Vendor actions (Edit, Delete).
+     */
     public interface OnVendorActionListener {
         void onEdit(Vendor vendor);
         void onDelete(Vendor vendor);
@@ -47,13 +54,8 @@ public class AdminVendorAdapter extends RecyclerView.Adapter<AdminVendorAdapter.
         holder.addressTv.setText(vendor.getAddress());
         holder.ratingTv.setText(String.format("Rating: %.1f ⭐", vendor.getRating()));
 
-        // Set icon
-        int iconId = context.getResources().getIdentifier(vendor.getIcon(), "drawable", context.getPackageName());
-        if (iconId != 0) {
-            holder.iconIv.setImageResource(iconId);
-        } else {
-            holder.iconIv.setImageResource(R.drawable.vendor_icon); // Default icon
-        }
+        // Set icon using ProductImageLoader for consistency and support for all sources
+        com.sunit.groceryplus.utils.ProductImageLoader.load(context, holder.iconIv, vendor.getIcon(), R.drawable.vendor_icon);
 
         holder.editBtn.setOnClickListener(v -> listener.onEdit(vendor));
         holder.deleteBtn.setOnClickListener(v -> listener.onDelete(vendor));

@@ -17,15 +17,38 @@ import com.sunit.groceryplus.models.Product;
 
 import java.util.List;
 
+
+/**
+ * WishlistActivity - Manages the user's wishlist items.
+ * 
+ * This activity displays a collection of products that the user has saved for later purchase.
+ * It allows users to view their wishlist in a grid layout and access product details.
+ * It handles loading data from the WishlistRepository and displaying appropriate empty states.
+ * 
+ * Key Features:
+ * - View wishlist products
+ * - Grid layout display
+ * - Empty wishlist handling
+ * - Navigation to product details
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class WishlistActivity extends AppCompatActivity {
 
     private static final String TAG = "WishlistActivity";
 
+    // UI Components
     private RecyclerView wishlistRv;
     private TextView emptyWishlistTv;
+    
+    // Adapters & Repositories
     private ProductAdapter productAdapter;
     private WishlistRepository wishlistRepository;
     private CartRepository cartRepository;
+    
+    // Data
     private List<Product> wishlistProducts;
     private int userId;
 

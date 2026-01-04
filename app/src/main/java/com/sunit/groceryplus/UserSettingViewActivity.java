@@ -12,6 +12,23 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
+
+/**
+ * UserSettingViewActivity - Application settings and preferences.
+ * 
+ * This activity allows users to configure application-wide settings such as push notifications
+ * and dark mode themes. It also provides a gateway to the Admin Login interface.
+ * 
+ * Key Features:
+ * - Toggle Notifications
+ * - Toggle Dark Mode (Theme preference)
+ * - Admin Login entry point
+ * - Logout capability
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class UserSettingViewActivity extends AppCompatActivity {
 
     private SwitchMaterial notificationSwitch;

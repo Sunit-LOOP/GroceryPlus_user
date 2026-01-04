@@ -1,46 +1,77 @@
 package com.sunit.groceryplus.models;
 
+/**
+ * AdminSettings Model Class
+ * 
+ * Stores global configuration for the application.
+ * These settings are managed by the Admin and affect app behavior,
+ * such as store info, taxes, delivery fees, and feature toggles.
+ */
 public class AdminSettings {
+    
+    // Unique ID (Usually 1 as there is only one settings record)
     private int id;
+    
+    // -- Store Identity --
     private String storeName;
     private String storeEmail;
     private String storePhone;
+    
+    // -- Store Location --
     private String storeAddress;
     private String storeCity;
     private String storeState;
     private String storePostalCode;
     private String storeCountry;
-    private double taxRate;
-    private double deliveryFee;
-    private boolean freeDeliveryAbove;
-    private double freeDeliveryThreshold;
-    private String currencySymbol;
+    
+    // -- Financial Settings --
+    private double taxRate;         // Percentage tax applied
+    private double deliveryFee;     // Base delivery fee
+    private boolean freeDeliveryAbove; // Toggle for free delivery threshold
+    private double freeDeliveryThreshold; // Amount above which delivery is free
+    private String currencySymbol;  // e.g., "₹", "$"
+    
+    // -- System Settings --
     private String timezone;
     private boolean enableNotifications;
     private boolean enableEmailNotifications;
+    
+    // -- Email Server (SMTP) Settings --
     private String smtpHost;
     private String smtpPort;
     private String smtpUsername;
     private String smtpPassword;
+    
+    // -- Payment Gateway (Stripe) Settings --
     private boolean stripeEnabled;
     private String stripePublishableKey;
     private String stripeSecretKey;
-    private boolean codEnabled;
+    private boolean codEnabled;     // Toggle Cash on Delivery
+    
+    // -- Operational Info --
     private String businessHours;
     private String supportEmail;
     private String supportPhone;
+    
+    // -- Branding --
     private String logoUrl;
     private String faviconUrl;
     private String primaryColor;
     private String accentColor;
-    private boolean maintenanceMode;
-    private String maintenanceMessage;
+    
+    // -- Maintenance --
+    private boolean maintenanceMode; // If true, app shows maintenance screen
+    private String maintenanceMessage; 
+    
+    // Timestamps
     private String createdAt;
     private String updatedAt;
 
     public AdminSettings() {}
 
-    // Getters and Setters
+    // ================= GETTERS AND SETTERS =================
+    // Standard accessors for all configuration fields
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

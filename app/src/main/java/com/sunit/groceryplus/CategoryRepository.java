@@ -19,9 +19,9 @@ public class CategoryRepository {
     /**
      * Add a new category
      */
-    public boolean addCategory(String categoryName, String categoryDescription) {
+    public boolean addCategory(String categoryName, String categoryDescription, String image) {
         try {
-            long result = dbHelper.addCategory(categoryName, categoryDescription);
+            long result = dbHelper.addCategory(categoryName, categoryDescription, image);
             return result != -1;
         } catch (Exception e) {
             Log.e(TAG, "Error adding category", e);
@@ -56,9 +56,9 @@ public class CategoryRepository {
     /**
      * Update category
      */
-    public boolean updateCategory(int categoryId, String categoryName, String categoryDescription) {
+    public boolean updateCategory(int categoryId, String categoryName, String categoryDescription, String image) {
         try {
-            return dbHelper.updateCategory(categoryId, categoryName, categoryDescription);
+            return dbHelper.updateCategory(categoryId, categoryName, categoryDescription, image);
         } catch (Exception e) {
             Log.e(TAG, "Error updating category", e);
             return false;

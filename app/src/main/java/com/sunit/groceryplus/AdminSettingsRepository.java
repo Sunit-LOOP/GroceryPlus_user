@@ -159,7 +159,9 @@ public class AdminSettingsRepository {
         settings.setTimezone("UTC");
         settings.setEnableNotifications(true);
         settings.setEnableEmailNotifications(true);
-        settings.setStripeEnabled(false);
+        settings.setStripeEnabled(true);
+        settings.setStripePublishableKey("pk_test_51SdBfzD0CBYYErpfvgC0r6IPOkh5Ey6g5ju5IOmoGR4nUISi5p8TXgfX75wjLuV8kXW7xoZWq3tBk9Z9svkMqIym0005By6JFh");
+        settings.setStripeSecretKey("sk_test_51SdBfzD0CBYYErpfg5pIH7DiWP8rBpMVdxMpZm0YexTCbMtA1WQismaPAKlowryeCXFYZIaBkmPV8MAh4ZGWnZ5G00DLnFaJtS");
         settings.setCodEnabled(true);
         settings.setBusinessHours("Mon-Sat: 9AM-8PM, Sun: 10AM-6PM");
         settings.setSupportEmail("support@groceryplus.com");

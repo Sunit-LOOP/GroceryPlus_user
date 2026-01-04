@@ -24,6 +24,24 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+
+/**
+ * MessageActivity - Chat interface for customer support.
+ * 
+ * This activity enables direct messaging between the user and the admin (support).
+ * It displays a chronological list of messages and allows the user to send new text messages.
+ * Messages are stored locally in the database.
+ * 
+ * Key Features:
+ * - Real-time messaging interface
+ * - Message history display
+ * - Send message functionality
+ * - Integration with DatabaseHelper for message storage
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class MessageActivity extends AppCompatActivity {
 
     private static final String TAG = "MessageActivity";

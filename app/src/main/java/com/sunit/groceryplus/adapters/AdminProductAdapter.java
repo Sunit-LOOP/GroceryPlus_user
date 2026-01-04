@@ -27,13 +27,18 @@ import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import java.util.List;
 
+/**
+ * Adapter for managing Products in the Admin Panel.
+ * Displays list of products with options to Edit, Delete, or View Reviews.
+ * Handles dynamic image loading and stock status display.
+ */
 public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapter.ViewHolder> {
 
     private Context context;
     private List<Product> productList;
-    private ProductRepository productRepository;
-    private List<Category> categoryList;
-    private ProductManagementActivity activity;
+    private ProductRepository productRepository; // Kept for potential direct repo actions if needed
+    private List<Category> categoryList; // For category resolution if needed
+    private ProductManagementActivity activity; // Reference to activity for dialog callbacks
 
     public AdminProductAdapter(Context context, List<Product> productList, ProductRepository productRepository, List<Category> categoryList, ProductManagementActivity activity) {
         this.context = context;
@@ -54,11 +59,12 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Product product = productList.get(position);
         holder.productNameTv.setText(product.getProductName());
-        holder.productPriceTv.setText("रु " + String.format("%.2f", product.getPrice()));
+        holder.productPriceTv.setText("Rs. " + String.format("%.2f", product.getPrice()));
         if (holder.productDescriptionTv != null) {
             holder.productDescriptionTv.setText(product.getDescription());
         }
         
+        // Stock Status Logic
         holder.productStockTv.setText("Stock: " + product.getStockQuantity());
         if (product.getStockQuantity() <= 0) {
             holder.productStockTv.setTextColor(context.getResources().getColor(android.R.color.holo_red_dark));
@@ -77,6 +83,7 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
         }
 
         // Set product image based on image name with better fallbacks
+        // Uses ProductImageLoader utility for consistent image handling
         String imageName = product.getImage();
         int fallback = getSpecificImageForProduct(product.getProductName());
         ProductImageLoader.load(context, holder.productImageIv, imageName, fallback);
@@ -84,6 +91,7 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
 
     /**
      * Get specific image resource based on product name
+     * Provides a smarter placeholder system compared to a single generic icon.
      */
     private int getSpecificImageForProduct(String productName) {
         if (productName == null) {
@@ -92,7 +100,7 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
         
         String lowerName = productName.toLowerCase();
         
-        // Match specific products to images
+        // Match specific products to images based on keywords
         if (lowerName.contains("milk") || lowerName.contains("dairy")) {
             return R.drawable.bottle_milk;
         } else if (lowerName.contains("cheese")) {
@@ -114,7 +122,7 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
         } else if (lowerName.contains("green") && (lowerName.contains("vegetable") || lowerName.contains("leaf"))) {
             return R.drawable.green_vegetable;
         } else {
-            // Default product image
+            // Default product image if no keyword match
             return R.drawable.product_icon;
         }
     }
@@ -124,6 +132,9 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
         return productList.size();
     }
 
+    /**
+     * Updates the product list data in the adapter.
+     */
     public void updateProducts(List<Product> products) {
         this.productList = products;
         notifyDataSetChanged();
@@ -137,7 +148,7 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Corrected the view IDs to match the actual layout
+            // Initialize Views
             productNameTv = itemView.findViewById(R.id.productNameTv);
             productPriceTv = itemView.findViewById(R.id.productPriceTv);
             productDescriptionTv = itemView.findViewById(R.id.productDescriptionTv);

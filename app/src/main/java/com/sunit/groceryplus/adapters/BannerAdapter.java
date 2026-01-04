@@ -14,6 +14,10 @@ import com.sunit.groceryplus.R;
 
 import java.util.List;
 
+/**
+ * Adapter for the Banner viewing pager/recyclerview carousel.
+ * Loads banner images using Glide (supports both Local Drawables and URLs).
+ */
 public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.BannerViewHolder> {
 
     private Context context;
@@ -45,7 +49,7 @@ public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.BannerView
                     .centerCrop()
                     .into(holder.bannerIv);
         } else {
-            // It's a URL or path
+            // It's a URL or path or unknown, try loading as string
             Glide.with(context)
                     .load(imageSource)
                     .centerCrop()

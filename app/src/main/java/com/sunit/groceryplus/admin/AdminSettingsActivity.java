@@ -16,6 +16,24 @@ import com.sunit.groceryplus.AdminSettingsRepository;
 import com.sunit.groceryplus.R;
 import com.sunit.groceryplus.models.AdminSettings;
 
+
+/**
+ * AdminSettingsActivity - Configuration panel for the application.
+ * 
+ * This activity provides controls for various system-wide settings including
+ * store information, tax rates, delivery fees, payment gateways (Stripe/COD),
+ * and notification preferences. It interacts with the AdminSettingsRepository.
+ * 
+ * Key Features:
+ * - Store Information Management
+ * - Pricing & Fee Configuration
+ * - Feature Toggles (Stripe, COD, Notifications)
+ * - Maintenance Mode Switch
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class AdminSettingsActivity extends AppCompatActivity {
 
     private AdminSettingsRepository repository;

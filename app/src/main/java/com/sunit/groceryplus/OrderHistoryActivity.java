@@ -19,13 +19,34 @@ import com.sunit.groceryplus.utils.GroceryNotificationManager;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * OrderHistoryActivity - Displays the list of past user orders.
+ * 
+ * This activity fetches and lists all orders placed by the user. It allows users to view
+ * details of past orders, reorder items from previous orders, or cancel pending orders directly
+ * from the list.
+ * 
+ * Key Features:
+ * - Comprehensive list of past orders
+ * - Status indicators for each order
+ * - "Reorder" functionality to quickly add items back to cart
+ * - "Cancel" shortcut for eligible orders
+ * - Navigation to detailed tracking view
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class OrderHistoryActivity extends AppCompatActivity {
 
     private static final String TAG = "OrderHistoryActivity";
     
+    // UI Components
     private RecyclerView ordersRecyclerView;
     private TextView emptyOrdersTv;
     
+    // Data & Repositories
     private int userId;
     private OrderRepository orderRepository;
     private OrderAdapter orderAdapter;

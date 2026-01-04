@@ -21,6 +21,22 @@ import com.sunit.groceryplus.models.Category;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * InventoryAlertsActivity - Dashboard for stock level monitoring.
+ * 
+ * This activity filters and displays products that are either out of stock or running low (below threshold).
+ * It helps the admin prioritize restocking efforts.
+ * 
+ * Key Features:
+ * - View Low Stock Products (< 10 items)
+ * - View Out of Stock Products (0 items)
+ * - aggregated alert summary
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class InventoryAlertsActivity extends AppCompatActivity {
 
     private RecyclerView alertsRv;

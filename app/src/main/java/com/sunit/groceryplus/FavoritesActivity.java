@@ -18,18 +18,36 @@ import com.sunit.groceryplus.models.Product;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * FavoritesActivity - Displays the user's favorite products.
+ * 
+ * This activity manages and displays a list of products that the user has marked as favorites.
+ * It provides a grid view of these products using a RecyclerView and handles empty states.
+ * Note: This functionality overlaps with WishlistActivity and uses a separate FavoriteRepository.
+ * 
+ * Key Features:
+ * - View favorite products grid
+ * - Handle empty favorites state
+ * - Integration with FavoriteRepository
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class FavoritesActivity extends AppCompatActivity {
 
     private static final String TAG = "FavoritesActivity";
     
+    // UI Components
     private RecyclerView favoritesRv;
     private TextView emptyFavoritesTv;
     
+    // Data & Repositories
     private int userId;
     private FavoriteRepository favoriteRepository;
     private CartRepository cartRepository;
     private ProductAdapter productAdapter;
-
 
     private List<Product> favoriteProducts = new ArrayList<>();
 

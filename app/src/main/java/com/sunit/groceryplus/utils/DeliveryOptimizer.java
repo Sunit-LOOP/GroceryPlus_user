@@ -3,8 +3,10 @@ package com.sunit.groceryplus.utils;
 import java.util.*;
 
 /**
- * Advanced Delivery Optimization Utility
- * implements Dijkstra's Algorithm and Nearest Neighbor Heuristic
+ * Advanced Delivery Optimization Utility.
+ * Implements Dijkstra's Algorithm for shortest path finding and 
+ * Nearest Neighbor Heuristic for TSP (Traveling Salesman Problem).
+ * Helps in optimizing delivery routes and assigning delivery personnel.
  */
 public class DeliveryOptimizer {
 
@@ -29,7 +31,8 @@ public class DeliveryOptimizer {
     }
 
     /**
-     * Dijkstra's Algorithm: Find the shortest path (time) from store to a location
+     * Dijkstra's Algorithm: Find the shortest path (time) from store to a location.
+     * 
      * @param targetLocation The name of the destination area
      * @return Estimated delivery time in minutes
      */
@@ -66,10 +69,11 @@ public class DeliveryOptimizer {
     }
 
     /**
-     * Nearest Neighbor Heuristic: Optimize route sequence for multiple orders
-     * This is a simple solution to the Traveling Salesman Problem (TSP)
+     * Nearest Neighbor Heuristic: Optimize route sequence for multiple orders.
+     * This is a simple solution to the Traveling Salesman Problem (TSP).
+     * 
      * @param locations List of delivery locations
-     * @return Optimized sequence of locations
+     * @return Optimized sequence of locations to visit
      */
     public static List<String> optimizeRoutePath(List<String> locations) {
         if (locations == null || locations.isEmpty()) return new ArrayList<>();
@@ -102,6 +106,9 @@ public class DeliveryOptimizer {
         return optimizedPath;
     }
 
+    /**
+     * Helper to get direct travel time between two known points.
+     */
     private static int getDirectTime(String from, String to) {
         if (from.equals(to)) return 0;
         if (deliveryGraph.containsKey(from) && deliveryGraph.get(from).containsKey(to)) {
@@ -111,7 +118,9 @@ public class DeliveryOptimizer {
     }
 
     /**
-     * Suggest the best delivery person based on proximity to the store or delivery location
+     * Suggest the best delivery person based on proximity to the store or delivery location.
+     * Uses shortest path calculation to estimate travel times.
+     * 
      * @param targetArea The area where order needs to be delivered
      * @param personnel List of available delivery personnel
      * @return The suggested delivery person
@@ -144,6 +153,9 @@ public class DeliveryOptimizer {
         return best;
     }
 
+    /**
+     * Node class for Dijkstra's Priority Queue.
+     */
     private static class Node {
         String name;
         int distance;

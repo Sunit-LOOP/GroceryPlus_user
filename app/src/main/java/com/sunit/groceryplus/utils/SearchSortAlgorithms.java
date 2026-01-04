@@ -7,12 +7,16 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Utility class containing advanced search and sorting algorithms for the GroceryPlus app
+ * SearchSortAlgorithms - Advanced search and sorting utility.
+ * 
+ * This class contains advanced algorithms for searching and sorting products
+ * within the GroceryPlus app. It includes binary search, fuzzy search,
+ * and custom sorting implementations like Merge Sort and Quick Sort.
  */
 public class SearchSortAlgorithms {
 
     /**
-     * Performs binary search on a sorted list of products by name
+     * Performs binary search on a sorted list of products by name.
      * Time Complexity: O(log n)
      * 
      * @param sortedProducts Sorted list of products by name
@@ -41,7 +45,7 @@ public class SearchSortAlgorithms {
     }
 
     /**
-     * Performs linear search with fuzzy matching for partial name matches
+     * Performs linear search with fuzzy matching for partial name matches.
      * Time Complexity: O(n)
      * 
      * @param products List of products to search through
@@ -89,9 +93,9 @@ public class SearchSortAlgorithms {
     }
 
     /**
-     * Calculates the Levenshtein distance between two strings
-     * Used for fuzzy matching to handle typos
-     * Time Complexity: O(m*n) where m and n are lengths of the strings
+     * Calculates the Levenshtein distance between two strings.
+     * Used for fuzzy matching to handle typos.
+     * Time Complexity: O(m*n) where m and n are lengths of the strings.
      * 
      * @param str1 First string
      * @param str2 Second string
@@ -127,9 +131,9 @@ public class SearchSortAlgorithms {
     }
 
     /**
-     * Sorts products by name using merge sort algorithm
+     * Sorts products by name using merge sort algorithm.
      * Time Complexity: O(n log n)
-     * Stable sort algorithm
+     * Stable sort algorithm.
      * 
      * @param products List of products to sort
      * @return New sorted list
@@ -145,7 +149,7 @@ public class SearchSortAlgorithms {
     }
 
     /**
-     * Recursive merge sort implementation
+     * Recursive merge sort implementation.
      */
     private static void mergeSort(List<Product> list, int left, int right, Comparator<Product> comparator) {
         if (left < right) {
@@ -159,7 +163,7 @@ public class SearchSortAlgorithms {
     }
 
     /**
-     * Merge function for merge sort
+     * Merge function for merge sort.
      */
     private static void merge(List<Product> list, int left, int mid, int right, Comparator<Product> comparator) {
         List<Product> temp = new ArrayList<>();
@@ -185,7 +189,7 @@ public class SearchSortAlgorithms {
     }
 
     /**
-     * Sorts products by price using quick sort algorithm
+     * Sorts products by price using quick sort algorithm.
      * Time Complexity: Average O(n log n), Worst O(n²)
      * 
      * @param products List of products to sort
@@ -198,7 +202,7 @@ public class SearchSortAlgorithms {
     }
 
     /**
-     * Recursive quick sort implementation
+     * Recursive quick sort implementation.
      */
     private static void quickSort(List<Product> list, int low, int high, Comparator<Product> comparator) {
         if (low < high) {
@@ -209,7 +213,7 @@ public class SearchSortAlgorithms {
     }
 
     /**
-     * Partition function for quick sort
+     * Partition function for quick sort.
      */
     private static int partition(List<Product> list, int low, int high, Comparator<Product> comparator) {
         Product pivot = list.get(high);
@@ -227,8 +231,8 @@ public class SearchSortAlgorithms {
     }
 
     /**
-     * Sorts products by multiple criteria using a hybrid approach
-     * First by category, then by name within each category
+     * Sorts products by multiple criteria using a hybrid approach.
+     * First by category, then by name within each category.
      * 
      * @param products List of products to sort
      * @return New sorted list
@@ -246,8 +250,8 @@ public class SearchSortAlgorithms {
     }
 
     /**
-     * Sorts products by rating (descending) then by price (ascending)
-     * Assumes products have a getRating() method that returns a double
+     * Sorts products by rating (descending) then by price (ascending).
+     * Assumes products have a getRating() method that returns a double.
      * 
      * @param products List of products to sort
      * @return New sorted list

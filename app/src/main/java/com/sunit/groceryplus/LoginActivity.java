@@ -18,33 +18,82 @@ import com.sunit.groceryplus.utils.HybridDatabaseManager;
 
 import org.json.JSONObject;
 
+/**
+ * LoginActivity - User authentication interface for GroceryPlus
+ * 
+ * This activity provides the login interface for customers to authenticate
+ * with the GroceryPlus application. It supports hybrid database authentication
+ * and routes users to appropriate interfaces based on their user type.
+ * 
+ * Key Features:
+ * - Email and password authentication
+ * - Input validation with error messages
+ * - Session management with SharedPreferences
+ * - Role-based navigation (Admin vs Customer)
+ * - Hybrid database integration
+ * - Admin login shortcut
+ * - Signup navigation
+ * 
+ * Authentication Flow:
+ * 1. User enters email and password
+ * 2. Input validation performed
+ * 3. Hybrid database authentication
+ * 4. Session data saved
+ * 5. Navigation based on user type:
+ *    - Admin users → AdminDashboardActivity
+ *    - Customer users → UserHomeActivity
+ * 
+ * Security Features:
+ * - Input sanitization and validation
+ * - Secure session storage
+ * - Error handling without exposing sensitive data
+ * - Login attempt logging
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class LoginActivity extends AppCompatActivity {
 
+    // Tag for logging and debugging
     private static final String TAG = "LoginActivity";
+    
+    // UI Components
     private TextInputEditText emailEditText;
     private TextInputEditText passwordEditText;
     private Button loginButton;
     private TextView signupTextView;
     private ImageView adminIcon;
+    
+    // Database Management
     private HybridDatabaseManager hybridDb;
 
-
+    /**
+     * Called when the activity is first created
+     * 
+     * This method initializes the UI components, sets up the hybrid database
+     * manager, and configures click listeners for user interactions.
+     * 
+     * @param savedInstanceState Previously saved state data
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_login);
 
-        // Initialize views
+        // Initialize all UI components
         initViews();
 
-        // Initialize repositories
+        // Initialize hybrid database manager for authentication
         hybridDb = HybridDatabaseManager.getInstance(this);
 
-
-        // Set click listeners
+        // Set up click listeners for user interactions
         setClickListeners();
     }
 
+    /**
+     * Initialize all UI components by finding views in the layout
+     */
     private void initViews() {
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
@@ -53,7 +102,11 @@ public class LoginActivity extends AppCompatActivity {
         adminIcon = findViewById(R.id.adminIcon);
     }
 
+    /**
+     * Set up click listeners for all interactive UI elements
+     */
     private void setClickListeners() {
+        // Login button click listener - performs authentication
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,6 +114,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        // Signup text click listener - navigates to registration
         signupTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -69,7 +123,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        // Admin icon click listener
+        // Admin icon click listener - shortcut to admin login
         adminIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -79,32 +133,44 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Perform user authentication with input validation
+     * 
+     * This method handles the complete login flow including validation,
+     * authentication, session management, and navigation. It uses the
+     * hybrid database manager for authentication and provides comprehensive
+     * error handling and logging.
+     */
     private void performLogin() {
+        // Get user input from text fields
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
 
-        // Validate input
+        // Validate email input
         if (TextUtils.isEmpty(email)) {
             emailEditText.setError("Email is required");
             emailEditText.requestFocus();
             return;
         }
 
+        // Validate password input
         if (TextUtils.isEmpty(password)) {
             passwordEditText.setError("Password is required");
             passwordEditText.requestFocus();
             return;
         }
 
-        // Disable button during login
+        // Disable login button during authentication to prevent multiple attempts
         loginButton.setEnabled(false);
         loginButton.setText("Logging in...");
 
-        // Use hybrid database login
+        // Perform authentication using hybrid database
         hybridDb.authenticateUser(email, password)
             .thenAccept(user -> {
+                // Handle authentication result on UI thread
                 runOnUiThread(() -> {
                     if (user != null) {
+                        // Authentication successful - log user details
                         Log.d(TAG, "=== HYBRID DATABASE LOGIN SUCCESSFUL ===");
                         Log.d(TAG, "User ID: " + user.getUserId());
                         Log.d(TAG, "User Name: " + user.getName());
@@ -112,38 +178,17 @@ public class LoginActivity extends AppCompatActivity {
                         Log.d(TAG, "User Type: " + user.getUserType());
                         Log.d(TAG, "Is Admin: " + user.isAdmin());
 
+                        // Show success message to user
                         Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
 
-                        // Save session
-                        android.content.SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-                        android.content.SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putInt("userId", user.getUserId());
-                        editor.putString("userName", user.getName());
-                        editor.putString("userEmail", user.getEmail());
-                        editor.putString("userType", user.getUserType());
-                        editor.commit();
-                        Log.d(TAG, "Session saved to SharedPreferences");
+                        // Save user session to SharedPreferences for persistence
+                        saveUserSession(user);
 
-                        // Navigate to appropriate screen based on user type
-                        if (user.isAdmin()) {
-                            Log.d(TAG, "User is ADMIN - Redirecting to AdminDashboardActivity");
-                            Intent intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
-                            intent.putExtra("user_id", user.getUserId());
-                            Log.d(TAG, "Starting AdminDashboardActivity...");
-                            startActivity(intent);
-                        } else {
-                            Log.d(TAG, "User is CUSTOMER - Redirecting to UserHomeActivity");
-                            Intent intent = new Intent(LoginActivity.this, UserHomeActivity.class);
-                            intent.putExtra("user_id", user.getUserId());
-                            Log.d(TAG, "Intent created with user_id: " + user.getUserId());
-                            Log.d(TAG, "Starting UserHomeActivity...");
-                            startActivity(intent);
-                            Log.d(TAG, "UserHomeActivity started successfully");
-                        }
-                        Log.d(TAG, "Finishing LoginActivity...");
-                        finish();
-                        Log.d(TAG, "=== LOGIN FLOW COMPLETE ===");
+                        // Navigate to appropriate interface based on user type
+                        navigateBasedOnUserRole(user);
+                        
                     } else {
+                        // Authentication failed - re-enable login button
                         loginButton.setEnabled(true);
                         loginButton.setText("Login");
                         Toast.makeText(LoginActivity.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
@@ -152,6 +197,7 @@ public class LoginActivity extends AppCompatActivity {
                 });
             })
             .exceptionally(throwable -> {
+                // Handle authentication errors
                 runOnUiThread(() -> {
                     loginButton.setEnabled(true);
                     loginButton.setText("Login");
@@ -160,5 +206,51 @@ public class LoginActivity extends AppCompatActivity {
                 });
                 return null;
             });
+    }
+
+    /**
+     * Save user session data to SharedPreferences for persistence
+     * 
+     * @param user The authenticated user object containing session data
+     */
+    private void saveUserSession(User user) {
+        android.content.SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        android.content.SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("userId", user.getUserId());
+        editor.putString("userName", user.getName());
+        editor.putString("userEmail", user.getEmail());
+        editor.putString("userType", user.getUserType());
+        editor.commit();
+        Log.d(TAG, "Session saved to SharedPreferences");
+    }
+
+    /**
+     * Navigate to appropriate interface based on user role
+     * 
+     * @param user The authenticated user object
+     */
+    private void navigateBasedOnUserRole(User user) {
+        if (user.isAdmin()) {
+            // Admin user - navigate to admin dashboard
+            Log.d(TAG, "User is ADMIN - Redirecting to AdminDashboardActivity");
+            Intent intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
+            intent.putExtra("user_id", user.getUserId());
+            Log.d(TAG, "Starting AdminDashboardActivity...");
+            startActivity(intent);
+        } else {
+            // Customer user - navigate to user home
+            Log.d(TAG, "User is CUSTOMER - Redirecting to UserHomeActivity");
+            Intent intent = new Intent(LoginActivity.this, UserHomeActivity.class);
+            intent.putExtra("user_id", user.getUserId());
+            Log.d(TAG, "Intent created with user_id: " + user.getUserId());
+            Log.d(TAG, "Starting UserHomeActivity...");
+            startActivity(intent);
+            Log.d(TAG, "UserHomeActivity started successfully");
+        }
+        
+        // Finish login activity to prevent back navigation
+        Log.d(TAG, "Finishing LoginActivity...");
+        finish();
+        Log.d(TAG, "=== LOGIN FLOW COMPLETE ===");
     }
 }

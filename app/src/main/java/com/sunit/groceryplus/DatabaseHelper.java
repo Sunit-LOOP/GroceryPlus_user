@@ -21,19 +21,72 @@ import static com.sunit.groceryplus.DatabaseContract.OrderItemEntry;
 import static com.sunit.groceryplus.DatabaseContract.ProductEntry;
 import static com.sunit.groceryplus.DatabaseContract.UserEntry;
 
-
+/**
+ * DatabaseHelper - Core database management class for GroceryPlus
+ * 
+ * This class manages all SQLite database operations for the GroceryPlus application.
+ * It handles database creation, version management, and provides methods for all
+ * CRUD operations across all data models.
+ * 
+ * Key Features:
+ * - Complete database schema management
+ * - User authentication with salted password hashing
+ * - Product, order, and payment management
+ * - Shopping cart functionality
+ * - Delivery personnel management
+ * - Notification system integration
+ * - Database versioning and migrations
+ * 
+ * Database Structure:
+ * - users (customers and admin accounts)
+ * - categories (product categories)
+ * - products (grocery items)
+ * - orders (customer orders)
+ * - order_items (order line items)
+ * - cart_items (shopping cart)
+ * - payments (payment records)
+ * - delivery_personnel (delivery staff)
+ * - notifications (system notifications)
+ * - favorites (user favorites)
+ * - reviews (product reviews)
+ * - messages (user messaging)
+ * - promotions (discount codes)
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
+    // Tag for logging database operations
     private static final String TAG = "DatabaseHelper";
 
-    // Database Info
+    // Database configuration constants
     private static final String DATABASE_NAME = "GroceryPlus.db";
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 10;
 
+    /**
+     * Constructor for DatabaseHelper
+     * 
+     * Initializes the SQLiteOpenHelper with database name and version.
+     * The database will be created if it doesn't exist, or upgraded if
+     * the version number is increased.
+     * 
+     * @param context Application context for database operations
+     */
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    /**
+     * Called when the database is created for the first time
+     * 
+     * This method executes all the SQL statements to create the database
+     * tables according to the schema defined in DatabaseContract.
+     * It creates all necessary tables for the GroceryPlus application.
+     * 
+     * @param db The SQLiteDatabase instance to write to
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         // Create all tables using DatabaseContract constants
@@ -65,27 +118,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Drop all tables
-        db.execSQL(DatabaseContract.SQL_DELETE_USERS_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_CATEGORIES_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_PRODUCTS_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_ORDERS_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_ORDER_ITEMS_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_CART_ITEMS_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_FAVORITES_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_MESSAGES_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_PROMOTIONS_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_REVIEWS_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_DELIVERY_PERSONNEL_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_PAYMENTS_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_NOTIFICATIONS_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_ADDRESSES_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_VENDORS_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_SEARCH_HISTORY_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_ADMIN_SETTINGS_TABLE);
-        db.execSQL(DatabaseContract.SQL_DELETE_WISHLISTS_TABLE);
-
-        onCreate(db);
+        Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);
+        
+        // Non-destructive migration strategy
+        if (oldVersion < 10) {
+            // Add image column to categories if it doesn't exist (added in v10)
+            try {
+                db.execSQL("ALTER TABLE " + CategoryEntry.TABLE_NAME + " ADD COLUMN " + CategoryEntry.COLUMN_NAME_IMAGE + " TEXT");
+                Log.d(TAG, "Added image column to categories table");
+            } catch (Exception e) {
+                Log.w(TAG, "Note: Category image column might already exist", e);
+            }
+        }
+        
+        // Ensure all sample data is present
+        insertSampleData();
     }
 
     /** Insert default admin user */
@@ -228,17 +275,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void forceRefreshSampleData() {
         SQLiteDatabase db = this.getWritableDatabase();
         try {
-            Log.d(TAG, "Force refreshing sample data...");
+            Log.d(TAG, "Force refreshing ALL sample data...");
             
             // Clear existing sample data
             db.delete(ProductEntry.TABLE_NAME, null, null);
             db.delete(CategoryEntry.TABLE_NAME, null, null);
             db.delete(DatabaseContract.VendorEntry.TABLE_NAME, null, null);
+            db.delete(DatabaseContract.PromotionEntry.TABLE_NAME, null, null);
             
             // Insert fresh sample data
             insertSampleCategoriesAndProducts(db);
+            insertSampleVendors();
+            insertSamplePromotions();
             
-            Log.d(TAG, "Sample data refreshed successfully");
+            Log.d(TAG, "All sample data refreshed successfully");
         } catch (Exception e) {
             Log.e(TAG, "Error refreshing sample data", e);
         }
@@ -266,15 +316,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION, "Fresh bread and bakery items");
         db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
         
-        // Insert sample vendor
-        ContentValues vendorValues = new ContentValues();
-        vendorValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_VENDOR_NAME, "Fresh Market");
-        vendorValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_ADDRESS, "123 Main Street");
-        vendorValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_LATITUDE, 27.7172);
-        vendorValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_LONGITUDE, 85.3240);
-        vendorValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_RATING, 4.5);
-        vendorValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_ICON, "supplier_icon");
-        db.insert(DatabaseContract.VendorEntry.TABLE_NAME, null, vendorValues);
+        // Removed redundant single vendor insertion - handled by insertSampleVendors()
         
         // Insert sample products - 5 products per category
         
@@ -643,12 +685,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Add a new category
      */
-    public long addCategory(String categoryName, String categoryDescription) {
+    public long addCategory(String categoryName, String categoryDescription, String image) {
         SQLiteDatabase db = this.getWritableDatabase();
         
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.CategoryEntry.COLUMN_NAME_CATEGORY_NAME, categoryName);
         values.put(DatabaseContract.CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION, categoryDescription);
+        values.put(DatabaseContract.CategoryEntry.COLUMN_NAME_IMAGE, image);
         
         long categoryId = db.insert(DatabaseContract.CategoryEntry.TABLE_NAME, null, values);
         return categoryId;
@@ -1075,9 +1118,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     int categoryId = cursor.getInt(cursor.getColumnIndexOrThrow(CategoryEntry.COLUMN_NAME_CATEGORY_ID));
                     String categoryName = cursor.getString(cursor.getColumnIndexOrThrow(CategoryEntry.COLUMN_NAME_CATEGORY_NAME));
                     String categoryDescription = cursor.getString(cursor.getColumnIndexOrThrow(CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION));
+                    String image = cursor.getString(cursor.getColumnIndexOrThrow(CategoryEntry.COLUMN_NAME_IMAGE));
                     
                     com.sunit.groceryplus.models.Category category = new com.sunit.groceryplus.models.Category(
-                        categoryId, categoryName, categoryDescription
+                        categoryId, categoryName, categoryDescription, image
                     );
                     categories.add(category);
                 } catch (Exception e) {
@@ -1106,9 +1150,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 int id = cursor.getInt(cursor.getColumnIndexOrThrow(CategoryEntry.COLUMN_NAME_CATEGORY_ID));
                 String categoryName = cursor.getString(cursor.getColumnIndexOrThrow(CategoryEntry.COLUMN_NAME_CATEGORY_NAME));
                 String categoryDescription = cursor.getString(cursor.getColumnIndexOrThrow(CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION));
+                String image = cursor.getString(cursor.getColumnIndexOrThrow(CategoryEntry.COLUMN_NAME_IMAGE));
                 
                 cursor.close();
-                return new com.sunit.groceryplus.models.Category(id, categoryName, categoryDescription);
+                return new com.sunit.groceryplus.models.Category(id, categoryName, categoryDescription, image);
             } catch (Exception e) {
                 Log.e(TAG, "Error getting category by ID", e);
                 cursor.close();
@@ -1123,13 +1168,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Update category
      */
-    public boolean updateCategory(int categoryId, String categoryName, String categoryDescription) {
+    public boolean updateCategory(int categoryId, String categoryName, String categoryDescription, String image) {
         SQLiteDatabase db = this.getWritableDatabase();
         
         try {
             ContentValues values = new ContentValues();
             values.put(CategoryEntry.COLUMN_NAME_CATEGORY_NAME, categoryName);
             values.put(CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION, categoryDescription);
+            values.put(CategoryEntry.COLUMN_NAME_IMAGE, image);
             
             int result = db.update(CategoryEntry.TABLE_NAME, values, 
                                   CategoryEntry.COLUMN_NAME_CATEGORY_ID + " = ?", 
@@ -1591,9 +1637,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private void insertSampleVendors() {
-        if (getAllVendors().isEmpty()) {
-            addVendor("Fresh Mart KTM", "Durbar Marg, Kathmandu", 27.7120, 85.3210, "vendor_icon", 4.5);
-            addVendor("KTM Food Store", "Lazimpat, Kathmandu", 27.7250, 85.3200, "vendor_icon", 4.3);
+        // Only insert if we have fewer than 3 vendors (ensures restoration if only a placeholder was present)
+        if (getAllVendors().size() < 3) {
+            Log.d(TAG, "Restoring/Expanding sample vendors...");
+            // Only add if doesn't exist by name to prevent duplicates
+            addVendorIfNotExists("Fresh Market", "123 Main Street", 27.7172, 85.3240, "vendor_icon", 4.5);
+            addVendorIfNotExists("Fresh Mart KTM", "Durbar Marg, Kathmandu", 27.7120, 85.3210, "vendor_icon", 4.5);
+            addVendorIfNotExists("KTM Food Store", "Lazimpat, Kathmandu", 27.7250, 85.3200, "vendor_icon", 4.3);
+            addVendorIfNotExists("Green Valley Grocers", "Baneshwor, Kathmandu", 27.6915, 85.3420, "vendor_icon", 4.7);
+            addVendorIfNotExists("Organic Oasis", "Patan, Lalitpur", 27.6710, 85.3120, "vendor_icon", 4.8);
+            Log.d(TAG, "Vendors restoration process completed");
+        }
+    }
+
+    private void addVendorIfNotExists(String name, String address, double lat, double lng, String icon, double rating) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(DatabaseContract.VendorEntry.TABLE_NAME, 
+                new String[]{DatabaseContract.VendorEntry.COLUMN_NAME_VENDOR_ID}, 
+                DatabaseContract.VendorEntry.COLUMN_NAME_VENDOR_NAME + " = ?", 
+                new String[]{name}, null, null, null);
+        
+        boolean exists = (cursor != null && cursor.getCount() > 0);
+        if (cursor != null) cursor.close();
+        
+        if (!exists) {
+            addVendor(name, address, lat, lng, icon, rating);
         }
     }
 
@@ -2489,7 +2557,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * Format currency consistently
      */
     public static String formatCurrency(double amount) {
-        return String.format("रु %.2f", amount);
+        return String.format("Rs. %.2f", amount);
     }
 
     /**
@@ -2497,11 +2565,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     public double calculateDeliveryFee(int userId) {
         double cartValue = getTotalCartValue(userId);
-        // Free delivery above 50
-        if (cartValue >= 50.0) {
+        if (cartValue >= com.sunit.groceryplus.utils.PaymentConfig.FREE_DELIVERY_THRESHOLD) {
             return 0.0;
         }
-        return 5.0; // Standard delivery fee
+        return com.sunit.groceryplus.utils.PaymentConfig.DELIVERY_FEE;
     }
     
     /**

@@ -63,7 +63,7 @@ public class DatabaseTestActivity extends AppCompatActivity {
             
             // Test 4: Add category
             CategoryRepository categoryRepository = new CategoryRepository(this);
-            boolean categoryAdded = categoryRepository.addCategory("Fruits", "Fresh fruits");
+            boolean categoryAdded = categoryRepository.addCategory("Fruits", "Fresh fruits", "cat_fruits");
             if (categoryAdded) {
                 Log.d(TAG, "Category added successfully");
                 Toast.makeText(this, "Category added successfully", Toast.LENGTH_SHORT).show();

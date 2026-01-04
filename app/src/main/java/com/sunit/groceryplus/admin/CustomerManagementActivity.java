@@ -16,6 +16,21 @@ import com.sunit.groceryplus.adapters.AdminCustomerAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * CustomerManagementActivity - Admin interface for viewing registered customers.
+ * 
+ * This activity displays a list of all registered users (customers) in the system.
+ * It provides visibility into the user base but currently operates in a read-only mode regarding user profiles.
+ * 
+ * Key Features:
+ * - List all registered customers
+ * - View customer basic details (Name, Email, Phone)
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class CustomerManagementActivity extends AppCompatActivity {
 
     private RecyclerView customersRv;

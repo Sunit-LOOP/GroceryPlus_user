@@ -1,5 +1,10 @@
 package com.sunit.groceryplus.utils;
 
+/**
+ * Configuration class for legacy constants.
+ * @deprecated Use specific config classes like PaymentConfig instead.
+ */
+@Deprecated
 public class Config {
     // Legacy constants - use PaymentConfig for new code
     @Deprecated

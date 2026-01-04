@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,12 +16,19 @@ import com.sunit.groceryplus.models.Category;
 
 import java.util.List;
 
+/**
+ * Adapter for managing Categories in the Admin Panel.
+ * Allows Admins to view list of categories, Edit them, or Delete them.
+ */
 public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdapter.CategoryViewHolder> {
 
     private Context context;
     private List<Category> categories;
     private OnCategoryActionListener listener;
 
+    /**
+     * Interface for Admin actions on a Category.
+     */
     public interface OnCategoryActionListener {
         void onEditClick(Category category);
         void onDeleteClick(Category category);
@@ -58,6 +66,7 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
     class CategoryViewHolder extends RecyclerView.ViewHolder {
         TextView categoryNameTv;
         TextView categoryDescriptionTv;
+        ImageView categoryImageIv;
         Button editCategoryBtn;
         Button deleteCategoryBtn;
 
@@ -65,6 +74,7 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
             super(itemView);
             categoryNameTv = itemView.findViewById(R.id.categoryNameTv);
             categoryDescriptionTv = itemView.findViewById(R.id.categoryDescriptionTv);
+            categoryImageIv = itemView.findViewById(R.id.categoryImageIv);
             editCategoryBtn = itemView.findViewById(R.id.editCategoryBtn);
             deleteCategoryBtn = itemView.findViewById(R.id.deleteCategoryBtn);
 
@@ -86,6 +96,7 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
         public void bind(Category category) {
             categoryNameTv.setText(category.getCategoryName());
             categoryDescriptionTv.setText(category.getCategoryDescription());
+            com.sunit.groceryplus.utils.ProductImageLoader.load(context, categoryImageIv, category.getImageUrl(), R.drawable.product_icon);
         }
     }
 }

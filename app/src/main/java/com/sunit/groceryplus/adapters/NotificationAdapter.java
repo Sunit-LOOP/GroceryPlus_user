@@ -14,6 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sunit.groceryplus.DatabaseContract;
 import com.sunit.groceryplus.R;
 
+/**
+ * Adapter for displaying System Notifications to the user.
+ * Uses CursorAdapter approach (RecyclerView implementation) for efficient DB loading.
+ * Shows title, message, and timestamp of notifications.
+ */
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
 
     private Context context;
@@ -24,6 +29,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         this.cursor = cursor;
     }
 
+    /**
+     * Swaps the old cursor with a new one when data changes.
+     */
     public void swapCursor(Cursor newCursor) {
         if (cursor != null) {
             cursor.close();

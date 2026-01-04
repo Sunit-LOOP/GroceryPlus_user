@@ -17,6 +17,26 @@ import com.sunit.groceryplus.models.Address;
 
 import java.util.List;
 
+
+/**
+ * AddressManagementActivity - Interface for managing delivery addresses.
+ * 
+ * This activity allows users to add, edit, delete, and set default delivery addresses.
+ * It uses a dialog-based interface for inputting address details and a RecyclerView
+ * to list existing saved addresses.
+ * 
+ * Key Features:
+ * - List all saved addresses
+ * - Add new address (Dialog)
+ * - Edit existing address (Dialog)
+ * - Delete address
+ * - Set default address
+ * - Input validation
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class AddressManagementActivity extends AppCompatActivity {
 
     private RecyclerView addressRecyclerView;

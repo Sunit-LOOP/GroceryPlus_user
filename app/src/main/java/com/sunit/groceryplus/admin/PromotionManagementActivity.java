@@ -25,6 +25,22 @@ import com.sunit.groceryplus.models.Promotion;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * PromotionManagementActivity - Admin interface for creating discount codes.
+ * 
+ * This activity allows the admin to manage promotional codes (coupons).
+ * Admins can create new codes with specific discount percentages, validity dates, and images.
+ * 
+ * Key Features:
+ * - List active promotions
+ * - Add new promotion code
+ * - Delete active promotion
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class PromotionManagementActivity extends AppCompatActivity {
 
     private RecyclerView promotionsRv;

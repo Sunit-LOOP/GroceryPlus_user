@@ -14,6 +14,25 @@ import com.sunit.groceryplus.models.User;
 
 import com.google.android.material.button.MaterialButton;
 
+
+/**
+ * UserDetailViewActivity - Comprehensive view of user account details and actions.
+ * 
+ * This activity acts as an extended profile page, displaying full user details and providing
+ * quick access to key account actions like Order History, Cart, Tracking, and Settings.
+ * It primarily serves as a read-only detailed view with navigation to edit modes.
+ * 
+ * Key Features:
+ * - Detailed user information display
+ * - Quick action buttons (Map, Cart, History)
+ * - Navigation to Edit Profile
+ * - Navigation to Settings
+ * - Logout functionality
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class UserDetailViewActivity extends AppCompatActivity {
 
     private static final String TAG = "UserDetailViewActivity";

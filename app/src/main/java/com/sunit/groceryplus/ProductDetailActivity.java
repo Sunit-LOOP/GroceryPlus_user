@@ -27,10 +27,32 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * ProductDetailActivity - Displays detailed information about a specific product.
+ * 
+ * This activity handles the detailed view of a product, including its image, price, description,
+ * reviews, and related actions like adding to cart or wishlist. It also manages specific user
+ * interactions such as quantity adjustment and writing reviews.
+ * 
+ * Key Features:
+ * - Detailed product information display
+ * - Quantity selector
+ * - Add to Cart functionality
+ * - Ratings and Reviews management (viewing and adding)
+ * - Wishlist toggling (logic present, UI pending)
+ * - Recently viewed tracking
+ * - Similar product recommendations (handled via data loading)
+ * 
+ * @author GroceryPlus Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class ProductDetailActivity extends AppCompatActivity {
 
     private static final String TAG = "ProductDetailActivity";
     
+    // UI Components
     private ImageView productImageIv;
     private TextView productNameTv, productPriceTv, productDescriptionTv, productCategoryTv, quantityTv, productVendorTv;
     private TextView productAvgRatingTv, productReviewCountTv, noReviewsTv;
@@ -39,15 +61,16 @@ public class ProductDetailActivity extends AppCompatActivity {
     private Button addToCartBtn, writeReviewBtn;
     private RecyclerView productReviewsRv;
     
+    // Data State
     private int productId, userId;
     private int quantity = 1;
     
+    // Repositories
     private ProductRepository productRepository;
     private CartRepository cartRepository;
     private ReviewRepository reviewRepository;
     private WishlistRepository wishlistRepository;
 
-    
     private Product product;
     private ReviewAdapter reviewAdapter;
     private List<Review> reviewList = new ArrayList<>();
@@ -114,7 +137,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             product = productRepository.getProductById(productId);
             if (product != null) {
                 productNameTv.setText(product.getProductName());
-                productPriceTv.setText("रु " + String.format("%.2f", product.getPrice()));
+                productPriceTv.setText("Rs. " + String.format("%.2f", product.getPrice()));
                 productDescriptionTv.setText(product.getDescription());
                 productCategoryTv.setText(product.getCategoryName());
                 if (product.getVendorName() != null) {

@@ -2,9 +2,7 @@ package com.sunit.groceryplus.utils;
 
 import android.content.Context;
 import android.util.Log;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.sunit.groceryplus.DatabaseHelper;
 import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.models.User;
@@ -14,18 +12,15 @@ import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * HybridDatabaseManager: SQLite-First with Optional Firestore Sync
+ * HybridDatabaseManager - Manages data flow between local SQLite and optional Firestore cloud.
  * 
  * Architecture:
- * - PRIMARY: SQLite database (always used, fast, reliable)
- * - SECONDARY: Firestore (optional sync, backup, multi-device)
+ * - PRIMARY: SQLite database (fast, reliable, always used)
+ * - SECONDARY: Firestore (optional sync, backup, multi-device support)
  * 
- * Features:
- * - SQLite-first: All operations use SQLite as primary source
- * - Optional cloud sync: Firestore for backup and multi-device sync
- * - Offline guaranteed: App works perfectly without internet
- * - Fast performance: Local SQLite provides instant responses
- * - Data safety: Optional cloud backup when available
+ * Strategy:
+ * - SQLite-First: All reads/writes happen to SQLite immediately.
+ * - Async Sync: Writes are optionally pushed to Firestore in the background.
  */
 public class HybridDatabaseManager {
     
@@ -34,7 +29,7 @@ public class HybridDatabaseManager {
     
     private final Context context;
     private final DatabaseHelper primaryDb;  // SQLite - PRIMARY
-    private final FirebaseFirestore cloudDb;     // Firestore - SECONDARY
+    private final FirebaseFirestore cloudDb; // Firestore - SECONDARY
     private final FirestoreSyncHelper syncHelper;
     
     // Sync settings - default to OFF for SQLite-first approach
@@ -59,7 +54,7 @@ public class HybridDatabaseManager {
     // ==== SYNC CONFIGURATION ====
     
     /**
-     * Enable/disable auto-sync to cloud (default: OFF for SQLite-first)
+     * Enable/disable auto-sync to cloud (default: OFF for SQLite-first).
      */
     public void setAutoSync(boolean enabled) {
         this.autoSync = enabled;
@@ -67,7 +62,7 @@ public class HybridDatabaseManager {
     }
     
     /**
-     * Enable/disable real-time sync from cloud (default: OFF)
+     * Enable/disable real-time sync from cloud (default: OFF).
      */
     public void setRealTimeSync(boolean enabled) {
         this.realTimeSync = enabled;
@@ -78,7 +73,7 @@ public class HybridDatabaseManager {
     }
     
     /**
-     * Enable/disable cloud functionality completely
+     * Enable/disable cloud functionality completely.
      */
     public void setCloudEnabled(boolean enabled) {
         this.cloudEnabled = enabled;
@@ -86,7 +81,7 @@ public class HybridDatabaseManager {
     }
     
     /**
-     * Get sync status
+     * Get current sync status.
      */
     public String getSyncStatus() {
         return "SQLite-First | " +
@@ -96,8 +91,10 @@ public class HybridDatabaseManager {
                ", Online: " + (isOnline() ? "YES" : "NO");
     }
     
+    // ==== PRODUCT OPERATIONS ====
+
     /**
-     * Add product to SQLite (PRIMARY) with optional cloud sync
+     * Add product to SQLite (PRIMARY) with optional cloud sync.
      */
     public CompletableFuture<Long> addProduct(Product product) {
         return CompletableFuture.supplyAsync(() -> {
@@ -137,7 +134,7 @@ public class HybridDatabaseManager {
     }
     
     /**
-     * Update product in SQLite (PRIMARY) with optional cloud sync
+     * Update product in SQLite (PRIMARY) with optional cloud sync.
      */
     public CompletableFuture<Boolean> updateProduct(Product product) {
         return CompletableFuture.supplyAsync(() -> {
@@ -176,7 +173,7 @@ public class HybridDatabaseManager {
     }
     
     /**
-     * Delete product from SQLite (PRIMARY) with optional cloud sync
+     * Delete product from SQLite (PRIMARY) with optional cloud sync.
      */
     public CompletableFuture<Boolean> deleteProduct(int productId) {
         return CompletableFuture.supplyAsync(() -> {
@@ -209,7 +206,7 @@ public class HybridDatabaseManager {
     }
     
     /**
-     * Get product from SQLite (PRIMARY database)
+     * Get product from SQLite (PRIMARY database).
      */
     public Product getProductById(int productId) {
         try {
@@ -221,7 +218,7 @@ public class HybridDatabaseManager {
     }
     
     /**
-     * Get all products from SQLite (PRIMARY database)
+     * Get all products from SQLite (PRIMARY database).
      */
     public List<Product> getAllProducts() {
         try {
@@ -235,7 +232,7 @@ public class HybridDatabaseManager {
     // ==== USER OPERATIONS ====
     
     /**
-     * Authenticate user using SQLite (PRIMARY) with optional cloud sync
+     * Authenticate user using SQLite (PRIMARY) with optional cloud sync.
      */
     public CompletableFuture<User> authenticateUser(String email, String password) {
         return CompletableFuture.supplyAsync(() -> {
@@ -265,7 +262,7 @@ public class HybridDatabaseManager {
     }
     
     /**
-     * Add new user to SQLite (PRIMARY) with optional cloud sync
+     * Add new user to SQLite (PRIMARY) with optional cloud sync.
      */
     public CompletableFuture<Long> addUser(String name, String email, String phone, String password, String userType) {
         return CompletableFuture.supplyAsync(() -> {
@@ -298,7 +295,7 @@ public class HybridDatabaseManager {
     // ==== ORDER OPERATIONS ====
     
     /**
-     * Create order in SQLite (PRIMARY) with optional cloud sync
+     * Create order in SQLite (PRIMARY) with optional cloud sync.
      */
     public CompletableFuture<Long> createOrder(int userId, double totalAmount, double deliveryFee, String status, int addressId, String instructions) {
         return CompletableFuture.supplyAsync(() -> {
@@ -331,7 +328,7 @@ public class HybridDatabaseManager {
     // ==== SYNC OPERATIONS ====
     
     /**
-     * Manual sync all local data to Firestore
+     * Manual sync all local data to Firestore.
      */
     public CompletableFuture<Void> syncAllToCloud() {
         return CompletableFuture.runAsync(() -> {
@@ -364,7 +361,7 @@ public class HybridDatabaseManager {
     }
     
     /**
-     * Sync from cloud to local (for initial data load or refresh)
+     * Sync from cloud to local (for initial data load or refresh).
      */
     public CompletableFuture<Void> syncFromCloud() {
         return CompletableFuture.runAsync(() -> {
@@ -395,21 +392,19 @@ public class HybridDatabaseManager {
     // ==== UTILITY METHODS ====
     
     /**
-     * Check if device is online
+     * Check if device is online.
      */
     public boolean isOnline() {
         return NetworkUtils.isOnline(context);
     }
     
     /**
-     * Clear all data (SQLite PRIMARY and optionally Firestore)
+     * Clear all data (SQLite PRIMARY and optionally Firestore).
      */
     public CompletableFuture<Void> clearAllData() {
         return CompletableFuture.runAsync(() -> {
             try {
                 // 1. Clear PRIMARY SQLite database manually
-                // Note: clearAllData() method doesn't exist in DatabaseHelper
-                // This would need to be implemented or use individual delete methods
                 Log.d(TAG, "SQLite clear operation - individual delete methods should be used");
                 
                 // 2. OPTIONAL: Clear Firestore collections if cloud is enabled

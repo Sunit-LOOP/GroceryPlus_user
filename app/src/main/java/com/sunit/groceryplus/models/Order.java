@@ -4,38 +4,76 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Order model class representing a customer order
+ * Order Model Class
+ * 
+ * Represents a customer's order in the system.
+ * This is a central entity that links user, products (via OrderItems), 
+ * payment status, and delivery details.
  */
 public class Order {
+    
+    // Unique ID for the order
     private int orderId;
+    
+    // ID of the user who placed the order
     private int userId;
+    
+    // -- User Snapshot Data (Preserved in case user profile changes) --
     private String userName;
     private String userEmail;
     private String userPhone;
+    
+    // Financial Details
     private double totalAmount;
     private double deliveryFee;
+    
+    // Current Order Lifecycle Status (Pending -> Processing -> Shipped -> Delivered)
     private String status;
+    
+    // Timestamps
     private String orderDate;
     private String shippedDate;
+    
+    // List of items in this order
     private List<OrderItem> items;
+    
+    // Payment Status Information
     private boolean paymentReceived;
     private String paymentMethod;
+    
+    // Delivery Details
     private int addressId;
     private String deliveryInstructions;
 
-    // Order status constants
+    // -- Order Status Constants --
     public static final String STATUS_PENDING = "pending";
     public static final String STATUS_PROCESSING = "processing";
     public static final String STATUS_SHIPPED = "shipped";
     public static final String STATUS_DELIVERED = "delivered";
     public static final String STATUS_CANCELLED = "cancelled";
 
-    // Default constructor
+    /**
+     * Default Constructor
+     * Initializes an empty list of items.
+     */
     public Order() {
         this.items = new ArrayList<>();
     }
 
-    // Constructor with all fields
+    /**
+     * Full Constructor
+     * Used for retrieving complete order history.
+     * 
+     * @param orderId Unique ID
+     * @param userId User ID
+     * @param userName Name snapshot
+     * @param userEmail Email snapshot
+     * @param userPhone Phone snapshot
+     * @param totalAmount Total cost
+     * @param deliveryFee Delivery cost
+     * @param status Current Status
+     * @param orderDate Creation Date
+     */
     public Order(int orderId, int userId, String userName, String userEmail, String userPhone,
                  double totalAmount, double deliveryFee, String status, String orderDate) {
         this.orderId = orderId;
@@ -50,7 +88,10 @@ public class Order {
         this.items = new ArrayList<>();
     }
 
-    // Constructor without orderId (for new orders)
+    /**
+     * Creation Constructor
+     * Used when creating a NEW order before it is saved to the DB.
+     */
     public Order(int userId, double totalAmount, double deliveryFee, String status) {
         this.userId = userId;
         this.totalAmount = totalAmount;
@@ -59,7 +100,10 @@ public class Order {
         this.items = new ArrayList<>();
     }
 
-    // Constructor with addressId (used by getOrderById)
+    /**
+     * Minimal Constructor with Address
+     * Used for specific queries where full user details aren't needed but location is.
+     */
     public Order(int orderId, int userId, String userName, double totalAmount, double deliveryFee, String status, String orderDate, int addressId) {
         this.orderId = orderId;
         this.userId = userId;
