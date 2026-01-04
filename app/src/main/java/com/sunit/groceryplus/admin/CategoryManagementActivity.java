@@ -165,9 +165,14 @@ public class CategoryManagementActivity extends AppCompatActivity {
         Field[] drawables = R.drawable.class.getFields();
         for (Field f : drawables) {
             String name = f.getName();
-            if (name.startsWith("cat_") || name.startsWith("category_") || name.equals("product_icon")) {
-                drawableNames.add(name);
+            // Filter out system/internal drawables but keep user-facing ones
+            if (name.startsWith("abc_") || 
+                name.startsWith("design_") || name.startsWith("mtrl_") ||
+                name.startsWith("googleg_") || name.startsWith("common_") ||
+                name.startsWith("avd_")) {
+                continue;
             }
+            drawableNames.add(name);
         }
         android.widget.ArrayAdapter<String> imageSpinnerAdapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_item, drawableNames);
         imageSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -335,11 +340,17 @@ public class CategoryManagementActivity extends AppCompatActivity {
         for (Field field : fields) {
             try {
                 String name = field.getName();
-                // Filter for relevant icons
-                if (name.startsWith("product_") || name.startsWith("cat_") || 
-                    name.startsWith("vendor_") || name.equals("banner_off") || name.startsWith("category_")) {
-                    drawableImages.add(new DrawableImageAdapter.DrawableImage(name, name));
+                
+                // Filter out system/internal drawables
+                if (name.startsWith("abc_") || 
+                    name.startsWith("design_") || name.startsWith("mtrl_") ||
+                    name.startsWith("googleg_") || name.startsWith("common_") ||
+                    name.startsWith("avd_")) {
+                    continue;
                 }
+                
+                // Include all other drawables (PNG, JPEG, XML, etc.)
+                drawableImages.add(new DrawableImageAdapter.DrawableImage(name, name));
             } catch (Exception ignored) {
             }
         }
