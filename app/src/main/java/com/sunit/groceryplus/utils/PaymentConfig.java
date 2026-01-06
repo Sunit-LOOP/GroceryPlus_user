@@ -15,7 +15,7 @@ public class PaymentConfig {
     public static final String BACKEND_URL = USE_PRODUCTION ? BACKEND_URL_PROD : BACKEND_URL_DEV;
     
     // Billing settings
-    public static final String CURRENCY = "usd";
+    public static final String CURRENCY = "npr";
     public static final int MIN_AMOUNT = 50;
     
     // Fulfillment settings

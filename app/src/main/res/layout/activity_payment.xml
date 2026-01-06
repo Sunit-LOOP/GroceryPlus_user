@@ -146,8 +146,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="0dp"
+                    app:cardElevation="4dp"
                     app:strokeColor="@color/primary"
                     app:strokeWidth="2dp">
 
@@ -184,15 +187,16 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-
-
                 <!-- COD Option -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/codCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="0dp"
+                    app:cardElevation="4dp"
                     app:strokeColor="@color/chip_background_color"
                     app:strokeWidth="1dp">
 

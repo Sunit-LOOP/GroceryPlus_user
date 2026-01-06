@@ -3,8 +3,10 @@ package com.sunit.groceryplus;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -76,6 +78,9 @@ public class PaymentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_payment);
 
+        // Remove complex window flags that might interfere with PaymentSheet
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+
         // Initialize Stripe with centralized key
         PaymentConfiguration.init(getApplicationContext(), com.sunit.groceryplus.utils.PaymentConfig.STRIPE_PUBLISHABLE_KEY);
         paymentSheet = new PaymentSheet(this, this::onPaymentSheetResult);
@@ -121,8 +126,14 @@ public class PaymentActivity extends AppCompatActivity {
         codCard = findViewById(R.id.codCard);
 
         // Card click listeners for payment method selection
-        stripeCard.setOnClickListener(v -> selectStripePayment());
-        codCard.setOnClickListener(v -> selectCodPayment());
+        stripeCard.setOnClickListener(v -> {
+            Log.d(TAG, "Stripe card clicked");
+            selectStripePayment();
+        });
+        codCard.setOnClickListener(v -> {
+            Log.d(TAG, "COD card clicked");
+            selectCodPayment();
+        });
 
         // Pay button click listener
         payNowBtn.setOnClickListener(v -> processPayment());
@@ -155,14 +166,30 @@ public class PaymentActivity extends AppCompatActivity {
         // Get amounts from intent
         baseSubtotal = getIntent().getDoubleExtra("subtotal_amount", 0.0);
         finalAmount = getIntent().getDoubleExtra("total_amount", 0.0);
-        deliveryFee = finalAmount - baseSubtotal;
+        
+        // Calculate delivery fee with free delivery logic
+        if (baseSubtotal >= com.sunit.groceryplus.utils.PaymentConfig.FREE_DELIVERY_THRESHOLD) {
+            deliveryFee = 0.0; // Free delivery for orders 500 or more
+        } else {
+            deliveryFee = finalAmount - baseSubtotal; // Normal delivery fee
+        }
+        
+        // Recalculate final amount with correct delivery fee
+        finalAmount = baseSubtotal + deliveryFee;
+        
         discountAmount = 0.0;
         appliedPromoCode = null;
 
         // Update UI
         summarySubtotal.setText("Rs. " + String.format("%.2f", baseSubtotal));
         if (summaryDeliveryFee != null) {
-            summaryDeliveryFee.setText("Rs. " + String.format("%.2f", deliveryFee));
+            if (deliveryFee == 0.0) {
+                summaryDeliveryFee.setText("FREE");
+                summaryDeliveryFee.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+            } else {
+                summaryDeliveryFee.setText("Rs. " + String.format("%.2f", deliveryFee));
+                summaryDeliveryFee.setTextColor(getResources().getColor(R.color.text_primary));
+            }
         }
         totalAmountTv.setText("Rs. " + String.format("%.2f", finalAmount));
 
@@ -291,7 +318,13 @@ public class PaymentActivity extends AppCompatActivity {
         }
 
         if (summaryDeliveryFee != null) {
-            summaryDeliveryFee.setText("Rs. " + String.format("%.2f", deliveryFee));
+            if (deliveryFee == 0.0) {
+                summaryDeliveryFee.setText("FREE");
+                summaryDeliveryFee.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+            } else {
+                summaryDeliveryFee.setText("Rs. " + String.format("%.2f", deliveryFee));
+                summaryDeliveryFee.setTextColor(getResources().getColor(R.color.text_primary));
+            }
         }
 
         if (discountRow != null && summaryDiscount != null) {
@@ -343,6 +376,124 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    /** Test method to check if other input fields work in the app. */
+    private void testOtherInputFields() {
+        Log.d(TAG, "=== Testing Other Input Fields ===");
+        
+        // Test promo code input field (without filling data)
+        if (promoCodeEt != null) {
+            promoCodeEt.requestFocus();
+            Log.d(TAG, "Promo code field focus: " + promoCodeEt.hasFocus());
+            Log.d(TAG, "Promo code field enabled: " + promoCodeEt.isEnabled());
+            promoCodeEt.clearFocus();
+        }
+        
+        // Test instructions input field (without filling data)
+        if (instructionsEt != null) {
+            instructionsEt.requestFocus();
+            Log.d(TAG, "Instructions field focus: " + instructionsEt.hasFocus());
+            Log.d(TAG, "Instructions field enabled: " + instructionsEt.isEnabled());
+            instructionsEt.clearFocus();
+        }
+        
+        // Test pay button
+        if (payNowBtn != null) {
+            Log.d(TAG, "Pay button enabled: " + payNowBtn.isEnabled());
+            Log.d(TAG, "Pay button clickable: " + payNowBtn.isClickable());
+        }
+        
+        Log.d(TAG, "Input field testing completed");
+    }
+
+    /** Check for potential overlays that might interfere with PaymentSheet. */
+    private void checkForOverlays() {
+        Log.d(TAG, "=== Checking for Overlays ===");
+        
+        // Check if any dialogs are showing
+        if (isFinishing()) {
+            Log.w(TAG, "Activity is finishing");
+        }
+        
+        // Check window flags
+        int flags = getWindow().getAttributes().flags;
+        Log.d(TAG, "Window flags: " + flags);
+        Log.d(TAG, "FLAG_NOT_TOUCH_MODAL: " + ((flags & WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL) != 0));
+        Log.d(TAG, "FLAG_NOT_FOCUSABLE: " + ((flags & WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE) != 0));
+        Log.d(TAG, "FLAG_ALT_FOCUSABLE_IM: " + ((flags & WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM) != 0));
+        
+        // Check decor view
+        View decorView = getWindow().getDecorView();
+        Log.d(TAG, "Decor view: " + (decorView != null ? "exists" : "null"));
+        Log.d(TAG, "Decor view focusable: " + (decorView != null ? decorView.isFocusable() : "null"));
+    }
+
+    /** Debug method to log system information. */
+    private void logSystemInfo() {
+        Log.d(TAG, "=== System Information ===");
+        Log.d(TAG, "SDK Version: " + android.os.Build.VERSION.SDK_INT);
+        Log.d(TAG, "Device: " + android.os.Build.MODEL);
+        Log.d(TAG, "Manufacturer: " + android.os.Build.MANUFACTURER);
+        Log.d(TAG, "Android Version: " + android.os.Build.VERSION.RELEASE);
+        
+        // Check for potential issues
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            Log.d(TAG, "Android 11+ - Check for scoped storage issues");
+        }
+        
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            Log.d(TAG, "Android 12+ - Check for new privacy features");
+        }
+    }
+
+    /** Presents the Stripe PaymentSheet with proper configuration and focus handling. */
+    private void presentPaymentSheet() {
+        try {
+            // Use simple configuration to avoid input field issues
+            PaymentSheet.Configuration configuration = new PaymentSheet.Configuration.Builder("GroceryPlus")
+                .allowsDelayedPaymentMethods(false)
+                .build();
+            
+            Log.d(TAG, "Presenting payment sheet...");
+            Log.d(TAG, "Client secret: " + paymentClientSecret.substring(0, Math.min(10, paymentClientSecret.length())) + "...");
+            
+            // Ensure activity is in proper state for PaymentSheet
+            runOnUiThread(() -> {
+                // Request focus for activity
+                getWindow().getDecorView().requestFocus();
+                
+                // Present payment sheet with a small delay to ensure UI is ready
+                new android.os.Handler().postDelayed(() -> {
+                    try {
+                        // Clear any current focus that might interfere
+                        if (getCurrentFocus() != null) {
+                            getCurrentFocus().clearFocus();
+                        }
+                        
+                        paymentSheet.presentWithPaymentIntent(paymentClientSecret, configuration);
+                        Log.d(TAG, "Payment sheet presented successfully");
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error presenting payment sheet", e);
+                        handlePaymentSheetError(e);
+                    }
+                }, 300); // 300ms delay to ensure UI is settled
+            });
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error preparing payment sheet", e);
+            handlePaymentSheetError(e);
+        }
+    }
+
+    /** Handles PaymentSheet presentation errors. */
+    private void handlePaymentSheetError(Exception e) {
+        Log.e(TAG, "PaymentSheet error: " + e.getMessage(), e);
+        runOnUiThread(() -> {
+            Toast.makeText(this, "Error showing payment form: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            payNowBtn.setEnabled(true);
+            updatePayButtonText();
+        });
+    }
+
     /** Initiates the Stripe payment flow by fetching a Client Secret. */
     private void startStripePayment() {
         // Safety check for placeholder key
@@ -354,6 +505,11 @@ public class PaymentActivity extends AppCompatActivity {
 
         payNowBtn.setEnabled(false);
         payNowBtn.setText("Processing...");
+        
+        // Run debugging tests before starting payment
+        testOtherInputFields();
+        checkForOverlays();
+        logSystemInfo();
         
         // Test: Show a simple toast to confirm button click works
         Toast.makeText(this, "Starting Stripe payment...", Toast.LENGTH_SHORT).show();
@@ -381,32 +537,9 @@ public class PaymentActivity extends AppCompatActivity {
                     paymentClientSecret = response.body().get("client_secret").getAsString();
                     Log.d(TAG, "Successfully received client secret");
                     
-                    // 2. Present Payment Sheet
-                    PaymentSheet.Configuration configuration = new PaymentSheet.Configuration.Builder("GroceryPlus")
-                        .allowsDelayedPaymentMethods(false)
-                        .build();
+                    // Present Payment Sheet with proper configuration
+                    presentPaymentSheet();
                     
-                    try {
-                        Log.d(TAG, "Presenting payment sheet...");
-                        Log.d(TAG, "Client secret: " + paymentClientSecret.substring(0, Math.min(10, paymentClientSecret.length())) + "...");
-                        paymentSheet.presentWithPaymentIntent(paymentClientSecret, configuration);
-                        Log.d(TAG, "Payment sheet presented successfully");
-                        
-                        // Add debug delay to see if sheet appears
-                        new android.os.Handler().postDelayed(() -> {
-                            Log.d(TAG, "Payment sheet should be visible now");
-                        }, 1000);
-                        
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error presenting payment sheet", e);
-                        Toast.makeText(PaymentActivity.this, "Error showing payment form. Please try again.", Toast.LENGTH_LONG).show();
-                        payNowBtn.setEnabled(true);
-                        updatePayButtonText();
-                        return;
-                    }
-                    
-                    payNowBtn.setEnabled(true);
-                    updatePayButtonText();
                 } else {
                     String errorMsg = "Failed to initialize payment.";
                     try {
@@ -461,9 +594,15 @@ public class PaymentActivity extends AppCompatActivity {
             createOrder("stripe");
         } else if (paymentSheetResult instanceof PaymentSheetResult.Canceled) {
             Toast.makeText(this, "Payment Canceled", Toast.LENGTH_SHORT).show();
+            // Re-enable pay button and update text after cancellation
+            payNowBtn.setEnabled(true);
+            updatePayButtonText();
         } else if (paymentSheetResult instanceof PaymentSheetResult.Failed) {
             PaymentSheetResult.Failed error = (PaymentSheetResult.Failed) paymentSheetResult;
             Toast.makeText(this, "Payment Failed: " + error.getError().getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            // Re-enable pay button and update text after failure
+            payNowBtn.setEnabled(true);
+            updatePayButtonText();
         }
     }
 
