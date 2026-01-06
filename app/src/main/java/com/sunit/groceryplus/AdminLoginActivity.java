@@ -16,25 +16,10 @@ import com.sunit.groceryplus.models.User;
 import com.sunit.groceryplus.utils.ValidationUtils;
 
 
-/**
- * AdminLoginActivity - Secure login interface for Administrators.
- * 
- * This activity handles the authentication of admin users. It differs from the standard
- * login by explicitly checking the user role (isAdmin flag) after successful credential validation.
- * It prevents non-admin users from accessing the dashboard.
- * 
- * Key Features:
- * - Email/Password Authentication
- * - Role Verification (Admin Check)
- * - Session Management (SharedPreferences)
- * - Navigation to User Login (for non-admins)
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** AdminLoginActivity - Secure login interface for privileged Administrator accounts. */
 public class AdminLoginActivity extends AppCompatActivity {
 
+    // Infrastructure & UI
     private static final String TAG = "AdminLoginActivity";
     private TextInputEditText adminEmailEditText;
     private TextInputEditText adminPasswordEditText;
@@ -42,6 +27,7 @@ public class AdminLoginActivity extends AppCompatActivity {
     private TextView userLoginTextView;
     private DatabaseHelper databaseHelper;
 
+    /** Initializes the activity, views, and database helper. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +43,7 @@ public class AdminLoginActivity extends AppCompatActivity {
         setClickListeners();
     }
 
+    /** Links UI components to their functional fields. */
     private void initViews() {
         adminEmailEditText = findViewById(R.id.adminEmailEditText);
         adminPasswordEditText = findViewById(R.id.adminPasswordEditText);
@@ -64,6 +51,7 @@ public class AdminLoginActivity extends AppCompatActivity {
         userLoginTextView = findViewById(R.id.userLoginTextView);
     }
 
+    /** Sets click listeners for both admin login and customer navigation shortcut. */
     private void setClickListeners() {
         adminLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,6 +70,7 @@ public class AdminLoginActivity extends AppCompatActivity {
         });
     }
 
+    /** Performs credential validation and role-based access control for admins. */
     private void performAdminLogin() {
         String email = adminEmailEditText.getText().toString().trim();
         String password = adminPasswordEditText.getText().toString().trim();

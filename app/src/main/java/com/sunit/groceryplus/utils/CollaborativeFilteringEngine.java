@@ -6,58 +6,7 @@ import com.sunit.groceryplus.DatabaseHelper;
 import com.sunit.groceryplus.models.Product;
 import java.util.*;
 
-/**
- * CollaborativeFilteringEngine - Advanced Collaborative Filtering Implementation
- * 
- * This class implements sophisticated collaborative filtering algorithms for the GroceryPlus app.
- * It provides personalized product recommendations based on user behavior patterns
- * and similarities between users.
- * 
- * Key Features:
- * - User-user similarity calculations (Jaccard, Cosine, Pearson)
- * - Item-item collaborative filtering
- * - K-nearest neighbors algorithm
- * - Matrix factorization support
- * - Cold start problem handling
- * - Hybrid filtering (collaborative + content-based)
- * - Real-time similarity updates
- * - Rating prediction algorithms
- * - Performance optimizations with caching
- * 
- * Algorithms Implemented:
- * 1. Jaccard Similarity - For purchase history overlap
- * 2. Cosine Similarity - For rating vector similarity
- * 3. Pearson Correlation - For rating correlation
- * 4. Weighted Hybrid Similarity - Combines multiple metrics
- * 5. K-Nearest Neighbors - Finds similar users/items
- * 6. User-Based Collaborative Filtering - User-based recommendations
- * 7. Item-Based Collaborative Filtering - Item similarity recommendations
- * 8. Matrix Factorization - Latent feature discovery
- * 
- * Data Structures:
- * - User-Item interaction matrix
- * - User similarity matrix
- * - Item similarity matrix
- * - Rating prediction matrix
- * - Neighborhood cache
- * 
- * Performance Optimizations:
- * - Lazy similarity calculation caching
- * - Precomputed similarity matrices
- * - Efficient neighborhood searches
- * - Memory-efficient data structures
- * - Batch processing for similarity calculations
- * 
- * Usage Example:
- * ```java
- * CollaborativeFilteringEngine engine = new CollaborativeFilteringEngine(context);
- * List<Product> recommendations = engine.getRecommendations(userId, 10);
- * ```
- * 
- * @author GroceryPlus Development Team
- * @version 2.0
- * @since 1.0
- */
+/** Sophisticated collaborative filtering engine implementing user-based, item-based, and matrix factorization algorithms for product recommendations. */
 public class CollaborativeFilteringEngine {
     
     private static final String TAG = "CollaborativeFilteringEngine";
@@ -80,36 +29,13 @@ public class CollaborativeFilteringEngine {
     private long lastCacheUpdate = 0;
     private static final long CACHE_DURATION_MS = 10 * 60 * 1000; // 10 minutes
 
-    /**
-     * Constructor for CollaborativeFilteringEngine
-     * 
-     * @param context Application context for database access
-     */
+    /** Constructor initializing the database helper for recommendation data access. */
     public CollaborativeFilteringEngine(Context context) {
         this.context = context;
         this.dbHelper = new DatabaseHelper(context);
     }
 
-    /**
-     * Get personalized recommendations using advanced collaborative filtering
-     * 
-     * This method implements a comprehensive collaborative filtering approach:
-     * 
-     * Algorithm Flow:
-     * 1. Build user-item interaction matrix from purchase history and ratings
-     * 2. Calculate user-user similarities using multiple similarity metrics
-     * 3. Find K-nearest neighbors for target user
-     * 4. Generate collaborative recommendations from neighbors
-     * 5. Apply item-based collaborative filtering for additional recommendations
-     * 6. Apply matrix factorization for latent feature discovery
-     * 7. Blend with content-based recommendations
-     * 8. Sort by predicted rating and apply diversity
-     * 9. Handle cold start problem with popularity-based fallback
-     * 
-     * @param userId Target user ID for recommendations
-     * @param limit Maximum number of recommendations to return
-     * @return List of recommended products sorted by relevance
-     */
+    /** Generates personalized recommendations using a hybrid approach (User-Based, Item-Based, and Matrix Factorization). */
     public List<Product> getRecommendations(int userId, int limit) {
         long startTime = System.currentTimeMillis();
         List<Product> recommendations = new ArrayList<>();

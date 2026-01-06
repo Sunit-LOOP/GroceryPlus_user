@@ -13,29 +13,14 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 
-/**
- * UserSettingViewActivity - Application settings and preferences.
- * 
- * This activity allows users to configure application-wide settings such as push notifications
- * and dark mode themes. It also provides a gateway to the Admin Login interface.
- * 
- * Key Features:
- * - Toggle Notifications
- * - Toggle Dark Mode (Theme preference)
- * - Admin Login entry point
- * - Logout capability
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** UserSettingViewActivity - Configuration interface for user preferences, theme selection, and administrative access. */
 public class UserSettingViewActivity extends AppCompatActivity {
 
-    private SwitchMaterial notificationSwitch;
-    private SwitchMaterial darkModeSwitch;
-    private MaterialCardView adminLoginCard;
-    private MaterialCardView logoutCard;
+    // UI Components
+    private SwitchMaterial notificationSwitch, darkModeSwitch;
+    private MaterialCardView adminLoginCard, logoutCard;
 
+    /** Initializes the settings view and loads user preferences. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +36,7 @@ public class UserSettingViewActivity extends AppCompatActivity {
         setClickListeners();
     }
 
+    /** Links UI components to functional fields and sets up the toolbar. */
     private void initViews() {
         Toolbar toolbar = findViewById(R.id.settingsToolbar);
         setSupportActionBar(toolbar);
@@ -62,6 +48,7 @@ public class UserSettingViewActivity extends AppCompatActivity {
         logoutCard = findViewById(R.id.logoutCard);
     }
 
+    /** Loads the current notification and theme preferences from SharedPreferences. */
     private void loadPreferences() {
         android.content.SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         boolean notificationsEnabled = prefs.getBoolean("notifications_enabled", true);
@@ -71,6 +58,7 @@ public class UserSettingViewActivity extends AppCompatActivity {
         darkModeSwitch.setChecked(darkModeEnabled);
     }
 
+    /** Sets listeners for switching settings and handling account actions. */
     private void setClickListeners() {
 
         notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {

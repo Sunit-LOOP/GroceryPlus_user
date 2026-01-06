@@ -49,7 +49,7 @@ dependencies {
     // OSMDroid for Maps
     implementation("org.osmdroid:osmdroid-android:6.1.20")
 
-    // Stripe Android SDK for future use
+    // Stripe Android SDK
     implementation("com.stripe:stripe-android:22.5.0")
 
     // Retrofit for networking

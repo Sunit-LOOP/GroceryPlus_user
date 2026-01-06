@@ -18,41 +18,7 @@ import com.sunit.groceryplus.utils.HybridDatabaseManager;
 
 import org.json.JSONObject;
 
-/**
- * LoginActivity - User authentication interface for GroceryPlus
- * 
- * This activity provides the login interface for customers to authenticate
- * with the GroceryPlus application. It supports hybrid database authentication
- * and routes users to appropriate interfaces based on their user type.
- * 
- * Key Features:
- * - Email and password authentication
- * - Input validation with error messages
- * - Session management with SharedPreferences
- * - Role-based navigation (Admin vs Customer)
- * - Hybrid database integration
- * - Admin login shortcut
- * - Signup navigation
- * 
- * Authentication Flow:
- * 1. User enters email and password
- * 2. Input validation performed
- * 3. Hybrid database authentication
- * 4. Session data saved
- * 5. Navigation based on user type:
- *    - Admin users → AdminDashboardActivity
- *    - Customer users → UserHomeActivity
- * 
- * Security Features:
- * - Input sanitization and validation
- * - Secure session storage
- * - Error handling without exposing sensitive data
- * - Login attempt logging
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** LoginActivity - User authentication interface supporting hybrid database sync and role-based navigation. */
 public class LoginActivity extends AppCompatActivity {
 
     // Tag for logging and debugging
@@ -68,14 +34,7 @@ public class LoginActivity extends AppCompatActivity {
     // Database Management
     private HybridDatabaseManager hybridDb;
 
-    /**
-     * Called when the activity is first created
-     * 
-     * This method initializes the UI components, sets up the hybrid database
-     * manager, and configures click listeners for user interactions.
-     * 
-     * @param savedInstanceState Previously saved state data
-     */
+    /** Initializes UI components, database managers, and click listeners. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,14 +92,7 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Perform user authentication with input validation
-     * 
-     * This method handles the complete login flow including validation,
-     * authentication, session management, and navigation. It uses the
-     * hybrid database manager for authentication and provides comprehensive
-     * error handling and logging.
-     */
+    /** Performs input validation and executes the hybrid authentication flow. */
     private void performLogin() {
         // Get user input from text fields
         String email = emailEditText.getText().toString().trim();
@@ -208,11 +160,7 @@ public class LoginActivity extends AppCompatActivity {
             });
     }
 
-    /**
-     * Save user session data to SharedPreferences for persistence
-     * 
-     * @param user The authenticated user object containing session data
-     */
+    /** Persists session data to SharedPreferences. */
     private void saveUserSession(User user) {
         android.content.SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         android.content.SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -224,11 +172,7 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "Session saved to SharedPreferences");
     }
 
-    /**
-     * Navigate to appropriate interface based on user role
-     * 
-     * @param user The authenticated user object
-     */
+    /** Routes user to Admin or Customer interface based on account type. */
     private void navigateBasedOnUserRole(User user) {
         if (user.isAdmin()) {
             // Admin user - navigate to admin dashboard

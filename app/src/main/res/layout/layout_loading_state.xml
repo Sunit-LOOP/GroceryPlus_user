@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Loading state layout -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/loadingLayout"
     android:layout_width="match_parent"
@@ -9,12 +10,14 @@
     android:clickable="true"
     android:focusable="true">
 
+    <!-- Progress indicator -->
     <ProgressBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:indeterminate="true"
         android:indeterminateTint="#4CAF50"/>
         
+    <!-- Loading text -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

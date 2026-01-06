@@ -8,6 +8,7 @@
 
     <!-- User Login Screen - For regular users (customers) only -->
     
+    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/loginToolbar"
         android:layout_width="0dp"
@@ -34,6 +35,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Main content -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -45,24 +47,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- Logo -->
         <ImageView
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:src="@drawable/splash_logo"
             android:layout_marginBottom="32dp" />
 
+        <!-- Login card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp">
 
+            <!-- Form -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="24dp">
 
+                <!-- Welcome text -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -73,6 +79,7 @@
                     android:gravity="center"
                     android:layout_marginBottom="24dp" />
 
+                <!-- Email field -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -87,6 +94,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Password field -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -102,6 +110,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Login button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/loginButton"
                     android:layout_width="match_parent"
@@ -110,6 +119,7 @@
                     android:textSize="16sp"
                     app:backgroundTint="#4CAF50" />
 
+                <!-- Signup link -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -1,38 +1,17 @@
 package com.sunit.groceryplus.models;
 
-/**
- * Wishlist Model Class
- * 
- * Represents an item saved by the user for later purchase.
- * Links a User to a specific Product.
- */
+/** Wishlist - Model representing an item saved for future purchase. */
 public class Wishlist {
     
-    // Unique ID for the wishlist entry
-    private int id;
-    
-    // User ID owner
-    private int userId;
-    
-    // Product ID saved
-    private int productId;
-    
-    // Timestamp when it was added
-    private String addedAt;
+    private int id;         // Unique DB identifier
+    private int userId;     // Owner User ID
+    private int productId;  // Saved Product ID
+    private String addedAt; // Timestamp
 
-    /**
-     * Default Constructor
-     */
+    /** Default Constructor. */
     public Wishlist() {}
 
-    /**
-     * Full Constructor
-     * 
-     * @param id Unique ID
-     * @param userId User ID
-     * @param productId Product ID
-     * @param addedAt Timestamp
-     */
+    /** Full Constructor. */
     public Wishlist(int id, int userId, int productId, String addedAt) {
         this.id = id;
         this.userId = userId;

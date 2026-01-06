@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Cart item layout -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -9,6 +10,7 @@
     app:cardElevation="2dp"
     app:strokeWidth="0dp">
 
+    <!-- Item content -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -16,6 +18,7 @@
         android:padding="12dp"
         android:gravity="center_vertical">
 
+        <!-- Product image container -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="80dp"
             android:layout_height="80dp"
@@ -24,6 +27,7 @@
             app:strokeColor="#EEEEEE"
             app:strokeWidth="1dp">
             
+            <!-- Product image -->
             <ImageView
                 android:id="@+id/cartProductImageIv"
                 android:layout_width="match_parent"

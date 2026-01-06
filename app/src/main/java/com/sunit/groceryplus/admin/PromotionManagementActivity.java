@@ -26,28 +26,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * PromotionManagementActivity - Admin interface for creating discount codes.
- * 
- * This activity allows the admin to manage promotional codes (coupons).
- * Admins can create new codes with specific discount percentages, validity dates, and images.
- * 
- * Key Features:
- * - List active promotions
- * - Add new promotion code
- * - Delete active promotion
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** PromotionManagementActivity - Admin interface for creating and managing promotional discount codes. */
 public class PromotionManagementActivity extends AppCompatActivity {
 
+    // UI Components
     private RecyclerView promotionsRv;
     private FloatingActionButton addPromotionFab;
+    
+    // Data & Helper
     private AdminPromotionAdapter adapter;
     private DatabaseHelper dbHelper;
 
+    /**
+     * Initializes activity, sets up toolbar, views, and loads promotions.
+     * @param savedInstanceState Saved instance state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +63,9 @@ public class PromotionManagementActivity extends AppCompatActivity {
         addPromotionFab.setOnClickListener(v -> showAddPromotionDialog());
     }
 
+    /**
+     * Configures the RecyclerView with AdminPromotionAdapter.
+     */
     private void setupRecyclerView() {
         promotionsRv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AdminPromotionAdapter(this, new ArrayList<>(), new AdminPromotionAdapter.OnPromotionActionListener() {
@@ -81,6 +77,9 @@ public class PromotionManagementActivity extends AppCompatActivity {
         promotionsRv.setAdapter(adapter);
     }
 
+    /**
+     * Fetches all active promotions from the database and updates the list.
+     */
     private void loadPromotions() {
         List<Promotion> promotions = new ArrayList<>();
         Cursor cursor = dbHelper.getAllPromotions();
@@ -102,6 +101,9 @@ public class PromotionManagementActivity extends AppCompatActivity {
         adapter.updatePromotions(promotions);
     }
 
+    /**
+     * Shows a dialog to create a new promotional code with discount and validity.
+     */
     private void showAddPromotionDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_promotion, null);
@@ -146,6 +148,10 @@ public class PromotionManagementActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    /**
+     * Deletes a promotion from the database.
+     * @param promotion The promotion to delete.
+     */
     private void deletePromotion(Promotion promotion) {
         if (dbHelper.deletePromotion(promotion.getPromoId())) {
             Toast.makeText(this, "Promotion deleted", Toast.LENGTH_SHORT).show();
@@ -155,6 +161,9 @@ public class PromotionManagementActivity extends AppCompatActivity {
         }
     }
     
+    /**
+     * Handles toolbar menu actions.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

@@ -27,31 +27,17 @@ import org.osmdroid.views.overlay.Marker;
 import java.util.List;
 
 
-/**
- * VendorMapActivity - Map interface for locating nearby vendors.
- * 
- * This activity displays a map populated with markers representing registered vendors/stores.
- * Users can view vendor locations relative to their own or a center point (default: Kathmandu).
- * Tapping a marker shows a summary card with the vendor's details and ratings.
- * 
- * Key Features:
- * - Multi-vendor map visualization
- * - Vendor markers with custom icons
- * - Vendor information card (Name, Address, Rating)
- * - Navigation to specific vendor store (simulated)
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** VendorMapActivity - Visualization interface for locating registered vendor stores on an interactive map. */
 public class VendorMapActivity extends AppCompatActivity {
 
+    // Infrastructure & UI
     private MapView map;
     private DatabaseHelper dbHelper;
     private MaterialCardView vendorInfoCard;
     private TextView vendorNameTv, vendorAddressTv, vendorRatingTv;
     private Button visitBtn;
 
+    /** Initializes the activity, OSMDroid SDK, and database connection. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +55,7 @@ public class VendorMapActivity extends AppCompatActivity {
         loadVendors();
     }
 
+    /** Links UI components and sets up the toolbar with back navigation. */
     private void initViews() {
         Toolbar toolbar = findViewById(R.id.vendorMapToolbar);
         setSupportActionBar(toolbar);
@@ -91,6 +78,7 @@ public class VendorMapActivity extends AppCompatActivity {
         });
     }
 
+    /** Configures initial map zoom and center coordinates. */
     private void setupMap() {
         map.setMultiTouchControls(true);
         map.getController().setZoom(14.0);
@@ -100,6 +88,7 @@ public class VendorMapActivity extends AppCompatActivity {
         map.getController().setCenter(ktmCenter);
     }
 
+    /** Fetches all vendors and plots them as interactive markers on the map. */
     private void loadVendors() {
         List<Vendor> vendors = dbHelper.getAllVendors();
         if (vendors.isEmpty()) {
@@ -126,6 +115,7 @@ public class VendorMapActivity extends AppCompatActivity {
         map.invalidate();
     }
 
+    /** Displays detailed vendor information on a summary card. */
     private void showVendorInfo(Vendor vendor) {
         vendorNameTv.setText(vendor.getVendorName());
         vendorAddressTv.setText(vendor.getAddress());
@@ -133,6 +123,7 @@ public class VendorMapActivity extends AppCompatActivity {
         vendorInfoCard.setVisibility(View.VISIBLE);
     }
 
+    /** Utility to create a scaled icon for map markers. */
     private Drawable getSmallIcon() {
         Drawable drawable = ContextCompat.getDrawable(this, R.drawable.ic_location);
         Bitmap bitmap = Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888);

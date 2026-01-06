@@ -23,57 +23,20 @@ import com.sunit.groceryplus.utils.GroceryNotificationManager;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * OrderManagementActivity - Admin interface for managing customer orders
- * 
- * This activity provides comprehensive order management functionality for administrators.
- * It allows admins to view, update, and manage all customer orders in the GroceryPlus system.
- * The activity includes features for order status updates, delivery personnel assignment,
- * and automatic COD payment completion.
- * 
- * Key Features:
- * - Display all customer orders in a RecyclerView
- * - Update order status (Pending → Processing → Shipped → Delivered)
- * - Assign delivery personnel to orders
- * - Automatic COD payment completion when order is marked as Delivered
- * - Send notifications to customers for order updates
- * - Background processing to prevent UI freezing
- * - Delivery route optimization
- * 
- * Order Status Flow:
- * 1. Pending - Order received, awaiting processing
- * 2. Processing - Order accepted, being prepared
- * 3. Shipped - Order out for delivery
- * 4. Delivered - Order delivered to customer
- * 5. Cancelled - Order cancelled (if applicable)
- * 
- * Payment Integration:
- * - When order status changes to "Delivered"
- * - Automatically updates COD payment status to "Completed"
- * - Sends payment confirmation notification
- * - Maintains payment history in database
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** OrderManagementActivity - Admin interface for managing customer orders, statuses, and delivery personnel assignment with automated payment handling. */
 public class OrderManagementActivity extends AppCompatActivity {
 
     // UI Components
     private RecyclerView ordersRv;
     private AdminOrderAdapter adapter;
     
-    // Business Logic Components
+    // Logic/Data Components
     private OrderRepository orderRepository;
     private GroceryNotificationManager notificationManager;
 
     /**
-     * Called when the activity is first created
-     * 
-     * This method initializes the UI components, sets up the toolbar,
-     * configures the RecyclerView, and loads the initial order data.
-     * 
-     * @param savedInstanceState Previously saved state data
+     * Initializes activity, setups toolbar, initializes repositories, and loads orders.
+     * @param savedInstanceState Saved instance state
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +57,7 @@ public class OrderManagementActivity extends AppCompatActivity {
     }
 
     /**
-     * Setup the MaterialToolbar with navigation and title
+     * Configures the toolbar with a back button.
      */
     private void setupToolbar() {
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
@@ -105,7 +68,7 @@ public class OrderManagementActivity extends AppCompatActivity {
     }
 
     /**
-     * Initialize business logic components
+     * Initializes repositories and managers.
      */
     private void initializeComponents() {
         ordersRv = findViewById(R.id.ordersRv);
@@ -113,6 +76,9 @@ public class OrderManagementActivity extends AppCompatActivity {
         notificationManager = GroceryNotificationManager.getInstance(this);
     }
 
+    /**
+     * Configures the RecyclerView options and click listeners for status updates and delivery assignment.
+     */
     private void setupRecyclerView() {
         ordersRv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AdminOrderAdapter(this, new ArrayList<>(), new AdminOrderAdapter.OnOrderActionListener() {
@@ -129,20 +95,19 @@ public class OrderManagementActivity extends AppCompatActivity {
         ordersRv.setAdapter(adapter);
     }
 
+    /**
+     * Fetches all orders from the repository and refreshes the adapter.
+     */
     private void loadOrders() {
         List<Order> orders = orderRepository.getAllOrders();
         adapter.updateOrders(orders);
     }
 
     /**
-     * Display a dialog to update the status of an order.
-     * 
-     * This method presents a list of valid statuses (Pending, Processing, Shipped, Delivered, Cancelled, Refunded).
-     * Upon selection, it updates the order status asynchronously and handles related side effects:
-     * - Payment status updates (e.g., Delivery -> Completed, Refunded -> Refunded)
-     * - Customer notifications via GroceryNotificationManager
-     * 
-     * @param order The order object to be updated.
+     * Displays a dialog to update order status.
+     * Updates database asynchronously, handles payment status syncing for completed/refunded orders,
+     * and sends push notifications to the user.
+     * @param order The order to update.
      */
     private void showUpdateStatusDialog(Order order) {
         // List of available statuses for the Admin to select from
@@ -235,6 +200,11 @@ public class OrderManagementActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Displays a dialog to assign a delivery person to an order.
+     * Uses DeliveryOptimizer to suggest the best candidate.
+     * @param order The order to assign.
+     */
     private void showAssignDeliveryDialog(Order order) {
         // Load delivery personnel
         DeliveryPersonRepository dpRepo = new DeliveryPersonRepository(this);
@@ -309,6 +279,9 @@ public class OrderManagementActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Handles toolbar navigation actions.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

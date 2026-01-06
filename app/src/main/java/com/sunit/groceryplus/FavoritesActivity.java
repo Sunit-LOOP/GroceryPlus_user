@@ -19,38 +19,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * FavoritesActivity - Displays the user's favorite products.
- * 
- * This activity manages and displays a list of products that the user has marked as favorites.
- * It provides a grid view of these products using a RecyclerView and handles empty states.
- * Note: This functionality overlaps with WishlistActivity and uses a separate FavoriteRepository.
- * 
- * Key Features:
- * - View favorite products grid
- * - Handle empty favorites state
- * - Integration with FavoriteRepository
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** FavoritesActivity - User interface for managing and browsing products marked as favorites. */
 public class FavoritesActivity extends AppCompatActivity {
 
+    // Infrastructure & UI
     private static final String TAG = "FavoritesActivity";
-    
-    // UI Components
     private RecyclerView favoritesRv;
     private TextView emptyFavoritesTv;
-    
+
     // Data & Repositories
     private int userId;
     private FavoriteRepository favoriteRepository;
     private CartRepository cartRepository;
     private ProductAdapter productAdapter;
-
     private List<Product> favoriteProducts = new ArrayList<>();
 
+    /** Initializes the activity, verifies user session, and loads favorite products. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,6 +69,7 @@ public class FavoritesActivity extends AppCompatActivity {
         }
     }
 
+    /** Handles toolbar menu selections. */
     @Override
     public boolean onOptionsItemSelected(android.view.MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -94,6 +79,7 @@ public class FavoritesActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /** Refreshes the favorites list when the activity resumes. */
     @Override
     protected void onResume() {
         super.onResume();
@@ -101,17 +87,20 @@ public class FavoritesActivity extends AppCompatActivity {
         loadFavorites();
     }
 
+    /** Links UI components to functional fields. */
     private void initViews() {
         favoritesRv = findViewById(R.id.favoritesRv);
         emptyFavoritesTv = findViewById(R.id.emptyFavoritesTv);
     }
 
+    /** Configures the grid layout for displaying products. */
     private void setupRecyclerView() {
         favoritesRv.setLayoutManager(new GridLayoutManager(this, 2));
         productAdapter = new ProductAdapter(this, favoriteProducts, userId);
         favoritesRv.setAdapter(productAdapter);
     }
 
+    /** Fetches the latest favorite products for the current user. */
     private void loadFavorites() {
         // For now, use database implementation
         // API integration can be added later when API structure is confirmed
@@ -133,11 +122,13 @@ public class FavoritesActivity extends AppCompatActivity {
         }
     }
 
+    /** Displays the favorites grid. */
     private void showFavorites() {
         favoritesRv.setVisibility(View.VISIBLE);
         emptyFavoritesTv.setVisibility(View.GONE);
     }
 
+    /** Displays the empty state message. */
     private void showEmptyFavorites() {
         favoritesRv.setVisibility(View.GONE);
         emptyFavoritesTv.setVisibility(View.VISIBLE);

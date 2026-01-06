@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Search history row layout -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -8,12 +9,14 @@
     android:gravity="center_vertical"
     android:background="?attr/selectableItemBackground">
 
+    <!-- History icon -->
     <ImageView
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:src="@drawable/history_icon_vector"
         app:tint="@android:color/darker_gray" />
 
+    <!-- Search query text -->
     <TextView
         android:id="@+id/historyQueryTv"
         android:layout_width="0dp"

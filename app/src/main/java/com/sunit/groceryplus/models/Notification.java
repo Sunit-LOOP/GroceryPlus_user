@@ -1,41 +1,16 @@
 package com.sunit.groceryplus.models;
 
-/**
- * Notification Model Class
- * 
- * Represents a system generated notification for the user.
- * Used to alert users about order changes, promotions, or system events.
- */
+/** Notification - Model representing a system alert or update for a user. */
 public class Notification {
     
-    // Unique ID for the notification
-    private int notificationId;
-    
-    // The recipient user's ID
-    private int userId;
-    
-    // Short title of the notification (e.g., "Order Shipped")
-    private String title;
-    
-    // Detailed body text of the notification
-    private String message;
-    
-    // Timestamp when the notification was created
-    private String createdAt;
-    
-    // Status to track if the user has seen this notification
-    private boolean isRead;
+    private int notificationId; // Unique DB identifier
+    private int userId;         // Recipient User ID
+    private String title;       // Notification Heading
+    private String message;     // Notification Body Text
+    private String createdAt;   // Timestamp
+    private boolean isRead;     // Read Status
 
-    /**
-     * Full Constructor
-     * 
-     * @param notificationId Unique ID
-     * @param userId Recipient ID
-     * @param title Title text
-     * @param message Message body
-     * @param createdAt Time string
-     * @param isRead Read status
-     */
+    /** Full Constructor. */
     public Notification(int notificationId, int userId, String title, String message, String createdAt, boolean isRead) {
         this.notificationId = notificationId;
         this.userId = userId;

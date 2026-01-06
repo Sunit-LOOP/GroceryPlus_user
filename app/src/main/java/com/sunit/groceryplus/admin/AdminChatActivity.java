@@ -21,33 +21,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-/**
- * AdminChatActivity - Admin-side chat interface.
- * 
- * This activity allows the admin to reply to messages fro specific users.
- * It provides a view of the conversation history and an input field for sending replies.
- * 
- * Key Features:
- * - Conversation view with user
- * - Send reply functionality
- * - Message status tracking (read/unread)
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** AdminChatActivity - Admin-side chat interface allowing replies to specific users with history view and status tracking. */
 public class AdminChatActivity extends AppCompatActivity {
 
+    // UI Components for chat interface
     private RecyclerView chatRv;
     private EditText messageEt;
     private ImageButton sendBtn;
 
+    // Adapters and Helpers
     private AdminChatAdapter adapter;
     private DatabaseHelper dbHelper;
 
+    // Session data
     private int userId;
     private int adminId;
 
+    /** Initializes the activity, UI components, and conversation history. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,12 +64,14 @@ public class AdminChatActivity extends AppCompatActivity {
         sendBtn.setOnClickListener(v -> sendMessage());
     }
 
+    /** Configures the RecyclerView with the chat adapter. */
     private void setupRecyclerView() {
         chatRv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AdminChatAdapter(this, null, adminId);
         chatRv.setAdapter(adapter);
     }
 
+    /** Loads conversation history from the database and marks messages as read. */
     private void loadConversation() {
         if (userId != -1) {
             dbHelper.markMessagesAsRead(adminId, userId);
@@ -89,6 +81,7 @@ public class AdminChatActivity extends AppCompatActivity {
         }
     }
 
+    /** Validates and sends a new message to the user. */
     private void sendMessage() {
         String messageText = messageEt.getText().toString().trim();
         if (messageText.isEmpty()) {
@@ -106,6 +99,7 @@ public class AdminChatActivity extends AppCompatActivity {
         }
     }
 
+    /** Handles toolbar navigation and menu item selections. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

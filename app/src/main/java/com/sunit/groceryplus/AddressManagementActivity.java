@@ -18,32 +18,16 @@ import com.sunit.groceryplus.models.Address;
 import java.util.List;
 
 
-/**
- * AddressManagementActivity - Interface for managing delivery addresses.
- * 
- * This activity allows users to add, edit, delete, and set default delivery addresses.
- * It uses a dialog-based interface for inputting address details and a RecyclerView
- * to list existing saved addresses.
- * 
- * Key Features:
- * - List all saved addresses
- * - Add new address (Dialog)
- * - Edit existing address (Dialog)
- * - Delete address
- * - Set default address
- * - Input validation
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** AddressManagementActivity - Interface for managing user delivery addresses. */
 public class AddressManagementActivity extends AppCompatActivity {
 
+    // UI Components & Data
     private RecyclerView addressRecyclerView;
     private AddressAdapter addressAdapter;
     private AddressRepository addressRepository;
     private int userId;
 
+    /** Initializes the activity, verifies user session, and loads addresses. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +54,7 @@ public class AddressManagementActivity extends AppCompatActivity {
         loadAddresses();
     }
 
+    /** Configures the toolbar with back navigation. */
     private void setupToolbar() {
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.addressToolbar);
         setSupportActionBar(toolbar);
@@ -79,6 +64,7 @@ public class AddressManagementActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
 
+    /** Initializes the RecyclerView and its action listeners. */
     private void setupRecyclerView() {
         addressRecyclerView = findViewById(R.id.addressRecyclerView);
         addressRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -103,11 +89,13 @@ public class AddressManagementActivity extends AppCompatActivity {
         addressRecyclerView.setAdapter(addressAdapter);
     }
 
+    /** Fetches the latest address list from the repository. */
     private void loadAddresses() {
         List<Address> addresses = addressRepository.getUserAddresses(userId);
         addressAdapter.updateAddresses(addresses);
     }
 
+    /** Opens a dialog to create or update an address record. */
     private void showAddressDialog(Address existingAddress) {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_address, null);
         EditText typeEt = dialogView.findViewById(R.id.addressTypeEt);

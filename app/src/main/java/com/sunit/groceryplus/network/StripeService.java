@@ -8,7 +8,9 @@ import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 
+/** Retrofit service interface defining endpoints for the Stripe Payment Intents API. */
 public interface StripeService {
+    /** Creates a new PaymentIntent on Stripe to initiate the payment process. */
     @FormUrlEncoded
     @POST("v1/payment_intents")
     Call<JsonObject> createPaymentIntent(

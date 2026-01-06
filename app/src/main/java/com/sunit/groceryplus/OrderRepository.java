@@ -13,84 +13,22 @@ import java.util.List;
 import com.sunit.groceryplus.utils.DeliveryOptimizer;
 import com.sunit.groceryplus.utils.GroceryNotificationManager;
 
-/**
- * OrderRepository - Repository class for order management operations
- * 
- * This repository class handles all order-related database operations and business logic
- * for the GroceryPlus application. It provides a clean abstraction layer between
- * the UI components and the database, implementing the Repository pattern.
- * 
- * Key Responsibilities:
- * - Order creation and management
- * - Order item handling
- * - Order status updates
- * - Delivery personnel assignment
- * - Order tracking and history
- * - Notification management for order updates
- * - Delivery optimization integration
- * 
- * Order Lifecycle:
- * 1. Order created with initial status
- * 2. Order items added to the order
- * 3. Delivery personnel assigned (optional)
- * 4. Order status updated through various stages
- * 5. Notifications sent for status changes
- * 6. Order completed or cancelled
- * 
- * Order Status Flow:
- * - Pending → Processing → Shipped → Delivered
- * - Can be cancelled at any stage
- * - Each status change triggers notifications
- * 
- * Integration Points:
- * - DatabaseHelper for data persistence
- * - DeliveryOptimizer for delivery time estimation
- * - GroceryNotificationManager for user notifications
- * - DeliveryPersonRepository for delivery assignments
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** Repository for managing user and admin order operations in the database. */
 public class OrderRepository {
-    
-    // Tag for logging and debugging
+    // Infrastructure
     private static final String TAG = "OrderRepository";
-    
-    // Database and repository dependencies
     private DatabaseHelper dbHelper;
     private DeliveryPersonRepository deliveryPersonRepository;
     private Context context;
 
-    /**
-     * Constructor for OrderRepository
-     * 
-     * Initializes the repository with database helper and delivery person repository
-     * for comprehensive order management operations.
-     * 
-     * @param context Application context for database operations and notifications
-     */
+    /** Initializes the repository with necessary dependencies. */
     public OrderRepository(Context context) {
         this.context = context;
         dbHelper = new DatabaseHelper(context);
         deliveryPersonRepository = new DeliveryPersonRepository(context);
     }
 
-    /**
-     * Create a new order in the system
-     * 
-     * This method creates a new order with the specified details and automatically
-     * sends a notification to the user with delivery time estimation using the
-     * DeliveryOptimizer algorithm.
-     * 
-     * @param userId ID of the user placing the order
-     * @param totalAmount Total amount for the order
-     * @param deliveryFee Delivery fee for the order
-     * @param status Initial status of the order (usually "Pending")
-     * @param addressId Delivery address ID for the order
-     * @param instructions Special delivery instructions
-     * @return Order ID if successful, -1 if failed
-     */
+    /** Creates a new order and sends an initial confirmation notification. */
     public long createOrder(int userId, double totalAmount, double deliveryFee, String status, int addressId, String instructions) {
         try {
             // Create order in database
@@ -115,19 +53,7 @@ public class OrderRepository {
         }
     }
 
-    /**
-     * Add an item to an existing order
-     * 
-     * This method adds a product to an order with the specified quantity and price.
-     * It's typically used during the order creation process when multiple items
-     * are added to a single order.
-     * 
-     * @param orderId ID of the order to add the item to
-     * @param productId ID of the product being added
-     * @param quantity Quantity of the product
-     * @param price Price per unit of the product
-     * @return true if successful, false if failed
-     */
+    /** Adds a specific product item to an existing order. */
     public boolean addOrderItem(int orderId, int productId, int quantity, double price) {
         try {
             long result = dbHelper.addOrderItem(orderId, productId, quantity, price);
@@ -138,14 +64,7 @@ public class OrderRepository {
         }
     }
 
-    /**
-     * Get all orders in the system (Admin functionality)
-     * 
-     * This method retrieves all orders from the database, typically used by
-     * administrators to view and manage all customer orders.
-     * 
-     * @return List of all orders, empty list if error occurs
-     */
+    /** Retrieves all orders in the system for admin use. */
     public List<Order> getAllOrders() {
         try {
             return dbHelper.getAllOrders();
@@ -155,15 +74,7 @@ public class OrderRepository {
         }
     }
 
-    /**
-     * Get orders for a specific user
-     * 
-     * This method retrieves all orders placed by a specific user, typically
-     * used in order history and tracking features.
-     * 
-     * @param userId ID of the user to get orders for
-     * @return List of user's orders, empty list if error occurs
-     */
+    /** Retrieves all orders placed by a specific user. */
     public List<Order> getUserOrders(int userId) {
         try {
             return dbHelper.getOrdersByUser(userId);
@@ -173,9 +84,7 @@ public class OrderRepository {
         }
     }
 
-    /**
-     * Get order items
-     */
+    /** Retrieves all items associated with a specific order. */
     public List<OrderItem> getOrderItems(int orderId) {
         try {
             return dbHelper.getOrderItems(orderId);
@@ -185,19 +94,7 @@ public class OrderRepository {
         }
     }
 
-    /**
-     * Cancel an order initiated by the user.
-     * 
-     * This method performs the following operations:
-     * 1. Updates the order status to "Cancelled".
-     * 2. Calculates the refund amount by deducting a 15% cancellation fee.
-     * 3. Sends a chat message from the Admin to the User notifying them of the cancellation and the calculated refund amount.
-     * 4. Sends a system notification for the status change.
-     * 
-     * @param orderId The unique identifier of the order to be cancelled.
-     * @param userId The ID of the user who owns the order.
-     * @return true if the cancellation and message sending were successful, false otherwise.
-     */
+    /** Cancels an order, calculates refund with fee, and notifies the user via chat and system. */
     public boolean cancelOrder(int orderId, int userId) {
         try {
             // 1. Get Order Details to calculate refund
@@ -251,12 +148,7 @@ public class OrderRepository {
         }
     }
 
-    /**
-     * Update order status with extensive notification and refund handling.
-     * 
-     * Now includes logic for handling "Refunded" status initiated by Admin.
-     * - If status is "Refunded", it triggers a full refund notification via chat.
-     */
+    /** Updates order status and sends appropriate user notifications, including refund info if applicable. */
     public boolean updateOrderStatus(int orderId, int userId, String status) {
         try {
             boolean success = dbHelper.updateOrderStatus(orderId, status);
@@ -298,9 +190,7 @@ public class OrderRepository {
         }
     }
 
-    /**
-     * Get last order for user
-     */
+    /** Retrieves the most recent order placed by a user. */
     public Order getLastOrder(int userId) {
         try {
             // Get all user orders
@@ -314,6 +204,7 @@ public class OrderRepository {
         return null;
     }
 
+    /** Manually assigns a delivery person to an order. */
     public boolean assignDeliveryPerson(int orderId, int deliveryPersonId) {
         boolean dbResult = dbHelper.assignDeliveryPerson(orderId, deliveryPersonId);
         if (dbResult) {
@@ -322,9 +213,7 @@ public class OrderRepository {
         return dbResult;
     }
 
-    /**
-     * Auto-assign next available delivery boy to an order
-     */
+    /** Automatically assigns the next available delivery person to an order. */
     public boolean autoAssignNextAvailable(int orderId) {
         DeliveryPerson next = deliveryPersonRepository.getNextAvailableDeliveryPerson();
         if (next != null) {
@@ -333,9 +222,7 @@ public class OrderRepository {
         return false;
     }
 
-    /**
-     * Update order status and handle delivery person availability
-     */
+    /** Updates order status and manages delivery person availability based on the status. */
     public boolean updateOrderStatusWithDeliveryLogic(int orderId, int userId, String status) {
         try {
             Order order = dbHelper.getOrderById(orderId);
@@ -372,9 +259,7 @@ public class OrderRepository {
         }
     }
 
-    /**
-     * Reassign pending orders for a delivery boy who becomes unavailable
-     */
+    /** Reassigns pending orders when a delivery person becomes unavailable. */
     public void reassignOrdersForUnavailableDeliveryBoy(int deliveryPersonId) {
         try {
             List<Order> pendingOrders = dbHelper.getOrdersByDeliveryPersonAndStatus(deliveryPersonId, "PENDING");
@@ -391,9 +276,7 @@ public class OrderRepository {
         }
     }
     
-    /**
-     * Record payment for an order
-     */
+    /** Records a payment transaction for an order in the database. */
     public boolean recordPayment(int orderId, double amount, String paymentMethod, String transactionId) {
         try {
             long result = dbHelper.addPayment(orderId, amount, paymentMethod, transactionId);

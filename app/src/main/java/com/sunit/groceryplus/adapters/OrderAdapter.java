@@ -18,26 +18,21 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Adapter for displaying user's order history.
- * Displays order summary card with ID, status, amount, and actions.
- * Supports: Realtime countdown timer for shipped orders, Cancellation (if pending), and Reordering.
- */
+/** OrderAdapter - Displays user's order history with status tracking and delivery countdowns. */
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
 
     private Context context;
     private List<Order> orders;
     private OnOrderClickListener listener;
 
-    /**
-     * Interface for order interactions
-     */
+    /** Interface for order interactions (View, Reorder, Cancel). */
     public interface OnOrderClickListener {
         void onOrderClick(Order order);     // View details
         void onReorderClick(Order order);   // Add items back to cart
         void onCancelOrderClick(Order order); // Cancel pending order
     }
 
+    /** Constructor. */
     public OrderAdapter(Context context, List<Order> orders, OnOrderClickListener listener) {
         this.context = context;
         this.orders = orders;
@@ -62,23 +57,18 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         return orders != null ? orders.size() : 0;
     }
 
+    /** Updates the data source and refreshes the UI. */
     public void updateOrders(List<Order> newOrders) {
         this.orders = newOrders;
         notifyDataSetChanged();
     }
 
-    /**
-     * ViewHolder component for Order item.
-     * Manages a countdown timer for delivery estimation.
-     */
+    /** ViewHolder for Order items, including realtime delivery timer support. */
     class OrderViewHolder extends RecyclerView.ViewHolder {
-        TextView orderIdTv;
-        TextView orderDateTv;
-        private TextView orderStatusTv;
-        private TextView orderTotalTv;
-        private TextView deliveryFeeTv;
-        private TextView orderItemCountTv;
-        private TextView orderTimerTv;
+        // UI Components
+        TextView orderIdTv, orderDateTv;
+        private TextView orderStatusTv, orderTotalTv, deliveryFeeTv;
+        private TextView orderItemCountTv, orderTimerTv;
         
         // Timer Logic for Shipped -> Delivered Countdown
         private Handler timerHandler = new Handler();
@@ -123,6 +113,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             });
         }
 
+        /** Binds data and initializes button visibility. */
         public void bind(Order order) {
             orderIdTv.setText("Order #" + order.getOrderId());
             orderDateTv.setText(order.getOrderDate());
@@ -152,10 +143,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             setupTimer(order);
         }
 
-        /**
-         * Sets up a mock countdown timer if the order is Shipped.
-         * Assumes a 30-minute delivery window from shipping start.
-         */
+        /** Configures a 30-minute estimated delivery countdown if order is Shipped. */
         private void setupTimer(final Order order) {
             if (timerRunnable != null) {
                 timerHandler.removeCallbacks(timerRunnable);
@@ -198,6 +186,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             }
         }
 
+        /** Resolves color resource based on current status string. */
         private int getStatusColor(String status) {
             switch (status.toLowerCase()) {
                 case "pending":

@@ -22,30 +22,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * InventoryAlertsActivity - Dashboard for stock level monitoring.
- * 
- * This activity filters and displays products that are either out of stock or running low (below threshold).
- * It helps the admin prioritize restocking efforts.
- * 
- * Key Features:
- * - View Low Stock Products (< 10 items)
- * - View Out of Stock Products (0 items)
- * - aggregated alert summary
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** InventoryAlertsActivity - Dashboard for monitoring stock levels, filtering out-of-stock and low-stock products. */
 public class InventoryAlertsActivity extends AppCompatActivity {
 
+    // UI Components
     private RecyclerView alertsRv;
     private TextView emptyAlertsTv;
+    
+    // Data & Adapters
     private AdminProductAdapter adapter;
     private DatabaseHelper dbHelper;
     private List<Product> lowStockProducts;
     private List<Product> outOfStockProducts;
 
+    /**
+     * Initializes activity, sets up toolbar, and triggers inventory check.
+     * @param savedInstanceState Saved instance state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +51,9 @@ public class InventoryAlertsActivity extends AppCompatActivity {
         loadInventoryAlerts();
     }
 
+    /**
+     * Configures the toolbar with a back button and title.
+     */
     private void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -68,6 +64,9 @@ public class InventoryAlertsActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
 
+    /**
+     * Initializes UI views and sets up the RecyclerView with a product adapter.
+     */
     private void initViews() {
         alertsRv = findViewById(R.id.alertsRv);
         emptyAlertsTv = findViewById(R.id.emptyAlertsTv);
@@ -80,6 +79,10 @@ public class InventoryAlertsActivity extends AppCompatActivity {
         alertsRv.setAdapter(adapter);
     }
 
+    /**
+     * Queries the database for low stock and out-of-stock products.
+     * Combines results and updates the UI or shows an empty state.
+     */
     private void loadInventoryAlerts() {
         try {
             lowStockProducts = dbHelper.getLowStockProducts(10); // Low stock threshold = 10
@@ -104,6 +107,11 @@ public class InventoryAlertsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Displays a summary dialog with counts of affected products.
+     * @param outOfStockCount Count of products with 0 stock
+     * @param lowStockCount Count of products below threshold
+     */
     private void showAlertSummary(int outOfStockCount, int lowStockCount) {
         String message = "Found " + outOfStockCount + " out of stock products and " + lowStockCount + " low stock products.";
         
@@ -117,6 +125,9 @@ public class InventoryAlertsActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Handles toolbar menu actions (Back button).
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

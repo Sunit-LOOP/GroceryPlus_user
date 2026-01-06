@@ -20,33 +20,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * PaymentTrackingActivity - Admin dashboard for monitoring financial transactions.
- * 
- * This activity displays a comprehensive list of all payments received by the system.
- * It includes filtering options (All, Stripe, COD) and displays aggregated financial statistics
- * such as Total Revenue and Monthly Revenue.
- * 
- * Key Features:
- * - Payment History List
- * - Filter by Payment Method (Stripe vs COD)
- * - Financial Statistics (Total collected, Monthly stats)
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** PaymentTrackingActivity - Admin dashboard for monitoring financial transactions, revenue stats, and filtering by payment method. */
 public class PaymentTrackingActivity extends AppCompatActivity {
 
+    // UI Components
     private RecyclerView paymentsRv;
+    private TextView totalPaymentsTv, totalAmountTv, monthlyAmountTv;
+    
+    // Filters
+    private com.google.android.material.chip.Chip chipAll, chipStripe, chipCod;
+    private String currentFilter = "all"; // all, cod, stripe
+
+    // Data & Helper
     private AdminPaymentAdapter adapter;
     private DatabaseHelper dbHelper;
 
-    private com.google.android.material.chip.Chip chipAll, chipStripe, chipCod;
-    private String currentFilter = "all"; // all, cod, stripe
-    
-    private TextView totalPaymentsTv, totalAmountTv, monthlyAmountTv;
-
+    /**
+     * Initializes activity, sets up toolbar, views, recycler view, and loads payment history.
+     * @param savedInstanceState Saved instance state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,12 +69,18 @@ public class PaymentTrackingActivity extends AppCompatActivity {
         updateStatistics();
     }
 
+    /**
+     * Configures the RecyclerView with AdminPaymentAdapter.
+     */
     private void setupRecyclerView() {
         paymentsRv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AdminPaymentAdapter(this, new ArrayList<>());
         paymentsRv.setAdapter(adapter);
     }
 
+    /**
+     * Sets up filter chip click listeners to toggle payment display.
+     */
     private void setupFilterChips() {
         chipAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) selectFilter("all");
@@ -98,6 +96,10 @@ public class PaymentTrackingActivity extends AppCompatActivity {
         chipAll.setChecked(true);
     }
 
+    /**
+     * Updates the current filter and reloads data.
+     * @param filter The selected filter type ('all', 'cod', 'stripe')
+     */
     private void selectFilter(String filter) {
         currentFilter = filter;
         
@@ -105,6 +107,10 @@ public class PaymentTrackingActivity extends AppCompatActivity {
         updateStatistics();
     }
 
+    /**
+     * Fetches all payments from database and filters them based on selection.
+     * Updates the adapter with the filtered list.
+     */
     private void loadPayments(String filter) {
         List<Payment> payments = new ArrayList<>();
         Cursor cursor = dbHelper.getAllPayments();
@@ -131,6 +137,9 @@ public class PaymentTrackingActivity extends AppCompatActivity {
         adapter.updatePayments(payments);
     }
     
+    /**
+     * Calculates and displays total revenue and transaction counts based on the active filter.
+     */
     private void updateStatistics() {
         // Get all payments for statistics
         List<Payment> allPayments = new ArrayList<>();
@@ -167,6 +176,9 @@ public class PaymentTrackingActivity extends AppCompatActivity {
         if (monthlyAmountTv != null) monthlyAmountTv.setText("Rs. " + String.format("%.2f", monthlyAmount));
     }
     
+    /**
+     * Handles toolbar menu actions (Back button).
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

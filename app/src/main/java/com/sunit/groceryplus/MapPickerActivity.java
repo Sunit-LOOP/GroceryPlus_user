@@ -14,30 +14,16 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
 
-/**
- * MapPickerActivity - Interface for selecting a location on the map.
- * 
- * This activity opens a map view (using OSMDroid) allowing the user to pan and zoom
- * to select a specific geographic location. The center of the map is always the selected point.
- * It returns the latitude and longitude of the selected location to the calling activity.
- * 
- * Key Features:
- * - Interactive Map
- * - "Pick" location by centering map
- * - Real-time coordinate display
- * - Returns result to caller (e.g., Address Management)
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** MapPickerActivity - Selection interface using OSMDroid for capturing geographic coordinates. */
 public class MapPickerActivity extends AppCompatActivity {
 
+    // UI & Data
     private MapView map;
     private TextView locationTv;
     private Button confirmBtn;
     private GeoPoint selectedPoint;
 
+    /** Initializes the map picker, OSMDroid configuration, and center listeners. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +79,7 @@ public class MapPickerActivity extends AppCompatActivity {
         updateSelectedLocation();
     }
 
+    /** Syncs the selected coordinate with the current map center. */
     private void updateSelectedLocation() {
         selectedPoint = (GeoPoint) map.getMapCenter();
         locationTv.setText(String.format("Lat: %.6f, Lng: %.6f", selectedPoint.getLatitude(), selectedPoint.getLongitude()));

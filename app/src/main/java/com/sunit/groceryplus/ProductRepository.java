@@ -8,14 +8,18 @@ import com.sunit.groceryplus.models.Product;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Repository for managing products in the database. */
 public class ProductRepository {
+    // Infrastructure
     private static final String TAG = "ProductRepository";
     private DatabaseHelper dbHelper;
 
+    /** Initializes the repository with a DatabaseHelper. */
     public ProductRepository(Context context) {
         this.dbHelper = new DatabaseHelper(context);
     }
 
+    /** Adds a new product to the database. */
     public boolean addProduct(String productName, int categoryId, double price, String description, String image, int stockQuantity, int vendorId) {
         try {
             long result = dbHelper.addProduct(productName, categoryId, price, description, image, stockQuantity, vendorId);
@@ -26,9 +30,7 @@ public class ProductRepository {
         }
     }
 
-    /**
-     * Get all products
-     */
+    /** Retrieves all products available in the database. */
     public List<Product> getAllProducts() {
         try {
             return dbHelper.getAllProducts();
@@ -38,9 +40,7 @@ public class ProductRepository {
         }
     }
 
-    /**
-     * Get product by ID
-     */
+    /** Retrieves a specific product by its ID. */
     public Product getProductById(int productId) {
         try {
             return dbHelper.getProductById(productId);
@@ -50,9 +50,7 @@ public class ProductRepository {
         }
     }
 
-    /**
-     * Get products by category
-     */
+    /** Retrieves all products belonging to a specific category. */
     public List<Product> getProductsByCategory(int categoryId) {
         try {
             return dbHelper.getProductsByCategory(categoryId);
@@ -62,9 +60,7 @@ public class ProductRepository {
         }
     }
 
-    /**
-     * Search products
-     */
+    /** Searches for products matching a text query. */
     public List<Product> searchProducts(String query) {
         try {
             return dbHelper.searchProducts(query);
@@ -74,6 +70,7 @@ public class ProductRepository {
         }
     }
 
+    /** Updates an existing product's information in the database. */
     public boolean updateProduct(int productId, String productName, int categoryId, double price, String description, String image, int stockQuantity, int vendorId) {
         try {
             return dbHelper.updateProduct(productId, productName, categoryId, price, description, image, stockQuantity, vendorId);
@@ -83,9 +80,7 @@ public class ProductRepository {
         }
     }
 
-    /**
-     * Delete product
-     */
+    /** Deletes a specific product from the database by its ID. */
     public boolean deleteProduct(int productId) {
         try {
             return dbHelper.deleteProduct(productId);

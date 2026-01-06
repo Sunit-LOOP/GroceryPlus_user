@@ -4,12 +4,12 @@ import android.content.Context;
 import android.util.Log;
 import com.sunit.groceryplus.models.User;
 
-/**
- * Test class to demonstrate DatabaseHelper usage
- */
+/** Utility class for demonstrating and testing various DatabaseHelper operations. */
 public class DatabaseHelperTest {
+    // Infrastructure
     private static final String TAG = "DatabaseHelperTest";
     
+    /** Executes a suite of database operations to verify correctness of DatabaseHelper methods. */
     public static void testDatabaseOperations(Context context) {
         DatabaseHelper dbHelper = new DatabaseHelper(context);
         

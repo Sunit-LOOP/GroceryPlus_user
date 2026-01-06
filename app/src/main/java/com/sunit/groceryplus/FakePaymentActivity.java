@@ -18,39 +18,24 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.sunit.groceryplus.utils.GroceryNotificationManager;
 
 
-/**
- * FakePaymentActivity - Simulates the Stripe payment gateway environment.
- * 
- * This activity provides a realistic-looking credit card entry form to simulate
- * a Stripe checkout experience. It handles input validation (Luhn algorithm not fully implemented, but basic checks are),
- * displays a card preview that updates in real-time, and simulates a payment processing delay
- * before successfully placing the order.
- * 
- * Key Features:
- * - Realistic Card Input Form (Number, Expiry, CVV, Name)
- * - Live Card Preview
- * - Simulated Processing Delay (Authorizing -> Confirming -> Finalizing)
- * - Integration with Order Creation logic upon success
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** Activity that simulates a Stripe payment gateway environment for checkout testing. */
 public class FakePaymentActivity extends AppCompatActivity {
-
+    // UI Components
     private TextInputEditText cardNumberEt, cardExpiryEt, cardCvvEt, cardNameEt;
     private TextView cardPreviewNumber, cardPreviewName, cardPreviewExpiry;
     private Button processPaymentBtn;
-
     private View paymentProcessingOverlay;
     private TextView processingSubtitleTv;
 
+    // Data State
     private int userId;
     private double amount;
     private double subtotal;
     private double deliveryFee;
     private int addressId;
     private String instructions;
+
+    // Infrastructure
     private com.sunit.groceryplus.DatabaseHelper dbHelper;
     private GroceryNotificationManager notificationManager;
 

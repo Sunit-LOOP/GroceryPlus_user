@@ -14,42 +14,28 @@ import com.sunit.groceryplus.models.Address;
 
 import java.util.List;
 
-/**
- * Adapter for displaying a list of User Addresses.
- * Handles binding address data to the RecyclerView, managing edit/delete actions,
- * and setting a default address.
- */
+/** AddressAdapter - Handles binding user addresses to RecyclerView, including edit/delete actions. */
 public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.ViewHolder> {
 
     private Context context;
     private List<Address> addressList;
     private OnAddressActionListener listener;
 
-    /**
-     * Interface for handling address-related user actions.
-     */
+    /** Interface for handling address-related user actions. */
     public interface OnAddressActionListener {
         void onEdit(Address address);
         void onDelete(Address address);
         void onSetDefault(Address address);
     }
 
-    /**
-     * Constructor for AddressAdapter.
-     * @param context Application context
-     * @param addressList List of Address objects
-     * @param listener Callback listener for actions
-     */
+    /** Constructor. */
     public AddressAdapter(Context context, List<Address> addressList, OnAddressActionListener listener) {
         this.context = context;
         this.addressList = addressList;
         this.listener = listener;
     }
 
-    /**
-     * Updates the data source and refreshes the UI.
-     * @param newAddresses New list of addresses
-     */
+    /** Updates the data source and refreshes the UI. */
     public void updateAddresses(List<Address> newAddresses) {
         this.addressList = newAddresses;
         notifyDataSetChanged();
@@ -91,9 +77,7 @@ public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.ViewHold
         return addressList.size();
     }
 
-    /**
-     * ViewHolder class to cache view lookups for performance.
-     */
+    /** ViewHolder class to cache view lookups. */
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView addressTypeTv, fullAddressTv, cityTv, defaultBadge;
         View editAddressBtn, deleteAddressBtn;

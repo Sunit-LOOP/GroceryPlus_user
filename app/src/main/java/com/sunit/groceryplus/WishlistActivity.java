@@ -18,40 +18,22 @@ import com.sunit.groceryplus.models.Product;
 import java.util.List;
 
 
-/**
- * WishlistActivity - Manages the user's wishlist items.
- * 
- * This activity displays a collection of products that the user has saved for later purchase.
- * It allows users to view their wishlist in a grid layout and access product details.
- * It handles loading data from the WishlistRepository and displaying appropriate empty states.
- * 
- * Key Features:
- * - View wishlist products
- * - Grid layout display
- * - Empty wishlist handling
- * - Navigation to product details
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** WishlistActivity - Grid interface for managing products saved by the user for later purchase. */
 public class WishlistActivity extends AppCompatActivity {
 
+    // Infrastructure & UI
     private static final String TAG = "WishlistActivity";
-
-    // UI Components
     private RecyclerView wishlistRv;
     private TextView emptyWishlistTv;
-    
-    // Adapters & Repositories
+
+    // Adapters & Data
     private ProductAdapter productAdapter;
     private WishlistRepository wishlistRepository;
     private CartRepository cartRepository;
-    
-    // Data
     private List<Product> wishlistProducts;
     private int userId;
 
+    /** Initializes the activity, verifies user session, and loads wishlist data. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +54,7 @@ public class WishlistActivity extends AppCompatActivity {
         loadWishlist();
     }
 
+    /** Links UI components to functional fields and configures the grid layout. */
     private void initViews() {
         wishlistRv = findViewById(R.id.wishlistRv);
         emptyWishlistTv = findViewById(R.id.emptyWishlistTv);
@@ -81,6 +64,7 @@ public class WishlistActivity extends AppCompatActivity {
         wishlistRv.setAdapter(productAdapter);
     }
 
+    /** Configures the toolbar with back navigation. */
     private void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -91,6 +75,7 @@ public class WishlistActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> finish());
     }
 
+    /** Fetches the latest wishlist products for the current user. */
     private void loadWishlist() {
         try {
             wishlistProducts = wishlistRepository.getWishlistProducts(userId);
@@ -112,6 +97,7 @@ public class WishlistActivity extends AppCompatActivity {
         }
     }
 
+    /** Refreshes the wishlist when the activity resumes. */
     @Override
     protected void onResume() {
         super.onResume();

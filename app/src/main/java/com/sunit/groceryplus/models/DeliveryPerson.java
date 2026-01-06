@@ -1,46 +1,21 @@
 package com.sunit.groceryplus.models;
 
-/**
- * DeliveryPerson Model Class
- * 
- * Represents a delivery personnel in the system.
- * This class tracks the person's availability, contact info,
- * and current assignment status.
- */
+/** DeliveryPerson - Model representing a fleet staff member and their availability. */
 public class DeliveryPerson {
     
     // Unique ID for the delivery person
-    private int personId;
-    
-    // Full Name
-    private String name;
-    
-    // Contact Phone Number
-    private String phone;
-    
-    // Employment Status (Active/Inactive)
-    private String status;
-    
-    // Availability for new orders (True = Can accept orders)
-    private boolean available;
-    
-    // ID of the order currently being delivered (0 if none)
-    private int currentOrderId;
+    private int personId;       // Unique DB identifier
+    private String name;        // Staff Name
+    private String phone;       // Contact Number
+    private String status;      // Employment Status (Active/Inactive)
+    private boolean available;  // Availability Flag
+    private int currentOrderId; // Currently assigned order ID (0 if none)
 
-    /**
-     * Default Constructor
-     */
+    /** Default Constructor. */
     public DeliveryPerson() {}
 
     /**
-     * Full Constructor
-     * 
-     * @param personId Unique ID
-     * @param name Name
-     * @param phone Contact Number
-     * @param status Employment Status
-     * @param available Is currently available?
-     * @param currentOrderId ID of active order
+     * Full Constructor.
      */
     public DeliveryPerson(int personId, String name, String phone, String status, boolean available, int currentOrderId) {
         this.personId = personId;

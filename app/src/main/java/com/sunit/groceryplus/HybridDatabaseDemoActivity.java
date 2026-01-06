@@ -13,15 +13,13 @@ import com.sunit.groceryplus.utils.NetworkUtils;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Demo activity to showcase SQLite-First Hybrid Database functionality
- * Demonstrates SQLite (PRIMARY) + Firestore (SECONDARY) integration
- */
+/** Activity demonstrating the SQLite-First hybrid database integration between local SQLite and cloud Firestore. */
 public class HybridDatabaseDemoActivity extends AppCompatActivity {
-    
+    // Infrastructure
     private static final String TAG = "HybridDatabaseDemo";
-    
     private HybridDatabaseManager hybridDb;
+
+    // UI Components
     private TextView statusText;
     private TextView syncStatusText;
     private Button addProductButton;

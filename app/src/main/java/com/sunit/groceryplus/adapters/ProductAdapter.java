@@ -26,17 +26,10 @@ import com.sunit.groceryplus.utils.UIComponents;
 
 import java.util.List;
 
-/**
- * Adapter for displaying the main product catalog grid.
- * Features:
- * - Dynamic product data binding (Image, Price, Stock)
- * - Add to Cart / Quantity adjustments directly from grid
- * - Wishlist toggling
- * - Stock validation logic
- * - Modern UI animations (Entrance slide, pulse effects)
- */
+/** Adapter for displaying the main product catalog grid with dynamic data binding, cart/wishlist actions, stock validation, and modern UI animations. */
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder> {
 
+    // Infrastructure
     private static final String TAG = "ProductAdapter";
     private Context context;
     private List<Product> productList;
@@ -45,10 +38,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     private int userId;
     private OnCartUpdateListener cartUpdateListener;
 
-    /**
-     * Interface to notify parent activity/fragment when cart contents change.
-     * Useful for updating cart badge or totals.
-     */
+    /** Interface for notifying parent of cart content changes. */
     public interface OnCartUpdateListener {
         void onCartUpdated();
     }
@@ -61,6 +51,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         this.userId = userId;
     }
 
+    /** Sets the listener for cart update events. */
     public void setCartUpdateListener(OnCartUpdateListener listener) {
         this.cartUpdateListener = listener;
     }
@@ -73,6 +64,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         notifyDataSetChanged();
     }
 
+    /** Directly updates the product list data. */
     public void updateProducts(List<Product> products) {
         this.productList = products;
         notifyDataSetChanged();
@@ -274,6 +266,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         });
     }
 
+    /** Updates the quantity toggle UI visibility and values. */
     private void updateQuantityUI(ViewHolder holder, int quantity) {
         if (quantity > 0) {
             holder.addToCartBtn.setVisibility(View.GONE);
@@ -285,9 +278,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         }
     }
 
-    /**
-     * Get specific image resource based on product name
-     */
+    /** Resolves specific local drawable resources based on product name keywords. */
     private int getSpecificImageForProduct(String productName) {
         if (productName == null) {
             return R.drawable.product_icon;
@@ -345,11 +336,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         return productList.size();
     }
 
-    /**
-     * ViewHolder for Product Item.
-     * Caches references to all UI elements in the card layout.
-     */
+    /** ViewHolder for Product Item. */
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        // UI Components
         ImageView productImage;
         TextView productName, productPrice, productCategory, stockBadge, tvQuantity, productRatingBadge, productVendor;
         View addToCartBtn, quantityLayout;

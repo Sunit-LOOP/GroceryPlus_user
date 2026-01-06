@@ -39,88 +39,40 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * UserHomeActivity - Main customer interface for GroceryPlus
- * 
- * This activity serves as the primary interface for customers to browse products,
- * view categories, manage their cart, and interact with various grocery shopping
- * features. It provides a comprehensive shopping experience with personalized
- * recommendations and order management.
- * 
- * Key Features:
- * - Product browsing with categories and search
- * - Featured products display
- * - Personalized product recommendations
- * - Buy again section for reordering
- * - Recent orders tracking
- * - Recently viewed products
- * - Banner carousel with promotions
- * - Free delivery progress tracking
- * - Swipe-to-refresh functionality
- * - Shopping cart integration
- * - Bottom navigation
- * 
- * UI Components:
- * - Multiple RecyclerViews for different product sections
- * - ViewPager2 for promotional banners
- * - SwipeRefreshLayout for content refresh
- * - Progress indicators for delivery tracking
- * - Material Design components
- * 
- * Data Management:
- * - CategoryRepository for product categories
- * - ProductRepository for product data
- * - CartRepository for shopping cart
- * - OrderRepository for order history
- * - RecommendationEngine for personalized suggestions
- * - ApiService for network operations
- * 
- * User Experience:
- * - Smooth animations and transitions
- * - Loading indicators for async operations
- * - Error handling with user feedback
- * - Responsive design for different screen sizes
- * - Intuitive navigation patterns
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** UserHomeActivity - Primary customer dashboard featuring product browsing, personalized recommendations, and order tracking. */
 public class UserHomeActivity extends AppCompatActivity {
 
-    // Tag for logging and debugging
+    // Infrastructure
     private static final String TAG = "UserHomeActivity";
+    private DatabaseHelper dbHelper;
+    private int userId;
 
-    // RecyclerView components for different product sections
-    private RecyclerView categoriesRv, featuredRecyclerView, allProductsRecyclerView, buyAgainRecyclerView, recommendedRecyclerView, recentOrdersRecyclerView, recentlyViewedRecyclerView;
-    
-    // Adapters for managing RecyclerView data
-    private CategoryAdapter categoryAdapter;
-    private ProductAdapter featuredAdapter, allProductsAdapter, buyAgainAdapter, recommendedAdapter, recentlyViewedAdapter;
-    private com.sunit.groceryplus.adapters.RecentOrderAdapter recentOrdersAdapter;
-
-    // UI components for delivery tracking and user feedback
-    private TextView deliveryTimeTv, freeDeliveryTv;
-    private com.google.android.material.progressindicator.LinearProgressIndicator freeDeliveryProgress;
-    private View freeDeliveryGoalCard, buyAgainSection, recommendationSection, recentOrdersSection, recentlyViewedSection;
-    private ImageView sortIcon;
+    // UI Components - Sections & Lists
+    private RecyclerView categoriesRv, featuredRecyclerView, allProductsRecyclerView;
+    private RecyclerView buyAgainRecyclerView, recommendedRecyclerView, recentOrdersRecyclerView, recentlyViewedRecyclerView;
+    private View buyAgainSection, recommendationSection, recentOrdersSection, recentlyViewedSection;
     private SwipeRefreshLayout swipeRefreshLayout;
 
-    // Banner carousel components
+    // UI Components - Banner
     private ViewPager2 bannerViewPager;
     private TabLayout bannerIndicator;
     private BannerAdapter bannerAdapter;
     private Handler bannerHandler = new Handler();
     private Runnable bannerRunnable;
-    private static final long BANNER_DELAY = 30000; // 30 seconds for auto-scroll
+    private static final long BANNER_DELAY = 30000;
 
-    // Database and API management
-    private DatabaseHelper dbHelper;
+    // UI Components - Feedback & Delivery
+    private TextView deliveryTimeTv, freeDeliveryTv;
+    private com.google.android.material.progressindicator.LinearProgressIndicator freeDeliveryProgress;
+    private View freeDeliveryGoalCard;
+    private ImageView sortIcon;
 
-    // User session data
-    private int userId;
-    
-    // Repository classes for data management
+    // Adapters
+    private CategoryAdapter categoryAdapter;
+    private ProductAdapter featuredAdapter, allProductsAdapter, buyAgainAdapter, recommendedAdapter, recentlyViewedAdapter;
+    private com.sunit.groceryplus.adapters.RecentOrderAdapter recentOrdersAdapter;
+
+    // Repositories & Engine
     private CategoryRepository categoryRepository;
     private ProductRepository productRepository;
     private CartRepository cartRepository;
@@ -128,18 +80,15 @@ public class UserHomeActivity extends AppCompatActivity {
     private RecommendationEngine recommendationEngine;
     private ApiService apiService;
 
-    // Data collections for different product sections
+    // Data State
     private List<Category> categories = new ArrayList<>();
-    private List<Product> featuredProducts = new ArrayList<>();
-    private List<Product> allProducts = new ArrayList<>();
-    private List<Product> buyAgainProducts = new ArrayList<>();
-    private List<Product> recommendedProducts = new ArrayList<>();
-    private List<Product> recentlyViewedProducts = new ArrayList<>();
+    private List<Product> featuredProducts = new ArrayList<>(), allProducts = new ArrayList<>(), buyAgainProducts = new ArrayList<>();
+    private List<Product> recommendedProducts = new ArrayList<>(), recentlyViewedProducts = new ArrayList<>();
     private List<com.sunit.groceryplus.models.Order> recentOrders = new ArrayList<>();
-
     private int selectedCategoryId = -1;
     private String currentSortOrder = "default";
 
+    /** Initializes the activity, sets up repositories, and starts data loading. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -191,6 +140,7 @@ public class UserHomeActivity extends AppCompatActivity {
         loadData();
     }
 
+    /** Handles intent updates when activity is brought to the foreground. */
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -207,6 +157,7 @@ public class UserHomeActivity extends AppCompatActivity {
         loadData();
     }
 
+    /** Links UI components and sets up core interaction listeners. */
     private void initViews() {
         deliveryTimeTv = findViewById(R.id.deliveryTimeTv);
         freeDeliveryTv = findViewById(R.id.freeDeliveryTv);
@@ -267,6 +218,7 @@ public class UserHomeActivity extends AppCompatActivity {
         com.sunit.groceryplus.utils.NavigationHelper.setupNavigation(this, userId);
     }
 
+    /** Configures LayoutManagers and Adapters for all list sections. */
     private void setupRecyclerViews() {
         categoriesRv.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         featuredRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -305,6 +257,7 @@ public class UserHomeActivity extends AppCompatActivity {
         recentOrdersRecyclerView.setAdapter(recentOrdersAdapter);
     }
 
+    /** Initializes the promotional banner carousel with auto-scroll logic. */
     private void setupBanner() {
         List<String> bannerImages = new ArrayList<>();
         Cursor cursor = dbHelper.getAllPromotions();
@@ -346,17 +299,20 @@ public class UserHomeActivity extends AppCompatActivity {
         };
     }
 
+    /** Configures the top action bar. */
     private void setupToolbar() {
         com.google.android.material.appbar.MaterialToolbar toolbar = findViewById(R.id.homeToolbar);
         if (toolbar != null) setSupportActionBar(toolbar);
     }
 
+    /** Initializes the product sorting popup trigger. */
     private void setupSortFunctionality() {
         if (sortIcon != null) {
             sortIcon.setOnClickListener(v -> showSortOptions());
         }
     }
 
+    /** Orchestrates the loading of all home screen data sections. */
     private void loadData() {
         if (!isNetworkAvailable()) {
             Toast.makeText(this, "You are offline. Showing cached data.", Toast.LENGTH_SHORT).show();
@@ -372,6 +328,7 @@ public class UserHomeActivity extends AppCompatActivity {
         updateDeliveryTime();
     }
 
+    /** Forces a reload of all data, typically triggered by SwipeRefresh. */
     private void refreshData() {
         // Clear caches if needed, then reload
         loadData();
@@ -379,12 +336,14 @@ public class UserHomeActivity extends AppCompatActivity {
         new Handler().postDelayed(() -> swipeRefreshLayout.setRefreshing(false), 2000);
     }
 
+    /** Checks for active internet connectivity. */
     private boolean isNetworkAvailable() {
         android.net.ConnectivityManager cm = (android.net.ConnectivityManager) getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
         android.net.NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
+    /** Loads categories from the API with a local database fallback. */
     private void loadCategories() {
         // Try API first, fallback to local database
         apiService.getCategories(new ApiService.ApiCallback<org.json.JSONArray>() {
@@ -416,6 +375,7 @@ public class UserHomeActivity extends AppCompatActivity {
         });
     }
 
+    /** Loads categories directly from the local SQLite storage. */
     private void loadCategoriesFromDatabase() {
         categories = categoryRepository.getAllCategories();
         if (categories != null) categoryAdapter.updateCategories(categories);
@@ -437,6 +397,7 @@ public class UserHomeActivity extends AppCompatActivity {
         return product;
     }
 
+    /** Fetches a subset of products to display in the 'Featured' carousel. */
     private void loadFeaturedProducts() {
         // Load featured products from API (first 6)
         apiService.getProducts(null, null, 6, 0, new ApiService.ApiCallback<org.json.JSONObject>() {
@@ -492,6 +453,7 @@ public class UserHomeActivity extends AppCompatActivity {
         }
     }
 
+    /** Loads the main product grid, optionally filtered by the selected category. */
     private void loadAllProducts() {
         String categoryParam = selectedCategoryId == -1 ? null : String.valueOf(selectedCategoryId);
 
@@ -550,6 +512,7 @@ public class UserHomeActivity extends AppCompatActivity {
         applySortAndNotify();
     }
 
+    /** Populates the 'Buy Again' section based on the user's most recent order. */
     private void loadBuyAgainProducts() {
         com.sunit.groceryplus.models.Order lastOrder = orderRepository.getLastOrder(userId);
         if (lastOrder != null) {
@@ -568,6 +531,7 @@ public class UserHomeActivity extends AppCompatActivity {
         }
     }
 
+    /** Uses the RecommendationEngine to find products the user might like. */
     private void loadRecommendedProducts() {
         recommendedProducts = recommendationEngine.getRecommendations(userId, 10);
         if (recommendedProducts != null && !recommendedProducts.isEmpty()) {
@@ -578,6 +542,7 @@ public class UserHomeActivity extends AppCompatActivity {
         }
     }
 
+    /** Retrieves recently viewed items from local persistent storage. */
     private void loadRecentlyViewedProducts() {
         List<Integer> ids = com.sunit.groceryplus.utils.RecentProductsHelper.getRecentProductIds(this);
         if (ids != null && !ids.isEmpty()) {
@@ -597,6 +562,7 @@ public class UserHomeActivity extends AppCompatActivity {
         }
     }
 
+    /** Fetches the latest few orders to show a quick status summary. */
     private void loadRecentOrders() {
         List<com.sunit.groceryplus.models.Order> allUserOrders = orderRepository.getUserOrders(userId);
         if (allUserOrders != null && !allUserOrders.isEmpty()) {
@@ -612,6 +578,7 @@ public class UserHomeActivity extends AppCompatActivity {
         }
     }
 
+    /** Updates the delivery goal progress bar based on current cart total. */
     private void updateFreeDeliveryGoal() {
         double total = cartRepository.getCartTotal(userId);
         double threshold = 500.0;
@@ -630,6 +597,7 @@ public class UserHomeActivity extends AppCompatActivity {
         }
     }
 
+    /** Updates the delivery time estimate string. */
     private void updateDeliveryTime() {
         if (deliveryTimeTv != null) {
             deliveryTimeTv.setText("20 - 30 mins");
@@ -642,6 +610,7 @@ public class UserHomeActivity extends AppCompatActivity {
     private void testCollaborativeFiltering() {
         com.sunit.groceryplus.utils.CollaborativeFilteringTest.testCollaborativeFiltering(this);
     }
+    /** Synchronizes list sorting and refreshes the adapter. */
     private void applySortAndNotify() {
         List<Product> sortedList = new ArrayList<>(allProducts);
         if ("price_low_high".equals(currentSortOrder)) {
@@ -655,6 +624,7 @@ public class UserHomeActivity extends AppCompatActivity {
         allProductsAdapter.updateProducts(sortedList);
     }
 
+    /** Displays a dialog for selecting product sorting criteria. */
     private void showSortOptions() {
         String[] options = {"Price: Low to High", "Price: High to Low", "Highest Rated"};
         new androidx.appcompat.app.AlertDialog.Builder(this)
@@ -678,6 +648,7 @@ public class UserHomeActivity extends AppCompatActivity {
         }
     }
 
+    /** Applies entry animations to sections and RecyclerView items. */
     private void setupAnimations() {
         // Animate sections on load
         AnimationUtils.fadeIn(freeDeliveryGoalCard, 500);

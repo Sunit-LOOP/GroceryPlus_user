@@ -1,41 +1,22 @@
 package com.sunit.groceryplus.models;
 
-/**
- * Message Model Class
- * 
- * Represents a chat message between a user and an admin.
- * Used for order support, notifications, and general inquiries.
- */
+/** Message - Model representing a chat message between users and admins. */
 public class Message {
     
-    // Unique ID for the message
-    private int messageId;
+    // Core Fields
+    private int messageId;      // Unique DB identifier
+    private int senderId;       // User ID of the sender
+    private int receiverId;     // User ID of the receiver
+    private String messageText; // Content text
+    private boolean isRead;     // Read receipt status
+    private String createdAt;   // Timestamp
     
-    // ID of the sender (User or Admin)
-    private int senderId;
-    
-    // ID of the receiver
-    private int receiverId;
-    
-    // The content of the message
-    private String messageText;
-    
-    // Has the message been read by the receiver?
-    private boolean isRead;
-    
-    // Timestamp of creation
-    private String createdAt;
-    
-    // -- Display Fields (Not always stored in DB table directly) --
+    // UI Helper Fields (Joined Data)
     private String senderName;
     private String receiverName;
 
     /**
-     * Constructor for creating a NEW message to be sent.
-     * 
-     * @param senderId Sender's ID
-     * @param receiverId Receiver's ID
-     * @param messageText Content
+     * Constructor for creating a NEW message (before saving to DB).
      */
     public Message(int senderId, int receiverId, String messageText) {
         this.senderId = senderId;
@@ -45,14 +26,7 @@ public class Message {
     }
 
     /**
-     * Constructor for retrieving an EXISTING message from the database.
-     * 
-     * @param messageId Unique ID
-     * @param senderId Sender
-     * @param receiverId Receiver
-     * @param messageText Content
-     * @param isRead Read status
-     * @param createdAt Timestamp
+     * Constructor for retrieving EXISTING messages from DB.
      */
     public Message(int messageId, int senderId, int receiverId, String messageText, boolean isRead, String createdAt) {
         this.messageId = messageId;
@@ -64,8 +38,7 @@ public class Message {
     }
 
     /**
-     * Full Constructor including sender/receiver names.
-     * Used for UI display where names are needed (e.g., Admin Chat List).
+     * Full Constructor including sender/receiver names for list display.
      */
     public Message(int messageId, int senderId, int receiverId, String messageText, boolean isRead, String createdAt, String senderName, String receiverName) {
         this.messageId = messageId;

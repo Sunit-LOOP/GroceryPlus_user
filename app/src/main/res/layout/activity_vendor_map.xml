@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Vendor map layout -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Map view -->
     <org.osmdroid.views.MapView
         android:id="@+id/vendorMap"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/vendorMapToolbar"
         android:layout_width="match_parent"
@@ -17,6 +20,7 @@
         app:title="Nearby Vendors"
         app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel" />
 
+    <!-- Vendor info card -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/vendorInfoCard"
         android:layout_width="match_parent"

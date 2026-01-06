@@ -9,14 +9,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.sunit.groceryplus.utils.GroceryNotificationManager;
 
-/**
- * OrderSuccessActivity - Displays a success message after order placement.
- */
+/** OrderSuccessActivity - Confirmation screen displayed after successful checkout, with auto-redirect to home. */
 public class OrderSuccessActivity extends AppCompatActivity {
 
+    // Infrastructure
     private Handler handler = new Handler(Looper.getMainLooper());
     private Runnable navigateRunnable = this::navigateToHome;
 
+    /** Initializes the success view and starts the auto-redirect timer. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +45,7 @@ public class OrderSuccessActivity extends AppCompatActivity {
         handler.postDelayed(navigateRunnable, 3000);
     }
 
+    /** Navigates back to the UserHomeActivity and clears the backstack. */
     private void navigateToHome() {
         int userId = getIntent().getIntExtra("user_id", -1);
         Intent intent = new Intent(OrderSuccessActivity.this, UserHomeActivity.class);
@@ -54,6 +55,7 @@ public class OrderSuccessActivity extends AppCompatActivity {
         finish();
     }
 
+    /** Cleans up the redirection handler when the activity is destroyed. */
     @Override
     protected void onDestroy() {
         super.onDestroy();

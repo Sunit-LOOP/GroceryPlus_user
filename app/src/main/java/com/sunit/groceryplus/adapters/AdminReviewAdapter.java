@@ -16,29 +16,26 @@ import com.sunit.groceryplus.models.Review;
 
 import java.util.List;
 
-/**
- * Adapter for managing User Reviews in the Admin Panel.
- * Admin can view reviews for products and delete inappropriate reviews.
- */
+/** AdminReviewAdapter - Manages user reviews in the Admin Panel (Moderation and deletion). */
 public class AdminReviewAdapter extends RecyclerView.Adapter<AdminReviewAdapter.ViewHolder> {
 
     private Context context;
     private List<Review> reviews;
     private OnReviewActionListener listener;
 
-    /**
-     * Interface for Admin Review actions (Delete).
-     */
+    /** Interface for Admin Review actions (Delete/Moderate). */
     public interface OnReviewActionListener {
         void onDeleteClick(Review review);
     }
 
+    /** Constructor. */
     public AdminReviewAdapter(Context context, List<Review> reviews, OnReviewActionListener listener) {
         this.context = context;
         this.reviews = reviews;
         this.listener = listener;
     }
 
+    /** Updates the data source and refreshes the UI. */
     public void updateReviews(List<Review> newReviews) {
         this.reviews = newReviews;
         notifyDataSetChanged();
@@ -67,7 +64,9 @@ public class AdminReviewAdapter extends RecyclerView.Adapter<AdminReviewAdapter.
         return reviews.size();
     }
 
+    /** ViewHolder for mapping review components. */
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        // UI Components
         TextView productTv, commentTv, userTv;
         RatingBar ratingBar;
         ImageView deleteBtn;

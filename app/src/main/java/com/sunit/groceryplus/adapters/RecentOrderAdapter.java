@@ -15,17 +15,14 @@ import com.sunit.groceryplus.models.Order;
 
 import java.util.List;
 
-/**
- * Adapter for displaying a user's recent orders in their Order History.
- * Shows order summary including ID, Status, Date, total items, and cost.
- * Click navigates to OrderTrackingActivity for full details.
- */
+/** RecentOrderAdapter - Displays order summaries in history lists with navigation to tracking details. */
 public class RecentOrderAdapter extends RecyclerView.Adapter<RecentOrderAdapter.ViewHolder> {
 
     private Context context;
     private List<Order> orders;
     private int userId;
 
+    /** Constructor. */
     public RecentOrderAdapter(Context context, List<Order> orders, int userId) {
         this.context = context;
         this.orders = orders;
@@ -50,12 +47,15 @@ public class RecentOrderAdapter extends RecyclerView.Adapter<RecentOrderAdapter.
         return orders != null ? orders.size() : 0;
     }
 
+    /** Updates the data source and refreshes the UI. */
     public void updateOrders(List<Order> newOrders) {
         this.orders = newOrders;
         notifyDataSetChanged();
     }
 
+    /** ViewHolder for mapping order summary components. */
     class ViewHolder extends RecyclerView.ViewHolder {
+        // UI Components
         TextView orderIdTv, orderStatusTv, orderDateTv, orderItemsTv, orderTotalTv;
 
         public ViewHolder(@NonNull View itemView) {
@@ -78,6 +78,7 @@ public class RecentOrderAdapter extends RecyclerView.Adapter<RecentOrderAdapter.
             });
         }
 
+        /** Binds data and applies status-based color coding. */
         public void bind(Order order) {
             orderIdTv.setText("Order #" + order.getOrderId());
             orderStatusTv.setText(order.getStatus().toUpperCase());

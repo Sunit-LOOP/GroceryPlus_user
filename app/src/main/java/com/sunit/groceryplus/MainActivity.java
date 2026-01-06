@@ -10,43 +10,13 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-/**
- * MainActivity - Entry point and initialization activity for GroceryPlus
- * 
- * This activity serves as the main entry point for the GroceryPlus application.
- * It handles initial setup, database testing, and API client initialization.
- * The activity uses EdgeToEdge display for a modern, full-screen experience.
- * 
- * Key Responsibilities:
- * - Initialize EdgeToEdge display for modern UI
- * - Setup API client with application context
- * - Test database connectivity and default user authentication
- * - Verify system readiness before launching main features
- * 
- * Testing Features:
- * - Default admin account verification
- * - Database connection testing
- * - User existence validation
- * - Error logging and debugging support
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** MainActivity - Entry point for system verification and API initialization. */
 public class MainActivity extends AppCompatActivity {
     
     // Tag for logging and debugging
     private static final String TAG = "MainActivity";
 
-    /**
-     * Called when the activity is first created
-     * 
-     * This method initializes the main activity with EdgeToEdge display,
-     * sets up the API client, and performs database testing to ensure
-     * the application is ready for use.
-     * 
-     * @param savedInstanceState Previously saved state data
-     */
+    /** Initializes EdgeToEdge display, network clients, and performs diagnostics. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,19 +41,7 @@ public class MainActivity extends AppCompatActivity {
         testDatabase();
     }
 
-    /**
-     * Test database connectivity and verify default user accounts
-     * 
-     * This method performs essential database tests to ensure the application
-     * is properly configured and ready for use. It tests authentication
-     * with the default admin account and verifies user data integrity.
-     * 
-     * Tests Performed:
-     * 1. Database helper initialization
-     * 2. Default admin authentication
-     * 3. Sample user existence verification
-     * 4. Error handling and logging
-     */
+    /** Verifies database connectivity and default account integrity. */
     private void testDatabase() {
         try {
             // Initialize database helper for testing

@@ -8,25 +8,12 @@ import com.sunit.groceryplus.models.Product;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * CollaborativeFilteringTest - Test class for collaborative filtering functionality
- * 
- * This class provides methods to test and validate the collaborative filtering
- * implementation to ensure it's working correctly.
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** Validation suite for verifying collaborative filtering logic, similarity accuracy, and cache performance. */
 public class CollaborativeFilteringTest {
     
     private static final String TAG = "CollaborativeFilteringTest";
     
-    /**
-     * Test collaborative filtering with sample data
-     * 
-     * @param context Application context
-     */
+    /** Executes the full battery of collaborative filtering tests with sample data. */
     public static void testCollaborativeFiltering(Context context) {
         try {
             Log.d(TAG, "=== Testing Collaborative Filtering ===");

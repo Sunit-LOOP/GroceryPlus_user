@@ -23,48 +23,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * CartActivity - Manages the user's shopping cart.
- * 
- * This activity displays the items currently in the user's cart, calculates totals (including delivery fees),
- * and handles quantity adjustments or item removals. It also enforces minimum order values
- * and guides the user towards the checkout process.
- * 
- * Key Features:
- * - List view of cart items
- * - Real-time total calculation
- * - Quantity adjustment (increment/decrement)
- * - Item removal
- * - Clear cart functionality
- * - Free delivery progress tracking
- * - Minimum order value check
- * - Navigation to Payment
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** CartActivity - User shopping cart manager supporting quantity adjustments, removals, and checkout orchestration. */
 public class CartActivity extends AppCompatActivity {
 
+    // Infrastructure & UI
     private static final String TAG = "CartActivity";
-    
-    // UI Components
     private RecyclerView cartRecyclerView;
-    private TextView emptyCartTv;
-    private TextView totalPriceTv;
-    private TextView freeDeliveryTv;
+    private TextView emptyCartTv, totalPriceTv, freeDeliveryTv;
     private com.google.android.material.progressindicator.LinearProgressIndicator freeDeliveryProgress;
     private View freeDeliveryGoalCard;
     private Button checkoutBtn;
-    
-    // Repositories & Adapters
+
+    // Data & Adapters
     private CartRepository cartRepository;
     private CartAdapter cartAdapter;
-
-    // Data State
     private List<CartItem> cartItems;
     private int userId;
 
+    /** Initializes the activity, verifies session, and prepares UI. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,12 +84,14 @@ public class CartActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
 
+    /** Initializes the cart options menu. */
     @Override
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
         getMenuInflater().inflate(R.menu.cart_menu, menu);
         return true;
     }
 
+    /** Handles menu item selections including clearing the cart. */
     @Override
     public boolean onOptionsItemSelected(android.view.MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -126,6 +104,7 @@ public class CartActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
     
+    /** Links UI components to functional fields. */
     private void initViews() {
         cartRecyclerView = findViewById(R.id.cartRecyclerView);
         emptyCartTv = findViewById(R.id.emptyCartTv);
@@ -136,6 +115,7 @@ public class CartActivity extends AppCompatActivity {
         checkoutBtn = findViewById(R.id.checkoutBtn);
     }
     
+    /** Sets up RecyclerView with its adapter and action listeners. */
     private void setupRecyclerView() {
         cartRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         cartAdapter = new CartAdapter(this, cartItems, new CartAdapter.OnQuantityChangeListener() {
@@ -152,10 +132,12 @@ public class CartActivity extends AppCompatActivity {
         cartRecyclerView.setAdapter(cartAdapter);
     }
     
+    /** Orchestrates cart data loading. */
     private void loadCartItems() {
         loadCartItemsFromDatabase();
     }
 
+    /** Fetches cart items from the local SQLite repository. */
     private void loadCartItemsFromDatabase() {
         try {
             cartItems = cartRepository.getCartItems(userId);
@@ -174,6 +156,7 @@ public class CartActivity extends AppCompatActivity {
         }
     }
 
+    /** Helper to map JSON data to a CartItem model. */
     private CartItem parseCartItemFromJson(org.json.JSONObject itemJson) throws org.json.JSONException {
         CartItem cartItem = new CartItem();
         cartItem.setCartId(itemJson.optInt("cart_id", 0));
@@ -186,10 +169,12 @@ public class CartActivity extends AppCompatActivity {
         return cartItem;
     }
     
+    /** Updates the quantity of a specific cart item. */
     private void updateQuantity(int cartItemId, int newQuantity) {
         updateQuantityDatabase(cartItemId, newQuantity);
     }
 
+    /** Persists quantity changes to the database and updates UI. */
     private void updateQuantityDatabase(int cartItemId, int newQuantity) {
         try {
             boolean success = cartRepository.updateCartQuantity(cartItemId, newQuantity);
@@ -214,6 +199,7 @@ public class CartActivity extends AppCompatActivity {
         }
     }
     
+    /** Displays a confirmation dialog before emptying the cart. */
     private void showClearCartConfirmation() {
         if (cartItems == null || cartItems.isEmpty()) {
             Toast.makeText(this, "Cart is already empty", Toast.LENGTH_SHORT).show();
@@ -228,6 +214,7 @@ public class CartActivity extends AppCompatActivity {
                 .show();
     }
 
+    /** Removes all items from the user's cart in the database. */
     private void clearCart() {
         try {
             boolean success = cartRepository.clearCart(userId);
@@ -246,10 +233,12 @@ public class CartActivity extends AppCompatActivity {
         }
     }
     
+    /** Removes a specific item from the cart. */
     private void removeItem(int cartItemId) {
         removeItemDatabase(cartItemId);
     }
 
+    /** Persists item removal to the database and updates list state. */
     private void removeItemDatabase(int cartItemId) {
         try {
             boolean success = cartRepository.removeFromCart(cartItemId);
@@ -284,6 +273,7 @@ public class CartActivity extends AppCompatActivity {
         }
     }
     
+    /** Calculates and displays updated subtotal and delivery-inclusive total. */
     private void updateTotalPrice() {
         double total = cartAdapter.getTotalPrice();
         double totalWithDelivery = cartAdapter.getTotalPriceWithDelivery();
@@ -291,6 +281,7 @@ public class CartActivity extends AppCompatActivity {
         updateFreeDeliveryGoal(total);
     }
 
+    /** Updates the visual progress towards free delivery threshold. */
     private void updateFreeDeliveryGoal(double total) {
         double threshold = com.sunit.groceryplus.utils.PaymentConfig.FREE_DELIVERY_THRESHOLD;
         if (total <= 0) {
@@ -308,6 +299,7 @@ public class CartActivity extends AppCompatActivity {
         }
     }
     
+    /** Shows cart items and checkout controls. */
     private void showCart() {
         cartRecyclerView.setVisibility(View.VISIBLE);
         totalPriceTv.setVisibility(View.VISIBLE);
@@ -315,6 +307,7 @@ public class CartActivity extends AppCompatActivity {
         emptyCartTv.setVisibility(View.GONE);
     }
     
+    /** Shows the empty state view. */
     private void showEmptyCart() {
         cartRecyclerView.setVisibility(View.GONE);
         totalPriceTv.setVisibility(View.GONE);
@@ -322,6 +315,7 @@ public class CartActivity extends AppCompatActivity {
         emptyCartTv.setVisibility(View.VISIBLE);
     }
     
+    /** Sets UI interaction listeners. */
     private void setClickListeners() {
         checkoutBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -331,6 +325,7 @@ public class CartActivity extends AppCompatActivity {
         });
     }
     
+    /** Validates order requirements and navigates to the payment screen. */
     private void proceedToCheckout() {
         if (cartItems == null || cartItems.isEmpty()) {
             Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show();

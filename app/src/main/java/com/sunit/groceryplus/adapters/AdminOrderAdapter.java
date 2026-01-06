@@ -16,25 +16,20 @@ import com.sunit.groceryplus.models.Order;
 
 import java.util.List;
 
-/**
- * Adapter for managing customer Orders in the Admin Panel.
- * Allows Admin to view order details, update status (Pending, Shipped, Delivered, etc.),
- * and assign delivery personnel.
- */
+/** AdminOrderAdapter - Manages customer orders in the Admin Panel (Status updates, transitions, delivery assignment). */
 public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.OrderViewHolder> {
 
     private Context context;
     private List<Order> orders;
     private OnOrderActionListener listener;
 
-    /**
-     * Interface for Admin Order actions.
-     */
+    /** Interface for Admin Order actions (Status transitions and delivery personnel assignment). */
     public interface OnOrderActionListener {
         void onUpdateStatusClick(Order order);
         void onAssignDeliveryClick(Order order);
     }
 
+    /** Constructor. */
     public AdminOrderAdapter(Context context, List<Order> orders, OnOrderActionListener listener) {
         this.context = context;
         this.orders = orders;
@@ -59,21 +54,17 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
         return orders != null ? orders.size() : 0;
     }
 
+    /** Updates the data source and refreshes the UI. */
     public void updateOrders(List<Order> newOrders) {
         this.orders = newOrders;
         notifyDataSetChanged();
     }
 
     class OrderViewHolder extends RecyclerView.ViewHolder {
-        TextView orderIdTv;
-        TextView orderDateTv;
-        TextView orderAmountTv;
-        TextView orderStatusTv;
-        TextView paymentStatusTv;
-        TextView deliveryPersonTv;
-        TextView deliveryFeeTv;
-        Button updateStatusBtn;
-        Button assignDeliveryBtn;
+        // UI Components
+        TextView orderIdTv, orderDateTv, orderAmountTv, orderStatusTv;
+        TextView paymentStatusTv, deliveryPersonTv, deliveryFeeTv;
+        Button updateStatusBtn, assignDeliveryBtn;
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -102,6 +93,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
             });
         }
 
+        /** Binds order data and applies color coding. */
         public void bind(Order order) {
             orderIdTv.setText("Order #" + order.getOrderId());
             orderDateTv.setText(order.getOrderDate()); // Assuming Date format is string

@@ -17,57 +17,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.sunit.groceryplus.R;
 
-/**
- * UIComponents - Utility class for creating modern UI components.
- * 
- * This class provides static methods for creating consistent, modern UI components
- * throughout the GroceryPlus application. It implements Material Design 3 principles
- * and provides a unified visual language across all screens.
- * 
- * Key Features:
- * - Modern card styling with elevation and ripple effects
- * - Gradient buttons with custom colors
- * - Material Design FAB styling
- * - Status badges with color coding
- * - Chip-style buttons for selections
- * - Shimmer effects for loading states
- * - Price tags and discount badges
- * - Rating displays with visual feedback
- * - Stock indicators with dynamic coloring
- * - Delivery status indicators
- * - Category chips with Material Design
- * - Gradient backgrounds and borders
- * 
- * Color Scheme:
- * - Primary: #6750A4 (Material Blue)
- * - Success: #4CAF50 (Material Green)
- * - Warning: #FF9800 (Material Orange)
- * - Error: #F44336 (Material Red)
- * - Info: #2196F3 (Material Light Blue)
- * - Surface: #F5F5F5 (Material Gray)
- * 
- * Design Patterns:
- * - Material Design 3 compliance
- * - Consistent corner radius (4f, 8f, 12f, 16f)
- * - Proper elevation and shadow effects
- * - Ripple effects for touch feedback
- * - Color-coded status indicators
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** Utility class for generating consistent, modern Material Design 3 UI components throughout the application. */
 public class UIComponents {
 
-    /**
-     * Create modern Material Design card with elevation and ripple effect.
-     * 
-     * This method applies Material Design 3 styling to card views with
-     * proper elevation, corner radius, and ripple effects for touch feedback.
-     * 
-     * @param cardView The MaterialCardView to style
-     * @param elevation The elevation value in pixels
-     */
+    /** Configures a MaterialCardView with standard elevation, corner radius, and primary ripple color. */
     public static void createModernCard(MaterialCardView cardView, int elevation) {
         cardView.setCardElevation(elevation);
         cardView.setRadius(16f);
@@ -75,16 +28,7 @@ public class UIComponents {
         cardView.setRippleColorResource(R.color.md_theme_light_primary);
     }
 
-    /**
-     * Create gradient button with modern styling.
-     * 
-     * This method creates a button with gradient background, proper corner radius,
-     * white text color, and ripple effect for Android Lollipop and above.
-     * 
-     * @param button The Button to style
-     * @param startColor Starting color of gradient (left)
-     * @param endColor Ending color of gradient (right)
-     */
+    /** Styles a button with a horizontal gradient and rounded corners, including ripple feedback on supported versions. */
     public static void createGradientButton(Button button, int startColor, int endColor) {
         GradientDrawable gradientDrawable = new GradientDrawable(
                 GradientDrawable.Orientation.LEFT_RIGHT,
@@ -107,47 +51,21 @@ public class UIComponents {
         button.setAllCaps(false);
     }
 
-    /**
-     * Create modern Floating Action Button (FAB) with Material Design styling.
-     * 
-     * @param fab The FloatingActionButton to style
-     */
+    /** Configures a FloatingActionButton with standard elevation and padding. */
     public static void createModernFAB(FloatingActionButton fab) {
         fab.setUseCompatPadding(true);
         fab.setSize(FloatingActionButton.SIZE_NORMAL);
         fab.setElevation(8f);
     }
 
-    /**
-     * Create modern Material Design text input layout.
-     * 
-     * This method applies Material Design styling to text input layouts with
-     * custom stroke color, hint text color, and stroke width.
-     * 
-     * @param textInputLayout The TextInputLayout to style
-     */
+    /** Styles a TextInputLayout with custom stroke colors and width for a modern look. */
     public static void createModernTextInput(TextInputLayout textInputLayout) {
         textInputLayout.setBoxStrokeColor(Color.parseColor("#6750A4"));
         textInputLayout.setHintTextColor(ColorStateList.valueOf(Color.parseColor("#49454F")));
         textInputLayout.setBoxStrokeWidth(2);
-        // Note: setRadius is not available on TextInputLayout
     }
 
-    /**
-     * Create status badge with color coding based on status type.
-     * 
-     * This method creates a status badge with appropriate background color
-     * based on the status value. Supports various order and delivery statuses.
-     * 
-     * Status Color Mapping:
-     * - Green (#4CAF50): active, available, delivered
-     * - Orange (#FF9800): pending, processing
-     * - Red (#F44336): cancelled, unavailable, out of stock
-     * - Gray (#9E9E9E): default/unknown
-     * 
-     * @param textView The TextView to style as badge
-     * @param status The status string for color determination
-     */
+    /** Creates a color-coded status badge with appropriate background and text colors based on the status string. */
     public static void createStatusBadge(TextView textView, String status) {
         GradientDrawable badgeBackground = new GradientDrawable();
         badgeBackground.setShape(GradientDrawable.RECTANGLE);
@@ -183,15 +101,7 @@ public class UIComponents {
         textView.setTextSize(12f);
     }
 
-    /**
-     * Create chip-style button with selection state styling.
-     * 
-     * This method creates a Material Design chip button with different colors
-     * based on selection state. Commonly used for filters, categories, and options.
-     * 
-     * @param textView The TextView to style as chip
-     * @param isSelected Whether the chip is currently selected
-     */
+    /** Creates a rounded chip-style button with distinct styles for selected and unselected states. */
     public static void createChipButton(TextView textView, boolean isSelected) {
         GradientDrawable chipBackground = new GradientDrawable();
         chipBackground.setShape(GradientDrawable.RECTANGLE);
@@ -211,14 +121,7 @@ public class UIComponents {
         textView.setTextSize(14f);
     }
 
-    /**
-     * Create shimmer loading effect for views.
-     * 
-     * This method applies a shimmer effect to indicate loading state,
-     * commonly used for skeleton loading in product lists and cards.
-     * 
-     * @param view The View to apply shimmer effect to
-     */
+    /** Applies a light gray background and shimmer animation to indicate a loading state for a view. */
     public static void createShimmerEffect(View view) {
         GradientDrawable shimmerBackground = new GradientDrawable();
         shimmerBackground.setShape(GradientDrawable.RECTANGLE);
@@ -229,19 +132,7 @@ public class UIComponents {
         AnimationUtils.startShimmerAnimation(view);
     }
 
-    /**
-     * Create state view with color-coded backgrounds.
-     * 
-     * This method creates a state indicator with appropriate colors:
-     * - Success (#E8F5E8): Green background, dark green text
-     * - Error (#FFEBEE): Light red background, dark red text
-     * - Warning (#FFF3E0): Light orange background, dark orange text
-     * - Info (#E3F2FD): Light blue background, dark blue text
-     * - Default (#F5F5F5): Gray background, dark gray text
-     * 
-     * @param textView The TextView to style
-     * @param state The state string ("success", "error", "warning", "info")
-     */
+    /** Styles a TextView as a state indicator with color-coding for success, error, warning, or info. */
     public static void createStateView(TextView textView, String state) {
         GradientDrawable stateBackground = new GradientDrawable();
         stateBackground.setShape(GradientDrawable.RECTANGLE);
@@ -275,11 +166,7 @@ public class UIComponents {
         textView.setTextSize(14f);
     }
 
-    /**
-     * Create price tag with Material Design styling.
-     * 
-     * @param textView The TextView to style as price tag
-     */
+    /** Styles a TextView as a green price tag with rounded corners and white text. */
     public static void createPriceTag(TextView textView) {
         GradientDrawable priceBackground = new GradientDrawable();
         priceBackground.setShape(GradientDrawable.RECTANGLE);
@@ -292,12 +179,7 @@ public class UIComponents {
         textView.setTextSize(12f);
     }
 
-    /**
-     * Create discount badge with percentage display.
-     * 
-     * @param textView The TextView to style as discount badge
-     * @param discountPercentage The discount percentage to display
-     */
+    /** Styles a TextView as a red discount badge showing the provided percentage. */
     public static void createDiscountBadge(TextView textView, int discountPercentage) {
         GradientDrawable discountBackground = new GradientDrawable();
         discountBackground.setShape(GradientDrawable.RECTANGLE);
@@ -311,17 +193,7 @@ public class UIComponents {
         textView.setText("-" + discountPercentage + "%");
     }
 
-    /**
-     * Create rating stars background with color based on rating value.
-     * 
-     * Rating Color Mapping:
-     * - 4.0+: Gold (#FFF8E1) with orange text
-     * - 3.0+: Light gold (#FFF3E0) with orange text
-     * - Below 3.0: Light red (#FFEBEE) with dark red text
-     * 
-     * @param textView The TextView to style as rating display
-     * @param rating The rating value (0.0 - 5.0)
-     */
+    /** Styles a TextView as a rating display with a primary theme background and white text. */
     public static void createRatingBackground(TextView textView, float rating) {
         GradientDrawable ratingBackground = new GradientDrawable();
         ratingBackground.setShape(GradientDrawable.RECTANGLE);
@@ -343,11 +215,7 @@ public class UIComponents {
         textView.setTextSize(12f);
     }
 
-    /**
-     * Create category chip with Material Design styling.
-     * 
-     * @param textView The TextView to style as category chip
-     */
+    /** Styles a TextView as a Material Design category chip with background and border styling. */
     public static void createCategoryChip(TextView textView) {
         GradientDrawable categoryBackground = new GradientDrawable();
         categoryBackground.setShape(GradientDrawable.RECTANGLE);
@@ -361,17 +229,7 @@ public class UIComponents {
         textView.setTextSize(12f);
     }
 
-    /**
-     * Create stock indicator with dynamic color and text based on stock level.
-     * 
-     * Stock Level Mapping:
-     * - > 10: "In Stock" (Green #E8F5E8)
-     * - 1-10: "Low Stock (X)" (Orange #FFF3E0)
-     * - 0: "Out of Stock" (Red #FFEBEE)
-     * 
-     * @param textView The TextView to style as stock indicator
-     * @param stock The current stock quantity
-     */
+    /** Styles a TextView as a stock indicator with dynamic coloring based on quantity (In Stock, Low Stock, or Out of Stock). */
     public static void createStockIndicator(TextView textView, int stock) {
         GradientDrawable stockBackground = new GradientDrawable();
         stockBackground.setShape(GradientDrawable.RECTANGLE);
@@ -396,22 +254,7 @@ public class UIComponents {
         textView.setTextSize(10f);
     }
 
-    /**
-     * Create delivery status indicator with color-coded status.
-     * 
-     * Delivery Status Color Mapping:
-     * - Pending: Light orange (#FFF3E0) with dark orange text
-     * - Confirmed: Light blue (#E3F2FD) with dark blue text
-     * - Preparing: Light purple (#F3E5F5) with dark purple text
-     * - Out for Delivery: Light green (#E8F5E8) with dark green text
-     * - Delivered: Light green (#E8F5E8) with dark green text
-     * - Cancelled: Light red (#FFEBEE) with dark red text
-     * - Refunded: Light red (#FFEBEE) with dark red text
-     * - Default: Light gray (#F5F5F5) with dark gray text
-     * 
-     * @param textView The TextView to style as delivery status
-     * @param status The delivery status string
-     */
+    /** Styles a TextView as a delivery status indicator with color-coded backgrounds for various fulfillment states. */
     public static void createDeliveryStatusIndicator(TextView textView, String status) {
         GradientDrawable statusBackground = new GradientDrawable();
         statusBackground.setShape(GradientDrawable.RECTANGLE);
@@ -454,14 +297,7 @@ public class UIComponents {
         textView.setTextSize(12f);
     }
 
-    /**
-     * Apply modern card shadow effect for Android Lollipop and above.
-     * 
-     * This method adds elevation and translation Z to create a modern
-     * shadow effect for card views.
-     * 
-     * @param view The View to apply shadow effect to
-     */
+    /** Applies a Material Design shadow effect to a view using elevation and translation Z for Android Lollipop+. */
     public static void applyCardShadow(View view) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             view.setElevation(8f);
@@ -469,13 +305,7 @@ public class UIComponents {
         }
     }
 
-    /**
-     * Apply gradient background to any view.
-     * 
-     * @param view The View to apply gradient background to
-     * @param startColor Starting color of gradient
-     * @param endColor Ending color of gradient
-     */
+    /** Applies a horizontal linear gradient background with rounded corners to a view. */
     public static void applyGradientBackground(View view, int startColor, int endColor) {
         GradientDrawable gradientDrawable = new GradientDrawable(
                 GradientDrawable.Orientation.LEFT_RIGHT,
@@ -485,13 +315,7 @@ public class UIComponents {
         view.setBackground(gradientDrawable);
     }
 
-    /**
-     * Create bordered text view with custom border styling.
-     * 
-     * @param textView The TextView to apply border to
-     * @param borderColor The color of the border
-     * @param borderWidth The width of the border in pixels
-     */
+    /** Configures a TextView with a custom colored border and transparent background. */
     public static void createBorderedTextView(TextView textView, int borderColor, int borderWidth) {
         GradientDrawable borderDrawable = new GradientDrawable();
         borderDrawable.setShape(GradientDrawable.RECTANGLE);

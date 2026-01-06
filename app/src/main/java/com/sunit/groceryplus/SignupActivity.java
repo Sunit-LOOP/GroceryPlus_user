@@ -14,41 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.textfield.TextInputEditText;
 import com.sunit.groceryplus.models.User;
 
-/**
- * SignupActivity - User registration interface for GroceryPlus
- * 
- * This activity provides the registration interface for new customers to create
- * accounts in the GroceryPlus application. It handles user input validation,
- * account creation, and navigation to the login screen upon successful registration.
- * 
- * Key Features:
- * - Complete user registration form
- * - Input validation with error messages
- * - Password confirmation matching
- * - Duplicate email checking
- * - Secure password hashing
- * - User role assignment (Customer)
- * - Navigation to login after successful signup
- * 
- * Registration Flow:
- * 1. User fills registration form with personal details
- * 2. Input validation performed for all fields
- * 3. Password confirmation verified
- * 4. Email uniqueness checked
- * 5. Account created with secure password hashing
- * 6. User redirected to login for authentication
- * 
- * Security Features:
- * - Password strength validation
- * - Secure password hashing with salt
- * - Input sanitization
- * - Email uniqueness enforcement
- * - SQL injection prevention
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** SignupActivity - User registration interface with input validation and duplicate account checking. */
 public class SignupActivity extends AppCompatActivity {
 
     // Tag for logging and debugging
@@ -67,14 +33,7 @@ public class SignupActivity extends AppCompatActivity {
     // User repository for database operations
     private UserRepository userRepository;
 
-    /**
-     * Called when the activity is first created
-     * 
-     * This method initializes the UI components, sets up the user repository,
-     * and configures click listeners for user interactions.
-     * 
-     * @param savedInstanceState Previously saved state data
-     */
+    /** Initializes views, repositories, and interaction listeners. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,13 +86,7 @@ public class SignupActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Perform user registration with comprehensive validation
-     * 
-     * This method handles the complete signup flow including input validation,
-     * password confirmation, email uniqueness checking, and account creation.
-     * It provides detailed error messages and logging for debugging purposes.
-     */
+    /** Validates inputs and creates a new customer record in the database. */
     private void performSignup() {
         // Get user input from all form fields
         String name = nameEditText.getText().toString().trim();

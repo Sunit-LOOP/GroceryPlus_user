@@ -1,12 +1,9 @@
 package com.sunit.groceryplus.utils;
 
-/**
- * Configuration class for legacy constants.
- * @deprecated Use specific config classes like PaymentConfig instead.
- */
+/** Legacy configuration constants for backward compatibility. @deprecated Use {@link PaymentConfig} instead. */
 @Deprecated
 public class Config {
-    // Legacy constants - use PaymentConfig for new code
+    // Legacy mapping - redirects to PaymentConfig
     @Deprecated
     public static final String STRIPE_PUBLISHABLE_KEY = PaymentConfig.STRIPE_PUBLISHABLE_KEY;
     

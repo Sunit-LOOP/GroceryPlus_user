@@ -1,69 +1,36 @@
 package com.sunit.groceryplus.models;
 
-/**
- * Product Model Class
- * 
- * Represents an item available for sale in the store.
- * Contains all display information (name, image, description) and 
- * inventory data (price, stock, vendor).
- */
+/** Product - Core model representing an item available for sale, including inventory and vendor details. */
 public class Product {
     
-    // Unique ID for the product in the database
-    private int productId;
+    // Identity & Details
+    private int productId;      // Unique Identifier
+    private String productName; // Display Name
+    private String description; // Product Details
+    private String image;       // Image URL or Resource Name
     
-    // Display name of the product
-    private String productName;
+    // Categorization
+    private int categoryId;     // Category Reference
+    private String categoryName;// Category Name (Joined)
     
-    // ID of the category this product belongs to
-    private int categoryId;
+    // Sales & Inventory
+    private double price;       // Unit Price
+    private int stockQuantity;  // Available Stock
     
-    // Name of the category (for display convenience)
-    private String categoryName;
+    // Vendor Info
+    private int vendorId;       // Supplier ID
+    private String vendorName;  // Supplier Name (Joined)
     
-    // Sale price per unit
-    private double price;
-    
-    // Detailed product description
-    private String description;
-    
-    // URL or identifier for the product image
-    private String image;
-    
-    // Current available stock count
-    private int stockQuantity;
-    
-    // Average user rating (0.0 to 5.0)
-    private double rating;
-    
-    // ID of the vendor supplying this product
-    private int vendorId;
-    
-    // Name of the vendor
-    private String vendorName;
+    // Metrics
+    private double rating;      // Average Rating (0.0 - 5.0)
 
-    /**
-     * Default Constructor
-     */
+    /** Default Constructor. */
     public Product() {
         this.rating = 0.0;
     }
 
     /**
-     * Full Constructor
-     * Used when retrieving full product details from the database.
-     * 
-     * @param productId Unique ID
-     * @param productName Product Name
-     * @param categoryId Category ID
-     * @param categoryName Category Name
-     * @param price Unit Price
-     * @param description Details
-     * @param image Image URL
-     * @param rating Avg Rating
-     * @param stockQuantity Stock Count
-     * @param vendorId Vendor ID
-     * @param vendorName Vendor Name
+     * Full Constructor for retrieving complete product details.
      */
     public Product(int productId, String productName, int categoryId, String categoryName, 
                    double price, String description, String image, double rating, int stockQuantity, int vendorId, String vendorName) {
@@ -81,9 +48,7 @@ public class Product {
     }
 
     /**
-     * Legacy/DB Helper Constructor
-     * Similar to the full constructor but defaults rating to 0.0.
-     * Primarily used during database population or simple queries.
+     * Legacy/Helper Constructor (defaults rating to 0.0).
      */
     public Product(int productId, String productName, int categoryId, String categoryName, 
                    double price, String description, String image, int stockQuantity, int vendorId, String vendorName) {
@@ -101,8 +66,7 @@ public class Product {
     }
     
     /**
-     * Simplified Constructor
-     * Used in contexts where names (Vendor/Category) are not yet fetched or needed.
+     * Simplified Constructor (minimal fields).
      */
     public Product(int productId, String productName, int categoryId, double price, String description, String image, int stockQuantity, int vendorId) {
         this.productId = productId;

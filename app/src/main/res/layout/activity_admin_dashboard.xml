@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Admin dashboard layout -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/admin_dashboard_root"
@@ -6,6 +7,7 @@
     android:layout_height="match_parent"
     android:background="#F5F5F5">
 
+    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/adminDashboardToolbar"
         android:layout_width="0dp"
@@ -19,6 +21,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Scrollable content -->
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -33,7 +36,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Welcome Section -->
+            <!-- Welcome message -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -18,31 +18,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * OrderTrackingActivity - Live tracking interface for active orders.
- * 
- * This activity provides real-time visualization of the order's status and delivery progress.
- * It integrates with OSMDroid to display a map showing the vendor location, delivery destination,
- * and the route path. It also estimates the delivery time based on distance and order status.
- * Crucially, it provides the "Cancel Order" functionality for orders that are still pending.
- * 
- * Key Features:
- * - Interactive Map using OpenStreetMap (OSMDroid)
- * - Vendor and Delivery markers with route line
- * - Live Status updates (Pending, Confirm, Shipped, Delivered, Cancelled)
- * - ETA Calculation based on distance
- * - Order Cancellation (for 'PENDING' orders) with refund policy warning
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** OrderTrackingActivity - Real-time order visualization featuring OSMDroid map integration and ETA calculations. */
 public class OrderTrackingActivity extends AppCompatActivity {
 
+    // Infrastructure & UI
     private MapView map;
     private int orderId;
     private String orderStatus;
 
+    /** Initializes the map activity, configures OSMDroid, and plots delivery route. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -167,12 +151,7 @@ public class OrderTrackingActivity extends AppCompatActivity {
         calculateAndDisplayEta(vendorPoint, deliveryPoint, orderStatus);
     }
 
-    /**
-     * Method to handle order cancellation process.
-     * Calls the Repository to update status and calculate refund.
-     * 
-     * @param orderId The ID of the order to cancel
-     */
+    /** Processes order cancellation with a 15% fee deduction policy. */
     private void cancelOrder(int orderId) {
         // Show progress indicator
         android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
@@ -209,6 +188,7 @@ public class OrderTrackingActivity extends AppCompatActivity {
         }).start();
     }
 
+    /** Updates the ETA display based on geographical distance and order status. */
     private void calculateAndDisplayEta(GeoPoint p1, GeoPoint p2, String status) {
         TextView etaTv = findViewById(R.id.orderEtaTv);
         if (etaTv == null) return;
@@ -244,6 +224,7 @@ public class OrderTrackingActivity extends AppCompatActivity {
         }
     }
 
+    /** Haversine formula to calculate distance between two coordinates in Kilometers. */
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         double R = 6371; // Earth Radius in KM
         double dLat = Math.toRadians(lat2 - lat1);
@@ -271,6 +252,7 @@ public class OrderTrackingActivity extends AppCompatActivity {
         }
     }
 
+    /** Handles toolbar menu selections. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

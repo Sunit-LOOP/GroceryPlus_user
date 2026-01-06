@@ -25,37 +25,22 @@ import java.util.List;
 import java.util.Locale;
 
 
-/**
- * MessageActivity - Chat interface for customer support.
- * 
- * This activity enables direct messaging between the user and the admin (support).
- * It displays a chronological list of messages and allows the user to send new text messages.
- * Messages are stored locally in the database.
- * 
- * Key Features:
- * - Real-time messaging interface
- * - Message history display
- * - Send message functionality
- * - Integration with DatabaseHelper for message storage
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** MessageActivity - Chat interface for real-time customer support messaging with the administrator. */
 public class MessageActivity extends AppCompatActivity {
 
+    // Infrastructure & UI
     private static final String TAG = "MessageActivity";
     private TextInputEditText messageEditText;
     private FloatingActionButton sendButton;
     private RecyclerView chatRv;
-    
+
+    // Data State & Adapters
     private DatabaseHelper dbHelper;
     private ChatAdapter chatAdapter;
     private List<Message> messageList;
-    
-    private int userId;
-    private int adminId;
+    private int userId, adminId;
 
+    /** Initializes the chat activity, verifies session, and loads message history. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,6 +72,7 @@ public class MessageActivity extends AppCompatActivity {
         setClickListeners();
     }
 
+    /** Links UI components to functional fields. */
     private void initViews() {
         messageEditText = findViewById(R.id.messageEditText);
         sendButton = findViewById(R.id.sendButton);
@@ -102,6 +88,7 @@ public class MessageActivity extends AppCompatActivity {
         }
     }
 
+    /** Configures the chat list with a LinearLayoutManager pinned to the bottom. */
     private void setupRecyclerView() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true); // Scroll to bottom
@@ -112,6 +99,7 @@ public class MessageActivity extends AppCompatActivity {
         chatRv.setAdapter(chatAdapter);
     }
 
+    /** Fetches the conversation history between the current user and admin. */
     private void loadMessages() {
         messageList.clear();
         Cursor cursor = dbHelper.getConversation(userId, adminId);
@@ -135,10 +123,12 @@ public class MessageActivity extends AppCompatActivity {
         }
     }
 
+    /** Sets UI interaction listeners for the send action. */
     private void setClickListeners() {
         sendButton.setOnClickListener(v -> sendMessage());
     }
 
+    /** Persists and sends a new message to the administrator. */
     private void sendMessage() {
         String text = messageEditText.getText().toString().trim();
         
@@ -159,6 +149,7 @@ public class MessageActivity extends AppCompatActivity {
         }
     }
     
+    /** Handles toolbar menu selections. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

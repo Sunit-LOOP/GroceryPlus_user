@@ -29,6 +29,7 @@ import com.sunit.groceryplus.R;
 import com.sunit.groceryplus.adapters.AdminCategoryAdapter;
 import com.sunit.groceryplus.adapters.DrawableImageAdapter;
 import com.sunit.groceryplus.models.Category;
+import com.sunit.groceryplus.utils.ImageStorageManager;
 import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import java.io.File;
@@ -37,36 +38,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * CategoryManagementActivity - Admin interface for managing product categories.
- * 
- * This activity allows the admin to view, add, edit, and delete product categories.
- * It uses a dialog-based interface for input and interacts with the CategoryRepository.
- * 
- * Key Features:
- * - List all categories
- * - Add new category
- * - Edit existing category
- * - Delete category (with confirmation)
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** CategoryManagementActivity - Admin interface for viewing, adding, editing, and deleting product categories using a dialog-based UI. */
 public class CategoryManagementActivity extends AppCompatActivity {
 
+    // UI Components
     private RecyclerView categoriesRv;
     private FloatingActionButton addCategoryFab;
+    
+    // Adapter & Data
     private AdminCategoryAdapter adapter;
     private CategoryRepository categoryRepository;
 
+    // Image Selection
     private ActivityResultLauncher<String[]> pickImageLauncher;
     private ActivityResultLauncher<Uri> takePictureLauncher;
     private Uri pendingCameraUri;
-
     private ImageView activeImagePreview;
     private String selectedImageValue;
 
+    /**
+     * Initializes activity, setups UI including Recycler View and FAB, and initializes image pickers.
+     * @param savedInstanceState Saved instance state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,6 +84,9 @@ public class CategoryManagementActivity extends AppCompatActivity {
         initImagePickers();
     }
 
+    /**
+     * Registers Activity Result Launchers for picking images from gallery and taking photos with camera.
+     */
     private void initImagePickers() {
         pickImageLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(), uri -> {
             if (uri == null) return;
@@ -100,22 +96,53 @@ public class CategoryManagementActivity extends AppCompatActivity {
             } catch (Exception ignored) {
             }
 
-            selectedImageValue = uri.toString();
-            if (activeImagePreview != null) {
-                ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+            // Save image permanently
+            String permanentPath = ImageStorageManager.saveImagePermanently(
+                this, uri, ImageStorageManager.ImageType.CATEGORY, "category_image");
+            
+            if (permanentPath != null) {
+                selectedImageValue = permanentPath;
+                if (activeImagePreview != null) {
+                    ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                }
+                Toast.makeText(this, "Image saved permanently", Toast.LENGTH_SHORT).show();
+            } else {
+                // Fallback to temporary URI if permanent storage fails
+                selectedImageValue = uri.toString();
+                if (activeImagePreview != null) {
+                    ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                }
+                Toast.makeText(this, "Using temporary image storage", Toast.LENGTH_LONG).show();
             }
         });
 
         takePictureLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
             if (success != null && success && pendingCameraUri != null) {
-                selectedImageValue = pendingCameraUri.toString();
-                if (activeImagePreview != null) {
-                    ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                // Save camera image permanently
+                String permanentPath = ImageStorageManager.saveImagePermanently(
+                    this, pendingCameraUri, ImageStorageManager.ImageType.CATEGORY, "category_camera");
+                
+                if (permanentPath != null) {
+                    selectedImageValue = permanentPath;
+                    if (activeImagePreview != null) {
+                        ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                    }
+                    Toast.makeText(this, "Camera image saved permanently", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Fallback to temporary URI if permanent storage fails
+                    selectedImageValue = pendingCameraUri.toString();
+                    if (activeImagePreview != null) {
+                        ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                    }
+                    Toast.makeText(this, "Using temporary camera image", Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
 
+    /**
+     * Configures the RecyclerView with AdminCategoryAdapter and handles edit/delete callbacks.
+     */
     private void setupRecyclerView() {
         categoriesRv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AdminCategoryAdapter(this, new ArrayList<>(), new AdminCategoryAdapter.OnCategoryActionListener() {
@@ -132,11 +159,18 @@ public class CategoryManagementActivity extends AppCompatActivity {
         categoriesRv.setAdapter(adapter);
     }
 
+    /**
+     * Fetches all categories from repository and updates the adapter.
+     */
     private void loadCategories() {
         List<Category> categories = categoryRepository.getAllCategories();
         adapter.updateCategories(categories);
     }
 
+    /**
+     * Shows a dialog to add a new category or edit an existing one.
+     * @param category The category to edit, or null to create a new one.
+     */
     private void showCategoryDialog(Category category) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_category, null);
@@ -183,9 +217,30 @@ public class CategoryManagementActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                 String selected = (String) imageSpinner.getSelectedItem();
-                if (selected != null && (selectedImageValue == null || !selectedImageValue.startsWith("content://") && !selectedImageValue.startsWith("file://"))) {
+                // Only change image if admin hasn't already selected an image and this is a new category
+                if (selected != null && selectedImageValue == null && category == null) {
                     selectedImageValue = selected;
                     ProductImageLoader.load(CategoryManagementActivity.this, imagePreviewIv, selectedImageValue, R.drawable.product_icon);
+                }
+                // For editing, only change if admin explicitly selects a different drawable
+                else if (selected != null && category != null && 
+                         selectedImageValue != null && !selectedImageValue.startsWith("content://") && 
+                         !selectedImageValue.startsWith("file://") && !ImageStorageManager.isPermanentStoragePath(selectedImageValue) &&
+                         !selected.equals(selectedImageValue)) {
+                    selectedImageValue = selected;
+                    ProductImageLoader.load(CategoryManagementActivity.this, imagePreviewIv, selectedImageValue, R.drawable.product_icon);
+                }
+                // Save drawable image permanently when selected for new categories
+                else if (selected != null && selectedImageValue != null && 
+                         !selectedImageValue.startsWith("content://") && !selectedImageValue.startsWith("file://") && 
+                         !ImageStorageManager.isPermanentStoragePath(selectedImageValue) && !selected.equals(selectedImageValue)) {
+                    // Convert drawable to permanent file
+                    String permanentPath = saveDrawableAsPermanentImage(selected);
+                    if (permanentPath != null) {
+                        selectedImageValue = permanentPath;
+                        ProductImageLoader.load(CategoryManagementActivity.this, imagePreviewIv, selectedImageValue, R.drawable.product_icon);
+                        Toast.makeText(CategoryManagementActivity.this, "Stock image saved permanently", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
@@ -200,8 +255,9 @@ public class CategoryManagementActivity extends AppCompatActivity {
             selectedImageValue = category.getImageUrl();
             ProductImageLoader.load(this, imagePreviewIv, selectedImageValue, R.drawable.product_icon);
 
-            // Set spinner selection if it's a drawable
-            if (selectedImageValue != null) {
+            // Set spinner selection only if it's a drawable resource
+            if (selectedImageValue != null && !selectedImageValue.startsWith("content://") && 
+                !selectedImageValue.startsWith("file://") && !ImageStorageManager.isPermanentStoragePath(selectedImageValue)) {
                 for (int i = 0; i < drawableNames.size(); i++) {
                     if (drawableNames.get(i).equals(selectedImageValue)) {
                         imageSpinner.setSelection(i);
@@ -210,7 +266,7 @@ public class CategoryManagementActivity extends AppCompatActivity {
                 }
             }
         } else {
-            // Default to first item for new categories
+            // Default to first item only for new categories
             if (!drawableNames.isEmpty()) {
                 selectedImageValue = drawableNames.get(0);
                 ProductImageLoader.load(this, imagePreviewIv, selectedImageValue, R.drawable.product_icon);
@@ -270,7 +326,14 @@ public class CategoryManagementActivity extends AppCompatActivity {
                     Toast.makeText(this, "Failed to add category", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                // Update
+                // Update - cleanup old image if it was changed and is a permanent storage path
+                String oldImage = category.getImageUrl();
+                if (image != null && oldImage != null && !image.equals(oldImage)) {
+                    if (ImageStorageManager.isPermanentStoragePath(oldImage)) {
+                        ImageStorageManager.deleteImage(oldImage);
+                    }
+                }
+                
                 success = categoryRepository.updateCategory(category.getCategoryId(), name, description, image);
                 if (success) {
                     Toast.makeText(this, "Category updated successfully", Toast.LENGTH_SHORT).show();
@@ -300,6 +363,9 @@ public class CategoryManagementActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Shows a dialog with a grid of app-bundled drawable resources for image selection.
+     */
     private void showDrawableSelectorDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_drawable_selector, null);
@@ -319,9 +385,20 @@ public class CategoryManagementActivity extends AppCompatActivity {
                 .setPositiveButton("Select", (dialogInterface, which) -> {
                     DrawableImageAdapter.DrawableImage selectedImage = adapter.getSelectedImage();
                     if (selectedImage != null) {
-                        selectedImageValue = selectedImage.getResourceName();
-                        if (activeImagePreview != null) {
-                            ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                        // Convert drawable to permanent file
+                        String permanentPath = saveDrawableAsPermanentImage(selectedImage.getResourceName());
+                        if (permanentPath != null) {
+                            selectedImageValue = permanentPath;
+                            if (activeImagePreview != null) {
+                                ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                            }
+                            Toast.makeText(this, "Stock icon saved permanently", Toast.LENGTH_SHORT).show();
+                        } else {
+                            // Fallback to drawable name if conversion fails
+                            selectedImageValue = selectedImage.getResourceName();
+                            if (activeImagePreview != null) {
+                                ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                            }
                         }
                     }
                 })
@@ -334,6 +411,10 @@ public class CategoryManagementActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * Reflectively gets all drawable fields from R.drawable, filtering out system resources.
+     * @return List of DrawableImage objects
+     */
     private List<DrawableImageAdapter.DrawableImage> getDrawableImages() {
         List<DrawableImageAdapter.DrawableImage> drawableImages = new ArrayList<>();
         Field[] fields = R.drawable.class.getFields();
@@ -357,11 +438,70 @@ public class CategoryManagementActivity extends AppCompatActivity {
         return drawableImages;
     }
 
+    /**
+     * Converts a drawable resource to a permanent image file.
+     * @param drawableName Name of the drawable resource
+     * @return Permanent file path, or null if failed
+     */
+    private String saveDrawableAsPermanentImage(String drawableName) {
+        try {
+            // Get drawable resource ID
+            int resId = getResources().getIdentifier(drawableName, "drawable", getPackageName());
+            if (resId == 0) {
+                return null;
+            }
+            
+            // Load drawable as bitmap
+            android.graphics.drawable.Drawable drawable = getResources().getDrawable(resId);
+            android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(
+                drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), 
+                android.graphics.Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas canvas = new android.graphics.Canvas(bitmap);
+            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.draw(canvas);
+            
+            // Create permanent file
+            File storageDir = ImageStorageManager.getStorageDirectory(this, ImageStorageManager.ImageType.CATEGORY);
+            if (!storageDir.exists() && !storageDir.mkdirs()) {
+                return null;
+            }
+            
+            String uniqueFileName = drawableName + "_" + 
+                new java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(new java.util.Date()) + 
+                ".png";
+            File destinationFile = new File(storageDir, uniqueFileName);
+            
+            // Save bitmap to file
+            java.io.FileOutputStream out = new java.io.FileOutputStream(destinationFile);
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out);
+            out.close();
+            
+            // Recycle bitmap
+            bitmap.recycle();
+            
+            return destinationFile.getAbsolutePath();
+            
+        } catch (Exception e) {
+            android.util.Log.e("CategoryManagement", "Error saving drawable as permanent image", e);
+            return null;
+        }
+    }
+
+    /**
+     * Displays a confirmation dialog before deleting a category.
+     * @param category The category to delete
+     */
     private void showDeleteConfirmationDialog(Category category) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Category")
                 .setMessage("Are you sure you want to delete " + category.getCategoryName() + "? Products in this category will remain but may lose category association.")
                 .setPositiveButton("Delete", (dialog, which) -> {
+                    // Delete associated image if it's a permanent storage path
+                    String imagePath = category.getImageUrl();
+                    if (imagePath != null && ImageStorageManager.isPermanentStoragePath(imagePath)) {
+                        ImageStorageManager.deleteImage(imagePath);
+                    }
+                    
                     boolean success = categoryRepository.deleteCategory(category.getCategoryId());
                     if (success) {
                         Toast.makeText(this, "Category deleted", Toast.LENGTH_SHORT).show();
@@ -374,6 +514,9 @@ public class CategoryManagementActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Handles toolbar menu actions (Back button).
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

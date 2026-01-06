@@ -1,21 +1,27 @@
 package com.sunit.groceryplus.models;
 
+/** DeliveryPersonnel - Model representing detailed fleet staff information including vehicle and license details. */
 public class DeliveryPersonnel {
-    private int deliveryPersonId;
-    private String name;
-    private String email;
-    private String phone;
-    private String vehicleType;
-    private String licenseNumber;
-    private boolean isAvailable;
-    private String currentLocation;
-    private double rating;
-    private int totalDeliveries;
-    private String createdAt;
-    private String updatedAt;
+    private int deliveryPersonId;   // Unique DB identifier
+    private String name;            // Staff Name
+    private String email;           // Staff Email
+    private String phone;           // Contact Phone
+    private String vehicleType;     // Vehicle Type (Bike, Van, etc.)
+    private String licenseNumber;   // Driving License Number
+    private boolean isAvailable;    // Availability Status
+    private String currentLocation; // Current GPS Location (Lat,Lng or Address)
+    private double rating;          // Average Rating (0-5)
+    private int totalDeliveries;    // Total completed deliveries count
+    private String createdAt;       // Registration Timestamp
+    private String updatedAt;       // Last Update Timestamp
 
+    /** Default constructor. */
     public DeliveryPersonnel() {}
 
+    /**
+     * Constructor for creating new personnel.
+     * Sets default values for availability, rating, and total deliveries.
+     */
     public DeliveryPersonnel(int deliveryPersonId, String name, String email, String phone, String vehicleType) {
         this.deliveryPersonId = deliveryPersonId;
         this.name = name;

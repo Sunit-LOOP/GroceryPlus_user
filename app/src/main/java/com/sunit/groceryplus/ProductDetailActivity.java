@@ -28,31 +28,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * ProductDetailActivity - Displays detailed information about a specific product.
- * 
- * This activity handles the detailed view of a product, including its image, price, description,
- * reviews, and related actions like adding to cart or wishlist. It also manages specific user
- * interactions such as quantity adjustment and writing reviews.
- * 
- * Key Features:
- * - Detailed product information display
- * - Quantity selector
- * - Add to Cart functionality
- * - Ratings and Reviews management (viewing and adding)
- * - Wishlist toggling (logic present, UI pending)
- * - Recently viewed tracking
- * - Similar product recommendations (handled via data loading)
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** ProductDetailActivity - Comprehensive product view featuring descriptions, ratings, reviews, and cart integration. */
 public class ProductDetailActivity extends AppCompatActivity {
 
+    // Infrastructure & UI
     private static final String TAG = "ProductDetailActivity";
-    
-    // UI Components
     private ImageView productImageIv;
     private TextView productNameTv, productPriceTv, productDescriptionTv, productCategoryTv, quantityTv, productVendorTv;
     private TextView productAvgRatingTv, productReviewCountTv, noReviewsTv;
@@ -60,21 +40,21 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ImageButton decreaseBtn, increaseBtn, backBtn, saveForLaterBtn;
     private Button addToCartBtn, writeReviewBtn;
     private RecyclerView productReviewsRv;
-    
-    // Data State
+
+    // Data State & Adapters
     private int productId, userId;
     private int quantity = 1;
-    
+    private Product product;
+    private ReviewAdapter reviewAdapter;
+    private List<Review> reviewList = new ArrayList<>();
+
     // Repositories
     private ProductRepository productRepository;
     private CartRepository cartRepository;
     private ReviewRepository reviewRepository;
     private WishlistRepository wishlistRepository;
 
-    private Product product;
-    private ReviewAdapter reviewAdapter;
-    private List<Review> reviewList = new ArrayList<>();
-
+    /** Initializes the activity, tracks recently viewed, and loads product data. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +85,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         setClickListeners();
     }
 
+    /** Links UI components to functional fields. */
     private void initViews() {
         productImageIv = findViewById(R.id.productDetailImageIv);
         productNameTv = findViewById(R.id.productDetailNameTv);
@@ -127,11 +108,13 @@ public class ProductDetailActivity extends AppCompatActivity {
         noReviewsTv = findViewById(R.id.noReviewsTv);
     }
 
+    /** Initializes the reviews list with its adapter. */
     private void setupReviewsRecyclerView() {
         reviewAdapter = new ReviewAdapter(this, reviewList);
         productReviewsRv.setAdapter(reviewAdapter);
     }
 
+    /** Fetches product details and populates text and image views. */
     private void loadProductDetails() {
         try {
             product = productRepository.getProductById(productId);
@@ -161,10 +144,12 @@ public class ProductDetailActivity extends AppCompatActivity {
         }
     }
 
+    /** Orchestrates product review loading. */
     private void loadReviews() {
         loadReviewsFromDatabase();
     }
 
+    /** Fetches reviews and ratings from the repository. */
     private void loadReviewsFromDatabase() {
         try {
             reviewList = reviewRepository.getReviewsForProduct(productId);
@@ -187,6 +172,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         }
     }
 
+    /** Sets UI interaction listeners for buttons and selectors. */
     private void setClickListeners() {
         decreaseBtn.setOnClickListener(v -> {
             if (quantity > 1) {
@@ -207,6 +193,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         backBtn.setOnClickListener(v -> finish());
     }
 
+    /** Opens a dialog allowing the user to rate and comment on the product. */
     private void showWriteReviewDialog() {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_write_review, null);
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -242,6 +229,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    /** Persists the selected quantity of this product to the cart. */
     private void addToCart() {
         if (cartRepository.addToCart(userId, productId, quantity)) {
             Toast.makeText(ProductDetailActivity.this, "Added to cart", Toast.LENGTH_SHORT).show();
@@ -250,6 +238,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         }
     }
 
+    /** Adds or removes the product from the user's wishlist. */
     private void toggleSaveForLater() {
         if (wishlistRepository.isInWishlist(userId, productId)) {
             wishlistRepository.removeFromWishlist(userId, productId);
@@ -261,6 +250,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         updateSaveForLaterIcon();
     }
 
+    /** Updates the wishlist button icon based on current state. */
     private void updateSaveForLaterIcon() {
         // TODO: Uncomment when saveForLaterBtn is added to layout
         if (wishlistRepository.isInWishlist(userId, productId)) {

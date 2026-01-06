@@ -4,17 +4,18 @@ import android.content.Context;
 import android.util.Log;
 import java.util.List;
 
+/** Repository for managing individual items within an order in the database. */
 public class OrderItemRepository {
+    // Infrastructure
     private static final String TAG = "OrderItemRepository";
     private DatabaseHelper dbHelper;
 
+    /** Initializes the repository with a DatabaseHelper. */
     public OrderItemRepository(Context context) {
         this.dbHelper = new DatabaseHelper(context);
     }
 
-    /**
-     * Add order item
-     */
+    /** Adds a new item to an existing order. */
     public boolean addOrderItem(int orderId, int productId, int quantity, double price) {
         try {
             long result = dbHelper.addOrderItem(orderId, productId, quantity, price);
@@ -25,9 +26,7 @@ public class OrderItemRepository {
         }
     }
 
-    /**
-     * Get order items by order ID
-     */
+    /** Retrieves all items associated with a specific order ID. */
     public List<com.sunit.groceryplus.models.OrderItem> getOrderItemsByOrderId(int orderId) {
         try {
             return dbHelper.getOrderItems(orderId);
@@ -37,9 +36,7 @@ public class OrderItemRepository {
         }
     }
 
-    /**
-     * Get order items by product ID
-     */
+    /** Retrieves all order items that contain a specific product ID. */
     public List<com.sunit.groceryplus.models.OrderItem> getOrderItemsByProductId(int productId) {
         try {
             // Get all order items and filter by product ID
@@ -59,9 +56,7 @@ public class OrderItemRepository {
         }
     }
 
-    /**
-     * Update order item quantity
-     */
+    /** Updates the quantity for a specific order item. */
     public boolean updateOrderItemQuantity(int orderItemId, int quantity) {
         try {
             return dbHelper.updateOrderItemQuantity(orderItemId, quantity);
@@ -71,9 +66,7 @@ public class OrderItemRepository {
         }
     }
 
-    /**
-     * Delete order item
-     */
+    /** Deletes a specific order item from the database. */
     public boolean deleteOrderItem(int orderItemId) {
         try {
             return dbHelper.deleteOrderItem(orderItemId);
@@ -83,9 +76,7 @@ public class OrderItemRepository {
         }
     }
 
-    /**
-     * Get total amount for order
-     */
+    /** Calculates the total cost for all items in a specific order. */
     public double getOrderTotal(int orderId) {
         try {
             List<com.sunit.groceryplus.models.OrderItem> items = dbHelper.getOrderItems(orderId);

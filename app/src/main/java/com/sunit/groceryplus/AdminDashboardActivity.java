@@ -19,24 +19,10 @@ import com.sunit.groceryplus.admin.ReviewsManagementActivity;
 import com.sunit.groceryplus.admin.VendorManagementActivity;
 
 
-/**
- * AdminDashboardActivity - Central hub for all administrative actions.
- * 
- * This activity serves as the main entry point for the Admin panel. It provides a grid
- * of dashboard cards that navigate to specific management modules such as Products, Orders,
- * Categories, Users, Vendors, and Analytics.
- * 
- * Key Features:
- * - Dashboard Grid UI
- * - Navigation to all Admin modules
- * - Logout functionality
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** AdminDashboardActivity - Central hub for all administrative actions and system management. */
 public class AdminDashboardActivity extends AppCompatActivity {
 
+    /** Initializes the activity and sets up navigation grid. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +32,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         setupClickListeners();
     }
 
+    /** Sets up click listeners for all dashboard management modules. */
     private void setupClickListeners() {
         // Product Management
         findViewById(R.id.manageProductsCard).setOnClickListener(v -> {

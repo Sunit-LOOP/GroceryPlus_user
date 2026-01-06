@@ -12,40 +12,20 @@ import com.sunit.groceryplus.models.User;
 import com.google.android.material.textfield.TextInputEditText;
 
 
-/**
- * EditProfileActivity - Input form for updating user personal information.
- * 
- * This activity allows users to modify their personal details such as name, email, and phone number.
- * It pre-loads the current user information and validates inputs before saving changes
- * to the UserRepository.
- * 
- * Key Features:
- * - Edit Name, Email, Phone
- * - Input validation (Email format, Phone length)
- * - Pre-filling existing data
- * - Save and Cancel actions
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** EditProfileActivity - Profile management interface allowing users to update their personal and contact details. */
 public class EditProfileActivity extends AppCompatActivity {
 
+    // Infrastructure & UI
     private static final String TAG = "EditProfileActivity";
-    
-    // UI Components
-    private TextInputEditText nameEt;
-    private TextInputEditText emailEt;
-    private TextInputEditText phoneEt;
-    private TextInputEditText addressEt;
-    private Button saveBtn;
-    private Button cancelBtn;
-    
+    private TextInputEditText nameEt, emailEt, phoneEt, addressEt;
+    private Button saveBtn, cancelBtn;
+
     // Data & Repositories
     private int userId;
     private UserRepository userRepository;
     private User currentUser;
 
+    /** Initializes the profile editor, verifies user session, and loads current data. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +52,7 @@ public class EditProfileActivity extends AppCompatActivity {
         setClickListeners();
     }
 
+    /** Links UI components to functional fields. */
     private void initViews() {
         nameEt = findViewById(R.id.editProfileNameEt);
         emailEt = findViewById(R.id.editProfileEmailEt);
@@ -81,6 +62,7 @@ public class EditProfileActivity extends AppCompatActivity {
         cancelBtn = findViewById(R.id.cancelProfileBtn);
     }
 
+    /** Fetches the latest user information and populates the input fields. */
     private void loadUserData() {
         try {
             currentUser = userRepository.getUserById(userId);
@@ -101,6 +83,7 @@ public class EditProfileActivity extends AppCompatActivity {
         }
     }
 
+    /** Sets UI interaction listeners for save and cancel actions. */
     private void setClickListeners() {
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,6 +100,7 @@ public class EditProfileActivity extends AppCompatActivity {
         });
     }
 
+    /** Validates inputs and persists profile changes to the local database. */
     private void saveProfile() {
         // Get input values
         String name = nameEt.getText().toString().trim();

@@ -1,41 +1,16 @@
 package com.sunit.groceryplus.models;
 
-/**
- * Promotion Model Class
- * 
- * Represents a discount coupon or promotional offer.
- * Users can apply these codes during checkout to receive discounts.
- */
+/** Promotion - Model representing a discount coupon or special offer. */
 public class Promotion {
     
-    // Unique ID for the promotion
-    private int promoId;
-    
-    // The code users enter to redeem (e.g., "SALE50")
-    private String code;
-    
-    // Discount amount in percentage (e.g., 10.0 for 10%)
-    private double discountPercentage;
-    
-    // Expiration date (YYYY-MM-DD)
-    private String validUntil;
-    
-    // Banner image for the promotion
-    private String imageUrl;
-    
-    // Is the promotion currently active?
-    private boolean isActive;
+    private int promoId;            // Unique DB identifier
+    private String code;            // Coupon Code (e.g., "SAVE10")
+    private double discountPercentage; // Discount Value (e.g., 10.0)
+    private String validUntil;      // Expiry Date (YYYY-MM-DD)
+    private String imageUrl;        // Banner Image Resource/URL
+    private boolean isActive;       // Activation Flag
 
-    /**
-     * Full Constructor
-     * 
-     * @param promoId Unique ID
-     * @param code Coupon Code
-     * @param discountPercentage Discount %
-     * @param validUntil Expiry Date
-     * @param imageUrl Banner Image
-     * @param isActive Active Status
-     */
+    /** Full Constructor. */
     public Promotion(int promoId, String code, double discountPercentage, String validUntil, String imageUrl, boolean isActive) {
         this.promoId = promoId;
         this.code = code;

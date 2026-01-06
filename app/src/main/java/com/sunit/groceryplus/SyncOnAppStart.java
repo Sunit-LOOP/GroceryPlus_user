@@ -4,15 +4,9 @@ import android.content.Context;
 import android.util.Log;
 import com.sunit.groceryplus.utils.FirestoreSyncHelper;
 
-/**
- * SyncOnAppStart: Optional background sync on app launch.
- * - Mirrors selected collections from Firestore to SQLite (read-through cache).
- * - Non-blocking; runs in background.
- *
- * Call from SplashScreenActivity or MainActivity once.
- */
+/** Handles background data synchronization from Firestore to SQLite during application startup. */
 public class SyncOnAppStart {
-
+    // Infrastructure
     private static final String TAG = "SyncOnAppStart";
 
     public static void syncIfNeeded(Context context) {

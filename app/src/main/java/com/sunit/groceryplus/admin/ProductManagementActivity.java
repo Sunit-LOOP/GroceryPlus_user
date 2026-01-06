@@ -33,6 +33,7 @@ import com.sunit.groceryplus.adapters.DrawableImageAdapter;
 import com.sunit.groceryplus.models.Category;
 import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.models.Vendor;
+import com.sunit.groceryplus.utils.ImageStorageManager;
 import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import java.io.File;
@@ -41,29 +42,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * ProductManagementActivity - Core admin interface for CRUD operations on Products.
- * 
- * This activity allows administrators to view, add, edit, and delete products.
- * It handles image selection (Gallery, Camera, Stock Drawables) and manages
- * relationships with Categories and Vendors.
- * 
- * Key Features:
- * - List all Products
- * - Add/Edit Product Form (Name, Price, Desc, Stock, Image, Vendor, Category)
- * - Image Picker Integration (Camera/Gallery/Drawable)
- * - Deletion with confirmation
- * - View Reviews for a product
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** ProductManagementActivity - Core admin interface for viewing, adding, editing, and deleting products with image selection and category/vendor assignment. */
 public class ProductManagementActivity extends AppCompatActivity {
 
+    // UI Components
     private RecyclerView productsRv;
     private FloatingActionButton addProductFab;
 
+    // Data Repositories & Helpers
     private ProductRepository productRepository;
     private CategoryRepository categoryRepository;
     private AdminProductAdapter adapter;
@@ -71,13 +57,17 @@ public class ProductManagementActivity extends AppCompatActivity {
     private List<Vendor> vendors;
     private DatabaseHelper dbHelper;
 
+    // Image Picker Components
     private ActivityResultLauncher<String[]> pickImageLauncher;
     private ActivityResultLauncher<Uri> takePictureLauncher;
     private Uri pendingCameraUri;
-
     private ImageView activeImagePreview;
     private String selectedImageValue;
 
+    /**
+     * Initializes activity, setups UI/Repo/Recycler, loads data and sets up image pickers.
+     * @param savedInstanceState Saved instance state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +95,9 @@ public class ProductManagementActivity extends AppCompatActivity {
         initImagePickers();
     }
 
+    /**
+     * Registers Activity Result Launchers for picking images from gallery and taking photos.
+     */
     private void initImagePickers() {
         pickImageLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(), uri -> {
             if (uri == null) return;
@@ -114,46 +107,93 @@ public class ProductManagementActivity extends AppCompatActivity {
             } catch (Exception ignored) {
             }
 
-            selectedImageValue = uri.toString();
-            if (activeImagePreview != null) {
-                ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+            // Save image permanently
+            String permanentPath = ImageStorageManager.saveImagePermanently(
+                this, uri, ImageStorageManager.ImageType.PRODUCT, "product_image");
+            
+            if (permanentPath != null) {
+                selectedImageValue = permanentPath;
+                if (activeImagePreview != null) {
+                    ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                }
+                Toast.makeText(this, "Image saved permanently", Toast.LENGTH_SHORT).show();
+            } else {
+                // Fallback to temporary URI if permanent storage fails
+                selectedImageValue = uri.toString();
+                if (activeImagePreview != null) {
+                    ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                }
+                Toast.makeText(this, "Using temporary image storage", Toast.LENGTH_LONG).show();
             }
         });
 
         takePictureLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
             if (success != null && success && pendingCameraUri != null) {
-                selectedImageValue = pendingCameraUri.toString();
-                if (activeImagePreview != null) {
-                    ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                // Save camera image permanently
+                String permanentPath = ImageStorageManager.saveImagePermanently(
+                    this, pendingCameraUri, ImageStorageManager.ImageType.PRODUCT, "product_camera");
+                
+                if (permanentPath != null) {
+                    selectedImageValue = permanentPath;
+                    if (activeImagePreview != null) {
+                        ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                    }
+                    Toast.makeText(this, "Camera image saved permanently", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Fallback to temporary URI if permanent storage fails
+                    selectedImageValue = pendingCameraUri.toString();
+                    if (activeImagePreview != null) {
+                        ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                    }
+                    Toast.makeText(this, "Using temporary camera image", Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
 
+    /**
+     * Finds and assigns UI views.
+     */
     private void initViews() {
         productsRv = findViewById(R.id.productsRv);
         addProductFab = findViewById(R.id.addProductFab);
     }
 
+    /**
+     * Instantiates necessary repositories for data access.
+     */
     private void initRepositories() {
         productRepository = new ProductRepository(this);
         categoryRepository = new CategoryRepository(this);
     }
 
+    /**
+     * Loads categories for spinner population.
+     */
     private void loadCategories() {
         categories = categoryRepository.getAllCategories();
     }
 
+    /**
+     * Loads vendors for spinner population.
+     */
     private void loadVendors() {
         vendors = dbHelper.getAllVendors();
     }
 
+    /**
+     * Sets up RecyclerView layout manager and adapter.
+     */
     private void setupRecyclerView() {
         productsRv.setLayoutManager(new GridLayoutManager(this, 1));
         adapter = new AdminProductAdapter(this, new ArrayList<>(), productRepository, categories, this);
         productsRv.setAdapter(adapter);
     }
 
+    /**
+     * Fetches all products and updates the adapter.
+     * Forces sample data refresh if list is empty.
+     */
     private void loadProducts() {
         List<Product> products = productRepository.getAllProducts();
         adapter.updateProducts(products);
@@ -174,6 +214,9 @@ public class ProductManagementActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets click listeners for FAB and test debug actions.
+     */
     private void setClickListeners() {
         addProductFab.setOnClickListener(v -> showProductDialog(null));
         
@@ -186,6 +229,11 @@ public class ProductManagementActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Displays a comprehensive dialog for adding or editing a product.
+     * Handles inputs for Name, Price, Description, Stock, Category, Vendor, and Image.
+     * @param product Product to edit, or null to create new.
+     */
     public void showProductDialog(Product product) {
         if (categories == null || categories.isEmpty()) {
             Toast.makeText(this, "Please add categories first before adding products", Toast.LENGTH_LONG).show();
@@ -256,10 +304,35 @@ public class ProductManagementActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                 String selected = (String) imageSpinner.getSelectedItem();
-                if (selected != null) {
+                // Only change image if admin hasn't already selected an image and this is a new product
+                if (selected != null && selectedImageValue == null && product == null) {
                     selectedImageValue = selected;
                     if (imagePreviewIv != null) {
                         ProductImageLoader.load(ProductManagementActivity.this, imagePreviewIv, selectedImageValue, R.drawable.product_icon);
+                    }
+                }
+                // For editing, only change if admin explicitly selects a different drawable
+                else if (selected != null && product != null && 
+                         selectedImageValue != null && !selectedImageValue.startsWith("content://") && 
+                         !selectedImageValue.startsWith("file://") && !ImageStorageManager.isPermanentStoragePath(selectedImageValue) &&
+                         !selected.equals(selectedImageValue)) {
+                    selectedImageValue = selected;
+                    if (imagePreviewIv != null) {
+                        ProductImageLoader.load(ProductManagementActivity.this, imagePreviewIv, selectedImageValue, R.drawable.product_icon);
+                    }
+                }
+                // Save drawable image permanently when selected for new products
+                else if (selected != null && selectedImageValue != null && 
+                         !selectedImageValue.startsWith("content://") && !selectedImageValue.startsWith("file://") && 
+                         !ImageStorageManager.isPermanentStoragePath(selectedImageValue) && !selected.equals(selectedImageValue)) {
+                    // Convert drawable to permanent file
+                    String permanentPath = saveDrawableAsPermanentImage(selected);
+                    if (permanentPath != null) {
+                        selectedImageValue = permanentPath;
+                        if (imagePreviewIv != null) {
+                            ProductImageLoader.load(ProductManagementActivity.this, imagePreviewIv, selectedImageValue, R.drawable.product_icon);
+                        }
+                        Toast.makeText(ProductManagementActivity.this, "Stock image saved permanently", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -297,9 +370,11 @@ public class ProductManagementActivity extends AppCompatActivity {
                 }
             }
 
-            // Set image spinner selection
+            // Set image spinner selection only if it's a drawable resource
             String img = product.getImage();
-            if (img != null && !img.startsWith("content://") && !img.startsWith("file://") && !img.startsWith("android.resource://") && !img.startsWith("http://") && !img.startsWith("https://")) {
+            if (img != null && !img.startsWith("content://") && !img.startsWith("file://") && 
+                !img.startsWith("android.resource://") && !img.startsWith("http://") && !img.startsWith("https://") &&
+                !ImageStorageManager.isPermanentStoragePath(img)) {
                 for (int i = 0; i < drawableNames.size(); i++) {
                     if (drawableNames.get(i).equals(img)) {
                         imageSpinner.setSelection(i);
@@ -310,6 +385,7 @@ public class ProductManagementActivity extends AppCompatActivity {
         }
 
         if (product == null) {
+            // Default to first item only for new products
             selectedImageValue = (String) imageSpinner.getSelectedItem();
             if (imagePreviewIv != null) {
                 ProductImageLoader.load(this, imagePreviewIv, selectedImageValue, R.drawable.product_icon);
@@ -396,6 +472,14 @@ public class ProductManagementActivity extends AppCompatActivity {
                 // Add
                 success = productRepository.addProduct(name, categoryId, price, description, image, stock, vendorId);
             } else {
+                // Update - cleanup old image if it was changed and is a permanent storage path
+                String oldImage = product.getImage();
+                if (image != null && oldImage != null && !image.equals(oldImage)) {
+                    if (ImageStorageManager.isPermanentStoragePath(oldImage)) {
+                        ImageStorageManager.deleteImage(oldImage);
+                    }
+                }
+                
                 // Update
                 success = productRepository.updateProduct(product.getProductId(), name, categoryId, price, description, image, stock, vendorId);
             }
@@ -424,11 +508,70 @@ public class ProductManagementActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Converts a drawable resource to a permanent image file.
+     * @param drawableName Name of the drawable resource
+     * @return Permanent file path, or null if failed
+     */
+    private String saveDrawableAsPermanentImage(String drawableName) {
+        try {
+            // Get drawable resource ID
+            int resId = getResources().getIdentifier(drawableName, "drawable", getPackageName());
+            if (resId == 0) {
+                return null;
+            }
+            
+            // Load drawable as bitmap
+            android.graphics.drawable.Drawable drawable = getResources().getDrawable(resId);
+            android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(
+                drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), 
+                android.graphics.Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas canvas = new android.graphics.Canvas(bitmap);
+            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.draw(canvas);
+            
+            // Create permanent file
+            File storageDir = ImageStorageManager.getStorageDirectory(this, ImageStorageManager.ImageType.PRODUCT);
+            if (!storageDir.exists() && !storageDir.mkdirs()) {
+                return null;
+            }
+            
+            String uniqueFileName = drawableName + "_" + 
+                new java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(new java.util.Date()) + 
+                ".png";
+            File destinationFile = new File(storageDir, uniqueFileName);
+            
+            // Save bitmap to file
+            java.io.FileOutputStream out = new java.io.FileOutputStream(destinationFile);
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out);
+            out.close();
+            
+            // Recycle bitmap
+            bitmap.recycle();
+            
+            return destinationFile.getAbsolutePath();
+            
+        } catch (Exception e) {
+            android.util.Log.e("ProductManagement", "Error saving drawable as permanent image", e);
+            return null;
+        }
+    }
+
+    /**
+     * Shows a confirmation dialog for removing a product.
+     * @param product The product to remove.
+     */
     public void showDeleteConfirmationDialog(Product product) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Product")
                 .setMessage("Are you sure you want to delete " + product.getProductName() + "?")
                 .setPositiveButton("Delete", (dialog, which) -> {
+                    // Delete associated image if it's a permanent storage path
+                    String imagePath = product.getImage();
+                    if (imagePath != null && ImageStorageManager.isPermanentStoragePath(imagePath)) {
+                        ImageStorageManager.deleteImage(imagePath);
+                    }
+                    
                     boolean success = productRepository.deleteProduct(product.getProductId());
                     if (success) {
                         Toast.makeText(this, "Product deleted", Toast.LENGTH_SHORT).show();
@@ -441,6 +584,10 @@ public class ProductManagementActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Shows a dialog listing reviews for the selected product.
+     * @param product The product to view reviews for.
+     */
     public void showReviewsDialog(Product product) {
         List<com.sunit.groceryplus.models.Review> reviews = dbHelper.getReviewsForProduct(product.getProductId());
 
@@ -464,6 +611,9 @@ public class ProductManagementActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * Shows a dialog to select an image from app resources.
+     */
     private void showDrawableSelectorDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_drawable_selector, null);
@@ -487,9 +637,20 @@ public class ProductManagementActivity extends AppCompatActivity {
         builder.setPositiveButton("Select", (dialogInterface, which) -> {
             DrawableImageAdapter.DrawableImage selectedImage = adapter.getSelectedImage();
             if (selectedImage != null) {
-                selectedImageValue = selectedImage.getResourceName();
-                if (activeImagePreview != null) {
-                    ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                // Convert drawable to permanent file
+                String permanentPath = saveDrawableAsPermanentImage(selectedImage.getResourceName());
+                if (permanentPath != null) {
+                    selectedImageValue = permanentPath;
+                    if (activeImagePreview != null) {
+                        ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                    }
+                    Toast.makeText(this, "Stock image saved permanently", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Fallback to drawable name if conversion fails
+                    selectedImageValue = selectedImage.getResourceName();
+                    if (activeImagePreview != null) {
+                        ProductImageLoader.load(this, activeImagePreview, selectedImageValue, R.drawable.product_icon);
+                    }
                 }
             }
         });
@@ -501,6 +662,9 @@ public class ProductManagementActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * Retrieves list of all drawable resources for the image selector dialog.
+     */
     private List<DrawableImageAdapter.DrawableImage> getDrawableImages() {
         List<DrawableImageAdapter.DrawableImage> images = new ArrayList<>();
         
@@ -528,6 +692,9 @@ public class ProductManagementActivity extends AppCompatActivity {
         return images;
     }
 
+    /**
+     * Formats drawable name for display (e.g., "my_image" -> "My Image").
+     */
     private String formatName(String drawableName) {
         // Convert drawable_name to Display Name
         String formatted = drawableName.replaceAll("_", " ")
@@ -550,6 +717,9 @@ public class ProductManagementActivity extends AppCompatActivity {
         return result.toString();
     }
 
+    /**
+     * Handles options menu items (Home button).
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

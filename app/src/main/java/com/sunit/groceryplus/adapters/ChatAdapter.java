@@ -15,11 +15,7 @@ import com.sunit.groceryplus.models.Message;
 
 import java.util.List;
 
-/**
- * Adapter for displaying Instant Messages in a chat conversation.
- * Determines if a message was sent by the current user or received from another,
- * and chooses the appropriate layout alignment.
- */
+/** ChatAdapter - Displays instant messages with distinct alignment for sent vs received bubbles. */
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
 
     private Context context;
@@ -38,11 +34,13 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         this.currentUserId = currentUserId;
     }
 
+    /** Updates the data source and refreshes the UI. */
     public void updateMessages(List<Message> newMessages) {
         this.messages = newMessages;
         notifyDataSetChanged();
     }
 
+    /** Adds a single message to the list with insertion animation. */
     public void addMessage(Message message) {
         this.messages.add(message);
         notifyItemInserted(messages.size() - 1);
@@ -80,7 +78,9 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         return messages.size();
     }
 
+    /** ViewHolder for chat messages. */
     static class ChatViewHolder extends RecyclerView.ViewHolder {
+        // UI Components
         LinearLayout layoutSent, layoutReceived;
         TextView tvSentMessage, tvSentTime;
         TextView tvReceivedMessage, tvReceivedTime;

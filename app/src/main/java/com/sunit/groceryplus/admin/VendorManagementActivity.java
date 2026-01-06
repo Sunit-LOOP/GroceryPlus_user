@@ -38,35 +38,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * VendorManagementActivity - Admin interface for managing store vendors.
- * 
- * This activity allows the admin to register new vendors (stores), update their details,
- * and manage their presence on the platform. It handles location data (Lat/Lng) for map visualization.
- * 
- * Key Features:
- * - List all vendors
- * - Add/Edit/Delete Vendor
- * - Location management for Vendor Map
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** VendorManagementActivity - Admin interface for managing store vendors, locations, and details. */
 public class VendorManagementActivity extends AppCompatActivity implements AdminVendorAdapter.OnVendorActionListener {
 
+    // UI Components
     private RecyclerView recyclerView;
+    
+    // Data & Adapters
     private AdminVendorAdapter adapter;
     private DatabaseHelper dbHelper;
     private List<Vendor> vendorList;
 
+    // Image Picker Components
     private ActivityResultLauncher<String[]> pickImageLauncher;
     private ActivityResultLauncher<Uri> takePictureLauncher;
     private Uri pendingCameraUri;
-
     private ImageView activeImagePreview;
     private String selectedImageValue;
 
+    /**
+     * Initializes activity, sets up toolbar, views, and loads vendor data.
+     * @param savedInstanceState Saved instance state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +86,9 @@ public class VendorManagementActivity extends AppCompatActivity implements Admin
         initImagePickers();
     }
 
+    /**
+     * Registers Activity Result Launchers for picking images from gallery and taking photos.
+     */
     private void initImagePickers() {
         pickImageLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(), uri -> {
             if (uri == null) return;
@@ -118,6 +114,10 @@ public class VendorManagementActivity extends AppCompatActivity implements Admin
         });
     }
 
+    /**
+     * Fetches all vendors from the database and refreshes the adapter.
+     * Inserts sample data if list is empty.
+     */
     private void loadVendors() {
         vendorList = dbHelper.getAllVendors();
         
@@ -135,6 +135,10 @@ public class VendorManagementActivity extends AppCompatActivity implements Admin
         }
     }
 
+    /**
+     * Displays a dialog for adding or editing a vendor details.
+     * @param vendor The vendor to edit, or null to create new.
+     */
     private void showVendorDialog(Vendor vendor) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_vendor, null);
@@ -242,11 +246,17 @@ public class VendorManagementActivity extends AppCompatActivity implements Admin
         dialog.show();
     }
 
+    /**
+     * Callback for editing a vendor. Triggers the dialog.
+     */
     @Override
     public void onEdit(Vendor vendor) {
         showVendorDialog(vendor);
     }
 
+    /**
+     * Callback for deleting a vendor. Shows confirmation dialog.
+     */
     @Override
     public void onDelete(Vendor vendor) {
         new AlertDialog.Builder(this)
@@ -276,6 +286,9 @@ public class VendorManagementActivity extends AppCompatActivity implements Admin
         }
     }
 
+    /**
+     * Shows a dialog to select a vendor icon from app resources.
+     */
     private void showDrawableSelectorDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_drawable_selector, null);
@@ -310,6 +323,9 @@ public class VendorManagementActivity extends AppCompatActivity implements Admin
         builder.show();
     }
 
+    /**
+     * Retrieves relevant drawable resources for vendor icons.
+     */
     private List<DrawableImageAdapter.DrawableImage> getDrawableImages() {
         List<DrawableImageAdapter.DrawableImage> drawableImages = new ArrayList<>();
         Field[] fields = R.drawable.class.getFields();

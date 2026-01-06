@@ -13,11 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sunit.groceryplus.DatabaseContract;
 import com.sunit.groceryplus.R;
 
-/**
- * Adapter for the internal Admin Chat interface.
- * Uses a CursorAdapter approach (conceptually, though implemented via RecyclerView) to load messages from DB.
- * Differentiates between 'Sent' (by Admin) and 'Received' (by Customer) messages.
- */
+/** AdminChatAdapter - Adapter for internal Admin Chat, using cursor for DB messages (Sent/Received separation). */
 public class AdminChatAdapter extends RecyclerView.Adapter<AdminChatAdapter.ViewHolder> {
 
     private static final int VIEW_TYPE_SENT = 1;
@@ -33,9 +29,7 @@ public class AdminChatAdapter extends RecyclerView.Adapter<AdminChatAdapter.View
         this.adminId = adminId;
     }
 
-    /**
-     * Updates the cursor when data changes. Keys for efficient DB list handling.
-     */
+    /** Updates the cursor when data changes. */
     public void swapCursor(Cursor newCursor) {
         if (cursor != null) {
             cursor.close();

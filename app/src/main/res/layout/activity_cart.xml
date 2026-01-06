@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Cart activity layout -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cart_root"
@@ -7,6 +8,7 @@
     android:orientation="vertical"
     android:background="#F5F5F5">
 
+    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/cartToolbar"
         android:layout_width="match_parent"
@@ -15,6 +17,7 @@
         app:title="Shopping Cart"
         app:titleTextColor="@android:color/white" />
 
+    <!-- Cart items list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/cartRecyclerView"
         android:layout_width="match_parent"
@@ -22,6 +25,7 @@
         android:layout_weight="1"
         android:layout_margin="8dp" />
 
+    <!-- Empty cart message -->
     <TextView
         android:id="@+id/emptyCartTv"
         android:layout_width="wrap_content"
@@ -34,6 +38,7 @@
         android:layout_gravity="center"
         android:gravity="center" />
 
+    <!-- Free delivery goal card -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/freeDeliveryGoalCard"
         android:layout_width="match_parent"
@@ -71,6 +76,7 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- Cart summary card -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cartSummaryCard"
         android:layout_width="match_parent"
@@ -79,12 +85,14 @@
         app:cardCornerRadius="16dp"
         app:cardElevation="8dp">
 
+        <!-- Summary content -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="24dp">
 
+            <!-- Total price display -->
             <TextView
                 android:id="@+id/cartTotalPriceTv"
                 android:layout_width="match_parent"
@@ -95,6 +103,7 @@
                 android:textColor="#333333"
                 android:gravity="end" />
 
+            <!-- Checkout button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/checkoutBtn"
                 android:layout_width="match_parent"

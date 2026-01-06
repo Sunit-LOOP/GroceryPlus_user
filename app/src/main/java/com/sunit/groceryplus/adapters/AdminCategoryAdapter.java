@@ -16,19 +16,14 @@ import com.sunit.groceryplus.models.Category;
 
 import java.util.List;
 
-/**
- * Adapter for managing Categories in the Admin Panel.
- * Allows Admins to view list of categories, Edit them, or Delete them.
- */
+/** AdminCategoryAdapter - Adapter for managing Categories in the Admin Panel (View, Edit, Delete). */
 public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdapter.CategoryViewHolder> {
 
     private Context context;
     private List<Category> categories;
     private OnCategoryActionListener listener;
 
-    /**
-     * Interface for Admin actions on a Category.
-     */
+    /** Interface for Admin actions on a Category. */
     public interface OnCategoryActionListener {
         void onEditClick(Category category);
         void onDeleteClick(Category category);

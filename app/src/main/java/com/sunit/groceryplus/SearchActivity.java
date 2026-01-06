@@ -25,50 +25,32 @@ import android.widget.ImageButton;
 import androidx.appcompat.app.AlertDialog;
 
 
-/**
- * SearchActivity - Product search interface with advanced filtering and history.
- * 
- * This activity allows users to search for products using keywords. It features
- * fuzzy search capabilities (handling typos), history tracking, and sorting options.
- * The interface includes a search bar, recent search history list, and a grid of search results.
- * 
- * Key Features:
- * - Real-time or explicit search execution
- * - Search history management (save, display, clear)
- * - Sorting options (Name, Price, Rating)
- * - Fuzzy search implementation for robust matching
- * - "No results" handling
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** SearchActivity - Advanced product discovery interface featuring fuzzy search and sorting algorithms. */
 public class SearchActivity extends AppCompatActivity {
 
+    // Infrastructure & UI
     private static final String TAG = "SearchActivity";
-    
-    // UI Components
     private EditText searchEt;
     private ImageButton sortBtn;
     private RecyclerView searchResultsRv;
     private TextView noResultsTv;
-    
+
     // Data & Repositories
     private int userId;
     private ProductRepository productRepository;
     private CartRepository cartRepository;
     private ProductAdapter productAdapter;
-    
     private List<Product> allProducts = new ArrayList<>();
     private List<Product> searchResults = new ArrayList<>();
-    
-    // Search History Components
+
+    // Search History
     private View historyLayout;
     private RecyclerView historyRv;
     private com.sunit.groceryplus.adapters.SearchHistoryAdapter historyAdapter;
     private List<String> recentSearches = new ArrayList<>();
     private com.sunit.groceryplus.DatabaseHelper dbHelper;
 
+    /** Initializes the search interface, repositories, and initial product list. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,6 +88,7 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
+    /** Handles toolbar menu selections. */
     @Override
     public boolean onOptionsItemSelected(android.view.MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -115,6 +98,7 @@ public class SearchActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /** Links UI components and sets up history tracking views. */
     private void initViews() {
         searchEt = findViewById(R.id.searchEt);
         sortBtn = findViewById(R.id.sortBtn);
@@ -134,6 +118,7 @@ public class SearchActivity extends AppCompatActivity {
         loadSearchHistory();
     }
 
+    /** Displays a dialog for selecting advanced sorting criteria. */
     private void showSortDialog() {
         String[] options = {"Name: A to Z", "Name: Z to A", "Price: Low to High", "Price: High to Low", "Highest Rated"};
         
@@ -164,12 +149,14 @@ public class SearchActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /** Configures the results grid with its adapter. */
     private void setupRecyclerView() {
         searchResultsRv.setLayoutManager(new GridLayoutManager(this, 2));
         productAdapter = new ProductAdapter(this, searchResults, userId);
         searchResultsRv.setAdapter(productAdapter);
     }
 
+    /** Loads the complete product set to enable instant local searching. */
     private void loadAllProducts() {
         try {
             allProducts = productRepository.getAllProducts();
@@ -192,6 +179,7 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
+    /** Sets up listeners for real-time query changes and keyboard actions. */
     private void setupSearchListener() {
         searchEt.addTextChangedListener(new TextWatcher() {
             @Override
@@ -233,6 +221,7 @@ public class SearchActivity extends AppCompatActivity {
         });
     }
 
+    /** Executes the fuzzy search algorithm against the local product cache. */
     private void performSearch(String query) {
         if (query == null || query.trim().isEmpty()) {
             // Show all products if search is empty
@@ -269,6 +258,7 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
+    /** Configures the search history list and its click actions. */
     private void setupHistoryRecyclerView() {
         historyRv.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
         historyAdapter = new com.sunit.groceryplus.adapters.SearchHistoryAdapter(recentSearches, query -> {
@@ -280,6 +270,7 @@ public class SearchActivity extends AppCompatActivity {
         historyRv.setAdapter(historyAdapter);
     }
 
+    /** Loads the most recent search terms from the local database. */
     private void loadSearchHistory() {
         Cursor cursor = dbHelper.getRecentSearchQueries(userId, 5);
         recentSearches.clear();
@@ -292,17 +283,20 @@ public class SearchActivity extends AppCompatActivity {
         historyAdapter.updateItems(recentSearches);
     }
 
+    /** Persists a successful search query to the user's history. */
     private void saveSearchQuery(String query) {
         dbHelper.addSearchQuery(userId, query);
         loadSearchHistory();
     }
 
+    /** Removes all saved search terms for the current user. */
     private void clearSearchHistory() {
         dbHelper.clearSearchHistory(userId);
         loadSearchHistory();
         hideHistory();
     }
 
+    /** Shows the search history overlay. */
     private void showHistory() {
         if (!recentSearches.isEmpty()) {
             historyLayout.setVisibility(View.VISIBLE);
@@ -311,6 +305,7 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
+    /** Hides the search history overlay. */
     private void hideHistory() {
         historyLayout.setVisibility(View.GONE);
         if (searchResults.isEmpty()) {
@@ -320,6 +315,7 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
+    /** Utility to add a product from search results directly to the cart. */
     private void addToCart(Product product) {
         try {
             boolean success = cartRepository.addToCart(userId, product.getProductId(), 1);
@@ -334,11 +330,13 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
+    /** Shows the results grid view. */
     private void showResults() {
         searchResultsRv.setVisibility(View.VISIBLE);
         noResultsTv.setVisibility(View.GONE);
     }
 
+    /** Shows the empty state view. */
     private void showNoResults() {
         searchResultsRv.setVisibility(View.GONE);
         noResultsTv.setVisibility(View.VISIBLE);

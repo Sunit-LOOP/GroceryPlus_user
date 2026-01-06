@@ -7,9 +7,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.sunit.groceryplus.models.User;
 
-/**
- * Activity to demonstrate database initialization and usage
- */
+/** DatabaseInitActivity - Utility activity to verify database initialization and run core operation tests. */
 public class DatabaseInitActivity extends AppCompatActivity {
     private static final String TAG = "DatabaseInitActivity";
     private DatabaseHelper dbHelper;
@@ -26,9 +24,7 @@ public class DatabaseInitActivity extends AppCompatActivity {
         testDatabaseOperations();
     }
 
-    /**
-     * Initialize the database helper
-     */
+    /** Initializes the DatabaseHelper instance. */
     private void initializeDatabase() {
         try {
             dbHelper = new DatabaseHelper(this);
@@ -40,9 +36,7 @@ public class DatabaseInitActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Test various database operations
-     */
+    /** Executes a sequence of tests including user authentication and registration. */
     private void testDatabaseOperations() {
         if (dbHelper == null) {
             Log.e(TAG, "Database helper not initialized");

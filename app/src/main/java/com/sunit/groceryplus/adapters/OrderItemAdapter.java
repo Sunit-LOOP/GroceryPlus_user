@@ -16,15 +16,13 @@ import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import java.util.List;
 
-/**
- * Adapter for displaying items within a specific Order (Order Details).
- * Shows product image, name, quantity, unit price, and subtotal.
- */
+/** OrderItemAdapter - Displays individual products within an order recap or details screen. */
 public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.ViewHolder> {
 
     private Context context;
     private List<OrderItem> orderItems;
 
+    /** Constructor. */
     public OrderItemAdapter(Context context, List<OrderItem> orderItems) {
         this.context = context;
         this.orderItems = orderItems;
@@ -48,17 +46,17 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.View
         return orderItems != null ? orderItems.size() : 0;
     }
 
+    /** Updates the data source and refreshes the UI. */
     public void updateOrderItems(List<OrderItem> items) {
         this.orderItems = items;
         notifyDataSetChanged();
     }
 
+    /** ViewHolder for Order Items. */
     class ViewHolder extends RecyclerView.ViewHolder {
+        // UI Components
         ImageView productImageView;
-        TextView productNameTextView;
-        TextView quantityTextView;
-        TextView unitPriceTextView;
-        TextView subtotalTextView;
+        TextView productNameTextView, quantityTextView, unitPriceTextView, subtotalTextView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -81,10 +79,7 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.View
             ProductImageLoader.load(context, productImageView, imageName, fallback);
         }
 
-        /**
-         * Get specific image resource based on product name
-         * Ensures consistent visual placeholders.
-         */
+        /** Maps product names to specific fallback icons for a consistent UI. */
         private int getSpecificImageForProduct(String productName) {
             if (productName == null) {
                 return R.drawable.product_icon;

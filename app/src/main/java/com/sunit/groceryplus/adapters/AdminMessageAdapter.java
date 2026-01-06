@@ -16,11 +16,7 @@ import com.sunit.groceryplus.models.Message;
 
 import java.util.List;
 
-/**
- * Adapter for displaying list of recent conversations in the Admin Panel.
- * Shows a summary of the last message from each user.
- * Highlights unread messages with Bold text.
- */
+/** AdminMessageAdapter - Adapter for displaying recent conversation summaries in the Admin Panel inbox. */
 public class AdminMessageAdapter extends RecyclerView.Adapter<AdminMessageAdapter.ViewHolder> {
 
     private Context context;

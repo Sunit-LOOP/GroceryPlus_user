@@ -8,14 +8,7 @@ import java.util.*;
 
 import com.sunit.groceryplus.utils.CollaborativeFilteringEngine;
 
-/**
- * RecommendationEngine - Provide product recommendations.
- * 
- * This class serves as the entry point for generating personalized product
- * recommendations. It delegates the complex logic to the 
- * {@link CollaborativeFilteringEngine} for a hybrid filtering approach
- * (Content-Based + Collaborative).
- */
+/** Orchestrates product recommendations by delegating to specialized filtering engines. */
 public class RecommendationEngine {
     private DatabaseHelper dbHelper;
     private Context context;
@@ -25,16 +18,7 @@ public class RecommendationEngine {
         this.dbHelper = new DatabaseHelper(context);
     }
 
-    /**
-     * Gets personalized recommendations using advanced collaborative filtering.
-     * 
-     * This method delegates to the new CollaborativeFilteringEngine
-     * for comprehensive collaborative filtering implementation.
-     * 
-     * @param userId Target user ID for recommendations
-     * @param limit Maximum number of recommendations to return
-     * @return List of recommended products sorted by relevance
-     */
+    /** Generates a list of personalized product recommendations for a specific user. */
     public List<Product> getRecommendations(int userId, int limit) {
         // Use the new advanced collaborative filtering engine
         CollaborativeFilteringEngine cfEngine = new CollaborativeFilteringEngine(context);

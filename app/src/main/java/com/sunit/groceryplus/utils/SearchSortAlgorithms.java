@@ -6,23 +6,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * SearchSortAlgorithms - Advanced search and sorting utility.
- * 
- * This class contains advanced algorithms for searching and sorting products
- * within the GroceryPlus app. It includes binary search, fuzzy search,
- * and custom sorting implementations like Merge Sort and Quick Sort.
- */
+/** Advanced utility containing search (Binary, Fuzzy) and sorting (Merge Sort, Quick Sort) algorithms for product collections. */
 public class SearchSortAlgorithms {
 
-    /**
-     * Performs binary search on a sorted list of products by name.
-     * Time Complexity: O(log n)
-     * 
-     * @param sortedProducts Sorted list of products by name
-     * @param targetName Name to search for
-     * @return Index of the product if found, -1 otherwise
-     */
+    /** Performs an efficient O(log n) binary search on a name-sorted product list. Index if found, otherwise -1. */
     public static int binarySearchByName(List<Product> sortedProducts, String targetName) {
         int left = 0;
         int right = sortedProducts.size() - 1;
@@ -44,14 +31,7 @@ public class SearchSortAlgorithms {
         return -1; // Product not found
     }
 
-    /**
-     * Performs linear search with fuzzy matching for partial name matches.
-     * Time Complexity: O(n)
-     * 
-     * @param products List of products to search through
-     * @param query Search query
-     * @return List of products that match the query
-     */
+    /** Performs O(n) linear search with fuzzy matching to support partial name matches and typo-tolerance. */
     public static List<Product> fuzzySearch(List<Product> products, String query) {
         List<Product> results = new ArrayList<>();
         String lowerQuery = query.toLowerCase().trim();
@@ -92,15 +72,7 @@ public class SearchSortAlgorithms {
         return results;
     }
 
-    /**
-     * Calculates the Levenshtein distance between two strings.
-     * Used for fuzzy matching to handle typos.
-     * Time Complexity: O(m*n) where m and n are lengths of the strings.
-     * 
-     * @param str1 First string
-     * @param str2 Second string
-     * @return Levenshtein distance
-     */
+    /** Calculates O(m*n) Levenshtein distance between two strings to quantify typo-tolerance. */
     private static int levenshteinDistance(String str1, String str2) {
         int[][] dp = new int[str1.length() + 1][str2.length() + 1];
         
@@ -130,14 +102,7 @@ public class SearchSortAlgorithms {
         return dp[str1.length()][str2.length()];
     }
 
-    /**
-     * Sorts products by name using merge sort algorithm.
-     * Time Complexity: O(n log n)
-     * Stable sort algorithm.
-     * 
-     * @param products List of products to sort
-     * @return New sorted list
-     */
+    /** Sorts products by name using a stable O(n log n) merge sort implementation. */
     public static List<Product> mergeSortByName(List<Product> products) {
         if (products.size() <= 1) {
             return new ArrayList<>(products);
@@ -188,13 +153,7 @@ public class SearchSortAlgorithms {
         }
     }
 
-    /**
-     * Sorts products by price using quick sort algorithm.
-     * Time Complexity: Average O(n log n), Worst O(n²)
-     * 
-     * @param products List of products to sort
-     * @return New sorted list
-     */
+    /** Sorts products by price using a fast average O(n log n) quick sort implementation. */
     public static List<Product> quickSortByPrice(List<Product> products) {
         List<Product> sorted = new ArrayList<>(products);
         quickSort(sorted, 0, sorted.size() - 1, Comparator.comparingDouble(Product::getPrice));
@@ -230,13 +189,7 @@ public class SearchSortAlgorithms {
         return i + 1;
     }
 
-    /**
-     * Sorts products by multiple criteria using a hybrid approach.
-     * First by category, then by name within each category.
-     * 
-     * @param products List of products to sort
-     * @return New sorted list
-     */
+    /** Sorts products using a hybrid approach: primarily by category name, then by product name. */
     public static List<Product> sortByCategoryAndName(List<Product> products) {
         List<Product> sorted = new ArrayList<>(products);
         Collections.sort(sorted, (p1, p2) -> {
@@ -249,13 +202,7 @@ public class SearchSortAlgorithms {
         return sorted;
     }
 
-    /**
-     * Sorts products by rating (descending) then by price (ascending).
-     * Assumes products have a getRating() method that returns a double.
-     * 
-     * @param products List of products to sort
-     * @return New sorted list
-     */
+    /** Sorts products primarily by rating (descending), then by price (ascending) as a secondary criterion. */
     public static List<Product> sortByRatingThenPrice(List<Product> products) {
         List<Product> sorted = new ArrayList<>(products);
         Collections.sort(sorted, (p1, p2) -> {

@@ -1,37 +1,19 @@
 package com.sunit.groceryplus.models;
 
-/**
- * Category Model Class
- * 
- * Represents a product category (e.g., "Vegetables", "Fruits", "Dairy").
- * Categories are used to organize products and help users browse the catalog.
- */
+/** Category - Model representing a product grouping or department. */
 public class Category {
     // Unique ID for the category
-    private int categoryId;
-    
-    // Display name of the category
-    private String categoryName;
-    
-    // Brief description of what this category contains
-    private String categoryDescription;
-    
-    // URL or resource name for the category icon/image
-    private String imageUrl;
+    private int categoryId;             // Unique DB identifier
+    private String categoryName;        // Category Display Name
+    private String categoryDescription; // Short description
+    private String imageUrl;            // Icon resource or URL
 
-    /**
-     * Default Constructor
-     */
+    /** Default Constructor. */
     public Category() {
     }
 
     /**
-     * Full Constructor
-     * 
-     * @param categoryId Unique ID
-     * @param categoryName Name of the category
-     * @param categoryDescription Description text
-     * @param imageUrl Image identifier
+     * Full Constructor.
      */
     public Category(int categoryId, String categoryName, String categoryDescription, String imageUrl) {
         this.categoryId = categoryId;
@@ -41,8 +23,7 @@ public class Category {
     }
 
     /**
-     * Constructor without ID
-     * Used when creating a new category that hasn't been saved to DB yet.
+     * Constructor without ID for creating new categories.
      */
     public Category(String categoryName, String categoryDescription, String imageUrl) {
         this.categoryName = categoryName;
@@ -51,8 +32,7 @@ public class Category {
     }
 
     /**
-     * Simple Constructor
-     * Used when image is not available or relevant.
+     * Simple Constructor without image.
      */
     public Category(int categoryId, String categoryName, String categoryDescription) {
         this.categoryId = categoryId;

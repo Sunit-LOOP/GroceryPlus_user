@@ -17,58 +17,45 @@ import com.sunit.groceryplus.R;
 import com.sunit.groceryplus.models.AdminSettings;
 
 
-/**
- * AdminSettingsActivity - Configuration panel for the application.
- * 
- * This activity provides controls for various system-wide settings including
- * store information, tax rates, delivery fees, payment gateways (Stripe/COD),
- * and notification preferences. It interacts with the AdminSettingsRepository.
- * 
- * Key Features:
- * - Store Information Management
- * - Pricing & Fee Configuration
- * - Feature Toggles (Stripe, COD, Notifications)
- * - Maintenance Mode Switch
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** AdminSettingsActivity - Configuration panel for system-wide settings including store info, pricing, payments, and notifications. */
 public class AdminSettingsActivity extends AppCompatActivity {
 
+    // Data Repository & Model
     private AdminSettingsRepository repository;
     private AdminSettings currentSettings;
 
-    // Store Info
+    // Store Info UI
     private EditText storeNameEt, storeEmailEt, storePhoneEt, storeAddressEt;
     private EditText storeCityEt, storeStateEt, storePostalCodeEt, storeCountryEt;
 
-    // Pricing
+    // Pricing UI
     private EditText taxRateEt, deliveryFeeEt, freeDeliveryThresholdEt;
     private Switch freeDeliveryAboveSw;
 
-    // Notifications
+    // Notifications UI
     private Switch enableNotificationsSw, enableEmailNotificationsSw;
 
-    // Email Settings - TODO: Add these fields to layout
+    // Email Settings (Placeholder for future implementation)
     // private EditText smtpHostEt, smtpPortEt, smtpUsernameEt, smtpPasswordEt;
 
-    // Payment Settings
+    // Payment Settings UI
     private Switch stripeEnabledSw, codEnabledSw;
     private EditText stripePublishableKeyEt, stripeSecretKeyEt;
 
-    // Support
+    // Support UI
     private EditText businessHoursEt, supportEmailEt, supportPhoneEt;
 
-    // Appearance - TODO: Add these fields to layout
+    // Appearance (Placeholder for future implementation)
     // private EditText primaryColorEt, accentColorEt;
 
-    // Maintenance
+    // Maintenance Mode UI
     private Switch maintenanceModeSw;
     private EditText maintenanceMessageEt;
 
+    // Action Buttons
     private Button saveBtn, resetBtn;
 
+    /** Initializes the activity, setting up repositories, toolbars, and UI components. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +69,7 @@ public class AdminSettingsActivity extends AppCompatActivity {
         setupClickListeners();
     }
 
+    /** Configures the toolbar with navigation features and title. */
     private void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -92,6 +80,7 @@ public class AdminSettingsActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
 
+    /** Binds UI components to their respective XML layout IDs. */
     private void initViews() {
         // Store Info
         storeNameEt = findViewById(R.id.storeNameEt);
@@ -143,6 +132,7 @@ public class AdminSettingsActivity extends AppCompatActivity {
         resetBtn = findViewById(R.id.resetBtn);
     }
 
+    /** Loads persistened settings from the repository and populates UI fields. */
     private void loadSettings() {
         currentSettings = repository.getSettings();
 
@@ -192,6 +182,7 @@ public class AdminSettingsActivity extends AppCompatActivity {
         maintenanceMessageEt.setText(currentSettings.getMaintenanceMessage());
     }
 
+    /** Sets up interactive listeners for buttons and toggle switches. */
     private void setupClickListeners() {
         saveBtn.setOnClickListener(v -> saveSettings());
         resetBtn.setOnClickListener(v -> resetToDefaults());
@@ -201,6 +192,7 @@ public class AdminSettingsActivity extends AppCompatActivity {
         });
     }
 
+    /** Validates user input and persists updated settings to the database. */
     private void saveSettings() {
         // Validate required fields
         if (storeNameEt.getText().toString().trim().isEmpty()) {
@@ -261,6 +253,7 @@ public class AdminSettingsActivity extends AppCompatActivity {
         }
     }
 
+    /** Confirms and executes a reset of all settings to their default values. */
     private void resetToDefaults() {
         new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Reset to Defaults")
@@ -277,6 +270,7 @@ public class AdminSettingsActivity extends AppCompatActivity {
                 .show();
     }
 
+    /** Handles toolbar back navigation and menu selection. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

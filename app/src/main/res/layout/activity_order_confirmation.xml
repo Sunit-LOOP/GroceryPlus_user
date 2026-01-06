@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Order confirmation layout -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/orderConfirmationRoot"
@@ -7,6 +8,7 @@
     android:orientation="vertical"
     android:background="#F5F5F5">
 
+    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/orderConfirmationToolbar"
         android:layout_width="match_parent"
@@ -23,6 +25,7 @@
         android:gravity="center"
         android:padding="24dp">
 
+        <!-- Success icon -->
         <ImageView
             android:layout_width="120dp"
             android:layout_height="120dp"

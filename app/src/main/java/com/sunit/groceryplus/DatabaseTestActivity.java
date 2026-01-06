@@ -6,7 +6,9 @@ import android.widget.Toast;
 import com.sunit.groceryplus.models.User;
 import androidx.appcompat.app.AppCompatActivity;
 
+/** Activity for testing database migrations and core repository operations. */
 public class DatabaseTestActivity extends AppCompatActivity {
+    // Infrastructure
     private static final String TAG = "DatabaseTestActivity";
     
     @Override
@@ -22,6 +24,7 @@ public class DatabaseTestActivity extends AppCompatActivity {
         testDatabaseOperations();
     }
     
+    /** Executes a series of integrated database tests covering users, categories, products, carts, and orders. */
     private void testDatabaseOperations() {
         try {
             // Test 1: Verify default admin insertion

@@ -19,28 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * AdminMessagesActivity - Inbox for customer support.
- * 
- * This activity lists all users who have initiated a chat with the admin.
- * It acts as an inbox, displaying the latest message from each conversation,
- * allowing the admin to select a conversation to view details.
- * 
- * Key Features:
- * - List of conversations
- * - Status indicators (Read/Unread)
- * - Navigation to individual chats
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** AdminMessagesActivity - Inbox for customer support listing all user conversations with read/unread status. */
 public class AdminMessagesActivity extends AppCompatActivity {
 
+    // UI Components
     private RecyclerView messagesRv;
+    
+    // Adapters and Helpers
     private AdminMessageAdapter adapter;
     private DatabaseHelper dbHelper;
 
+    /** Initializes the activity, toolbar, and message list. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,18 +48,21 @@ public class AdminMessagesActivity extends AppCompatActivity {
         loadMessages();
     }
 
+    /** Configures the RecyclerView with the message adapter. */
     private void setupRecyclerView() {
         messagesRv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AdminMessageAdapter(this, new ArrayList<>());
         messagesRv.setAdapter(adapter);
     }
 
+    /** Refreshes conversation list upon activity resumption. */
     @Override
     protected void onResume() {
         super.onResume();
         loadMessages();
     }
 
+    /** Loads conversation history and populates the message list. */
     private void loadMessages() {
         int adminId = dbHelper.getAdminId();
         List<Message> messages = new ArrayList<>();
@@ -99,6 +91,7 @@ public class AdminMessagesActivity extends AppCompatActivity {
         adapter.updateMessages(messages);
     }
     
+    /** Handles toolbar menu selections. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

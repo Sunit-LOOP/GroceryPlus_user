@@ -4,9 +4,12 @@ import android.content.Context;
 import android.util.Log;
 import com.sunit.groceryplus.models.User;
 
+/** Utility class for testing the initial database connection and default user setup. */
 public class DatabaseConnectionTest {
+    // Infrastructure
     private static final String TAG = "DatabaseConnectionTest";
     
+    /** Exercises basic database and repository operations to verify connectivity. */
     public static void testDatabaseConnection(Context context) {
         try {
             // Test 1: Initialize DatabaseHelper

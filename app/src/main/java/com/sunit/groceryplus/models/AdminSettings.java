@@ -1,12 +1,6 @@
 package com.sunit.groceryplus.models;
 
-/**
- * AdminSettings Model Class
- * 
- * Stores global configuration for the application.
- * These settings are managed by the Admin and affect app behavior,
- * such as store info, taxes, delivery fees, and feature toggles.
- */
+/** AdminSettings - Model representing global application configuration and store settings. */
 public class AdminSettings {
     
     // Unique ID (Usually 1 as there is only one settings record)

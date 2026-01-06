@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Supplier management layout -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/supplier_management_root"
@@ -6,6 +7,7 @@
     android:layout_height="match_parent"
     android:background="#F5F5F5">
 
+    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/supplierManagementToolbar"
         android:layout_width="0dp"
@@ -17,6 +19,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Scrollable content -->
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"

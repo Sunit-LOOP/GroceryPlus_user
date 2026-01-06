@@ -9,28 +9,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * RecentProductsHelper - Manages the list of recently viewed products.
- * 
- * This class uses SharedPreferences to store and retrieve a list of product IDs
- * that the user has recently viewed. It maintains a limited list (MAX_RECENT)
- * and ensures that the most recently viewed product is at the top.
- */
+/** Manages a persistent list of recently viewed product IDs using SharedPreferences. */
 public class RecentProductsHelper {
 
     private static final String PREF_NAME = "RecentProducts";
     private static final String KEY_RECENT_IDS = "recent_product_ids";
     private static final int MAX_RECENT = 10;
 
-    /**
-     * Adds a product ID to the recently viewed list.
-     * 
-     * If the product is already in the list, it is moved to the front.
-     * If the list exceeds MAX_RECENT, the oldest items are removed.
-     * 
-     * @param context Application context
-     * @param productId The ID of the product being viewed
-     */
+    /** Adds a product ID to the recent list, moving it to the front or removing the oldest if at capacity. */
     public static void addProduct(Context context, int productId) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String savedIds = prefs.getString(KEY_RECENT_IDS, "");
@@ -58,12 +44,7 @@ public class RecentProductsHelper {
         prefs.edit().putString(KEY_RECENT_IDS, sb.toString()).apply();
     }
 
-    /**
-     * Retrieves the list of recently viewed product IDs.
-     * 
-     * @param context Application context
-     * @return List of Integer product IDs
-     */
+    /** Returns the ordered list of recently viewed product IDs. */
     public static List<Integer> getRecentProductIds(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String savedIds = prefs.getString(KEY_RECENT_IDS, "");

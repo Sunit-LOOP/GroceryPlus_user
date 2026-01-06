@@ -12,8 +12,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/** Activity for testing network connectivity to the application's backend server. */
 public class NetworkTestActivity extends AppCompatActivity {
+    // Infrastructure
     private static final String TAG = "NetworkTest";
+    
+    // UI Components
     private TextView statusTextView;
     private Button testButton;
 

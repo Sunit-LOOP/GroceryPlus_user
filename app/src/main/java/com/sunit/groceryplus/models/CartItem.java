@@ -1,53 +1,23 @@
 package com.sunit.groceryplus.models;
 
-/**
- * CartItem Model Class
- * 
- * Represents a single item within the user's shopping cart.
- * This class links a specific Product to a User and tracks the quantity
- * selected for purchase. It also stores a snapshot of the product's price
- * and name at the time it was added to the cart.
- */
+/** CartItem - Model representing a specific product and quantity in a user's shopping cart. */
 public class CartItem {
     
     // Unique ID for this cart entry in the database
-    private int cartId;
-    
-    // The ID of the user who owns this cart items
-    private int userId;
-    
-    // The ID of the product being purchased
-    private int productId;
-    
-    // Name of the product (stored to avoid repeated DB lookups)
-    private String productName;
-    
-    // Price per unit of the product
-    private double price;
-    
-    // Quantity of the product selected by the user
-    private int quantity;
-    
-    // Image URL or resource name for the product thumbnail
-    private String image;
+    private int cartId;         // Unique DB identifier
+    private int userId;         // Owner user ID
+    private int productId;      // Product reference ID
+    private String productName; // Snapshot of product name
+    private double price;       // Snapshot of product price
+    private int quantity;       // Quantity selected
+    private String image;       // Thumbnail image reference
 
-    /**
-     * Default constructor required for some serialization frameworks.
-     */
+    /** Default constructor. */
     public CartItem() {
     }
 
     /**
-     * Full Constructor
-     * Used when retrieving an existing cart item from the database.
-     * 
-     * @param cartId Unique ID of the cart entry
-     * @param userId User's ID
-     * @param productId Product's ID
-     * @param productName Name of the product
-     * @param price Unit price
-     * @param quantity Quantity selected
-     * @param image Product image identifier
+     * Full Constructor for retrieving existing items.
      */
     public CartItem(int cartId, int userId, int productId, String productName, 
                     double price, int quantity, String image) {
@@ -61,15 +31,7 @@ public class CartItem {
     }
 
     /**
-     * Creation Constructor
-     * Used when creating a NEW cart item before it has an ID from the database.
-     * 
-     * @param userId User's ID
-     * @param productId Product's ID
-     * @param productName Name of the product
-     * @param price Unit price
-     * @param quantity Quantity selected
-     * @param image Product image identifier
+     * Creation Constructor for adding new items.
      */
     public CartItem(int userId, int productId, String productName, 
                     double price, int quantity, String image) {

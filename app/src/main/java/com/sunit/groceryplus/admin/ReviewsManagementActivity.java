@@ -21,27 +21,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * ReviewsManagementActivity - Admin interface for moderating product reviews.
- * 
- * This activity allows administrators to view all product reviews submitted by users.
- * It provides functionality to monitor feedback and delete inappropriate or spam reviews.
- * 
- * Key Features:
- * - List all reviews
- * - View review details (Product, User, Rating, Comment)
- * - Delete review moderation
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** ReviewsManagementActivity - Admin interface for moderating product reviews and removing inappropriate content. */
 public class ReviewsManagementActivity extends AppCompatActivity {
 
+    // UI Components
     private RecyclerView reviewsRv;
+    
+    // Data & Helper
     private AdminReviewAdapter adapter;
     private DatabaseHelper dbHelper;
 
+    /**
+     * Initializes activity, sets up toolbar, views, and loads reviews.
+     * @param savedInstanceState Saved instance state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +54,9 @@ public class ReviewsManagementActivity extends AppCompatActivity {
         loadReviews();
     }
 
+    /**
+     * Configures the RecyclerView with AdminReviewAdapter.
+     */
     private void setupRecyclerView() {
         reviewsRv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AdminReviewAdapter(this, new ArrayList<>(), new AdminReviewAdapter.OnReviewActionListener() {
@@ -72,6 +68,9 @@ public class ReviewsManagementActivity extends AppCompatActivity {
         reviewsRv.setAdapter(adapter);
     }
 
+    /**
+     * Fetches all reviews joining user and product data, then updates the adapter.
+     */
     private void loadReviews() {
         List<Review> reviews = new ArrayList<>();
         Cursor cursor = dbHelper.getAllReviews();
@@ -102,6 +101,10 @@ public class ReviewsManagementActivity extends AppCompatActivity {
         adapter.updateReviews(reviews);
     }
 
+    /**
+     * Shows a confirmation dialog before deleting a review.
+     * @param review The review to delete.
+     */
     private void showDeleteConfirmationDialog(Review review) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Review")
@@ -118,6 +121,9 @@ public class ReviewsManagementActivity extends AppCompatActivity {
                 .show();
     }
     
+    /**
+     * Handles toolbar navigation actions.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

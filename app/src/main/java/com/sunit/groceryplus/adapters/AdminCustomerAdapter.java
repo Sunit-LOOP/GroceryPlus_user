@@ -13,10 +13,7 @@ import com.sunit.groceryplus.R;
 
 import java.util.List;
 
-/**
- * Adapter for displaying a list of Customers/Users in the Admin Panel.
- * Shows basic user details like Name, Email, Phone, and User Type (Customer/Admin).
- */
+/** AdminCustomerAdapter - Adapter for displaying registered Customers/Users in the Admin Panel. */
 public class AdminCustomerAdapter extends RecyclerView.Adapter<AdminCustomerAdapter.CustomerViewHolder> {
 
     private Context context;

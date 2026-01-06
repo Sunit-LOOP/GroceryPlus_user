@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Write review dialog layout -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -6,6 +7,7 @@
     android:orientation="vertical"
     android:padding="24dp">
 
+    <!-- Dialog title -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -15,6 +17,7 @@
         android:textColor="#212121"
         android:layout_gravity="center_horizontal"/>
 
+    <!-- Rating bar -->
     <RatingBar
         android:id="@+id/dialogRatingBar"
         android:layout_width="wrap_content"
@@ -26,6 +29,7 @@
         android:rating="5.0"
         android:progressTint="#FFC107"/>
 
+    <!-- Review text field -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -9,17 +9,18 @@ import com.sunit.groceryplus.models.CartItem;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Repository for managing user shopping cart data in the database. */
 public class CartRepository {
+    // Infrastructure
     private static final String TAG = "CartRepository";
     private DatabaseHelper dbHelper;
 
+    /** Initializes the repository with a DatabaseHelper. */
     public CartRepository(Context context) {
         this.dbHelper = new DatabaseHelper(context);
     }
 
-    /**
-     * Add item to cart
-     */
+    /** Adds an item to the user's shopping cart. */
     public boolean addToCart(int userId, int productId, int quantity) {
         try {
             long result = dbHelper.addToCart(userId, productId, quantity);
@@ -30,9 +31,7 @@ public class CartRepository {
         }
     }
 
-    /**
-     * Get cart items for user
-     */
+    /** Retrieves all cart items with product details for a specific user. */
     public List<CartItem> getCartItems(int userId) {
         try {
             return dbHelper.getCartItemsWithDetails(userId);
@@ -42,9 +41,7 @@ public class CartRepository {
         }
     }
 
-    /**
-     * Update cart quantity
-     */
+    /** Updates the quantity of a specific cart item. */
     public boolean updateCartQuantity(int cartId, int quantity) {
         try {
             return dbHelper.updateCartQuantity(cartId, quantity);
@@ -54,9 +51,7 @@ public class CartRepository {
         }
     }
 
-    /**
-     * Remove item from cart
-     */
+    /** Removes a specific item from the cart. */
     public boolean removeFromCart(int cartId) {
         try {
             int result = dbHelper.removeFromCart(cartId);
@@ -67,9 +62,7 @@ public class CartRepository {
         }
     }
 
-    /**
-     * Clear cart for user
-     */
+    /** Removes all items from the user's shopping cart. */
     public boolean clearCart(int userId) {
         try {
             int result = dbHelper.clearCart(userId);
@@ -80,9 +73,7 @@ public class CartRepository {
         }
     }
 
-    /**
-     * Get cart total
-     */
+    /** Calculates the total cost of all items in the user's cart. */
     public double getCartTotal(int userId) {
         try {
             return dbHelper.getCartTotal(userId);

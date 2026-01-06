@@ -16,30 +16,26 @@ import com.sunit.groceryplus.models.DeliveryPerson;
 
 import java.util.List;
 
-/**
- * Adapter for managing Delivery Personnel in the Admin Panel.
- * Shows list of drivers, their phone numbers, and Availability status.
- * Allows Admin to toggle their availability manually.
- */
+/** DeliveryPersonnelAdapter - Manages list of delivery drivers and their availability status in the Admin Panel. */
 public class DeliveryPersonnelAdapter extends RecyclerView.Adapter<DeliveryPersonnelAdapter.ViewHolder> {
 
     private Context context;
     private List<DeliveryPerson> personnel;
     private OnStatusToggleListener listener;
 
-    /**
-     * Interface for toggling driver availability.
-     */
+    /** Interface for toggling driver availability (Ready for duty vs Offline). */
     public interface OnStatusToggleListener {
         void onToggleStatus(DeliveryPerson person);
     }
 
+    /** Constructor. */
     public DeliveryPersonnelAdapter(Context context, List<DeliveryPerson> personnel, OnStatusToggleListener listener) {
         this.context = context;
         this.personnel = personnel;
         this.listener = listener;
     }
 
+    /** Updates the data source and refreshes the UI. */
     public void updateList(List<DeliveryPerson> newList) {
         this.personnel = newList;
         notifyDataSetChanged();
@@ -75,7 +71,9 @@ public class DeliveryPersonnelAdapter extends RecyclerView.Adapter<DeliveryPerso
         return personnel != null ? personnel.size() : 0;
     }
 
+    /** ViewHolder for mapping delivery personnel components. */
     static class ViewHolder extends RecyclerView.ViewHolder {
+        // UI Components
         TextView nameTv, phoneTv, statusTv;
         Button toggleBtn;
 

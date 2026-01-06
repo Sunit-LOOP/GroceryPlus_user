@@ -27,13 +27,10 @@ import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import java.util.List;
 
-/**
- * Adapter for managing Products in the Admin Panel.
- * Displays list of products with options to Edit, Delete, or View Reviews.
- * Handles dynamic image loading and stock status display.
- */
+/** AdminProductAdapter - Manages products in the Admin Panel (Edit/Delete, Review viewing, and stock indicators). */
 public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapter.ViewHolder> {
 
+    // Infrastructure
     private Context context;
     private List<Product> productList;
     private ProductRepository productRepository; // Kept for potential direct repo actions if needed
@@ -89,10 +86,7 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
         ProductImageLoader.load(context, holder.productImageIv, imageName, fallback);
     }
 
-    /**
-     * Get specific image resource based on product name
-     * Provides a smarter placeholder system compared to a single generic icon.
-     */
+    /** Maps product names to specific drawable placeholders for a richer UI. */
     private int getSpecificImageForProduct(String productName) {
         if (productName == null) {
             return R.drawable.product_icon;
@@ -132,15 +126,15 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
         return productList.size();
     }
 
-    /**
-     * Updates the product list data in the adapter.
-     */
+    /** Updates the data source and refreshes the UI. */
     public void updateProducts(List<Product> products) {
         this.productList = products;
         notifyDataSetChanged();
     }
 
+    /** ViewHolder for product management controls. */
     class ViewHolder extends RecyclerView.ViewHolder {
+        // UI Components
         TextView productNameTv, productPriceTv, productDescriptionTv, productStockTv, productVendorTv;
         ImageView productImageIv;
         Button editBtn, deleteBtn;

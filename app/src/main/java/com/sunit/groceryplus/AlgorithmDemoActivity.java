@@ -9,12 +9,9 @@ import com.sunit.groceryplus.utils.SearchSortAlgorithms;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Demonstration activity showcasing the search and sorting algorithms
- */
+/** AlgorithmDemoActivity - Demonstration activity showcasing search and sorting algorithms with sample data. */
 public class AlgorithmDemoActivity extends AppCompatActivity {
     private static final String TAG = "AlgorithmDemo";
-    
     private TextView resultsTv;
     
     @Override
@@ -29,9 +26,7 @@ public class AlgorithmDemoActivity extends AppCompatActivity {
         demonstrateSortAlgorithms();
     }
     
-    /**
-     * Demonstrates the search algorithms
-     */
+    /** Runs and logs fuzzy and binary search demonstrations. */
     private void demonstrateSearchAlgorithms() {
         // Create sample products
         List<Product> products = createSampleProducts();
@@ -66,9 +61,7 @@ public class AlgorithmDemoActivity extends AppCompatActivity {
         Log.d(TAG, results.toString());
     }
     
-    /**
-     * Demonstrates the sorting algorithms
-     */
+    /** Runs and logs merge sort, quick sort, and multi-criteria sorting demonstrations. */
     private void demonstrateSortAlgorithms() {
         // Create sample products
         List<Product> products = createSampleProducts();
@@ -117,9 +110,7 @@ public class AlgorithmDemoActivity extends AppCompatActivity {
         Log.d(TAG, results.toString());
     }
     
-    /**
-     * Creates sample products for demonstration
-     */
+    /** Generates a dummy list of products for demonstration purposes. */
     private List<Product> createSampleProducts() {
         List<Product> products = new ArrayList<>();
         

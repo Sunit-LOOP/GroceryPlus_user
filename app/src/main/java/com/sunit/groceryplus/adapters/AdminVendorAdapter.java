@@ -16,24 +16,20 @@ import com.sunit.groceryplus.models.Vendor;
 
 import java.util.List;
 
-/**
- * Adapter for managing Vendors in the Admin Panel.
- * Admin can view, edit, or delete vendors.
- */
+/** AdminVendorAdapter - Manages vendor listings in the Admin Panel (View, Edit, Delete). */
 public class AdminVendorAdapter extends RecyclerView.Adapter<AdminVendorAdapter.VendorViewHolder> {
 
     private Context context;
     private List<Vendor> vendorList;
     private OnVendorActionListener listener;
 
-    /**
-     * Interface for Admin Vendor actions (Edit, Delete).
-     */
+    /** Interface for Admin Vendor actions (Edit/Delete). */
     public interface OnVendorActionListener {
         void onEdit(Vendor vendor);
         void onDelete(Vendor vendor);
     }
 
+    /** Constructor. */
     public AdminVendorAdapter(Context context, List<Vendor> vendorList, OnVendorActionListener listener) {
         this.context = context;
         this.vendorList = vendorList;
@@ -66,12 +62,15 @@ public class AdminVendorAdapter extends RecyclerView.Adapter<AdminVendorAdapter.
         return vendorList.size();
     }
 
+    /** Updates the data source and refreshes the UI. */
     public void updateList(List<Vendor> newList) {
         this.vendorList = newList;
         notifyDataSetChanged();
     }
 
+    /** ViewHolder for mapping vendor components. */
     static class VendorViewHolder extends RecyclerView.ViewHolder {
+        // UI Components
         ImageView iconIv;
         TextView nameTv, addressTv, ratingTv;
         ImageButton editBtn, deleteBtn;

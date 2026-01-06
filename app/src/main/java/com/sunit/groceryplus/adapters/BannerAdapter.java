@@ -14,15 +14,13 @@ import com.sunit.groceryplus.R;
 
 import java.util.List;
 
-/**
- * Adapter for the Banner viewing pager/recyclerview carousel.
- * Loads banner images using Glide (supports both Local Drawables and URLs).
- */
+/** BannerAdapter - Handles the carousel display of promotion banners on the home screen. */
 public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.BannerViewHolder> {
 
     private Context context;
     private List<String> bannerImages;
 
+    /** Constructor. */
     public BannerAdapter(Context context, List<String> bannerImages) {
         this.context = context;
         this.bannerImages = bannerImages;
@@ -64,8 +62,9 @@ public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.BannerView
         return bannerImages.size();
     }
 
+    /** ViewHolder for the banner image view. */
     class BannerViewHolder extends RecyclerView.ViewHolder {
-        ImageView bannerIv;
+        ImageView bannerIv; // The banner image component
 
         public BannerViewHolder(@NonNull View itemView) {
             super(itemView);

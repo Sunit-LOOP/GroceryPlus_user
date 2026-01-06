@@ -17,21 +17,19 @@ import com.sunit.groceryplus.models.Payment;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Adapter for managing view of Payment entries in the Admin Panel.
- * Displays Payment details, Transaction IDs, and status.
- * Special Feature: Allows marking COD payments as "Received" manually.
- */
+/** AdminPaymentAdapter - Displays payment entries and allows marking COD as received. */
 public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapter.ViewHolder> {
 
     private Context context;
     private List<Payment> payments;
 
+    /** Constructor. */
     public AdminPaymentAdapter(Context context, List<Payment> payments) {
         this.context = context;
         this.payments = payments;
     }
 
+    /** Updates the data source and refreshes the UI. */
     public void updatePayments(List<Payment> newPayments) {
         this.payments = newPayments;
         notifyDataSetChanged();
@@ -58,7 +56,7 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
         
         // Set payment method and icon
         String method = payment.getPaymentMethod();
-        holder.methodTv.setText(getPaymentMethodDisplayName(method));
+        holder.methodTv.setText(getPaymentMethodName(method));
         
         // Set appropriate icon based on Method
         if ("stripe".equalsIgnoreCase(method)) {
@@ -108,9 +106,7 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
         }
     }
     
-    /**
-     * Helper to prettify date strings.
-     */
+    /** Prettifies date strings (YYYY-MM-DD HH:MM:SS -> MMM DD, YYYY • HH:MM). */
     private String formatDateForDisplay(String dateStr) {
         // Simplified date formatting - in a real app you'd parse the date properly
         // Assuming dateStr is in format "YYYY-MM-DD HH:MM:SS"
@@ -134,7 +130,8 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
         return dateStr;
     }
     
-    private String getPaymentMethodDisplayName(String method) {
+    /** Resolves readable payment method names. */
+    private String getPaymentMethodName(String method) {
         if ("stripe".equalsIgnoreCase(method)) {
             return "Stripe Payment";
         } else if ("cod".equalsIgnoreCase(method)) {
@@ -149,7 +146,9 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
         return payments.size();
     }
 
+    /** ViewHolder for mapping payment row components. */
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        // UI Components
         TextView orderIdTv, amountTv, methodTv, dateTv, txnIdTv;
         ImageView methodIcon;
         Chip statusChip;

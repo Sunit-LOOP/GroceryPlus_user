@@ -11,32 +11,20 @@ import com.sunit.groceryplus.DatabaseHelper;
 import com.sunit.groceryplus.R;
 
 
-/**
- * AnalyticsDashboardActivity - Visual overview of business performance.
- * 
- * This activity displays key business metrics such as Total Revenue, Total Orders,
- * Customer Count, and Product Count. It fetches aggregated data from the database
- * to provide a snapshot of the store's health.
- * 
- * Key Features:
- * - Revenue Tracking
- * - Order Counts (Total, Delivered)
- * - Customer Growth Metric
- * - Inventory Stats
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** AnalyticsDashboardActivity - Visual overview of business performance including revenue, orders, and customer metrics. */
 public class AnalyticsDashboardActivity extends AppCompatActivity {
 
+    // Data Helper
     private DatabaseHelper dbHelper;
+    
+    // UI Components (Metric Cards)
     private TextView totalRevenueTv;
     private TextView totalOrdersTv;
     private TextView totalCustomersTv;
     private TextView totalProductsTv;
     private TextView completedOrdersTv;
 
+    /** Initializes the activity, toolbar, and data helper. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +42,7 @@ public class AnalyticsDashboardActivity extends AppCompatActivity {
         loadAnalyticsData();
     }
 
+    /** Binds UI components to their respective layout IDs. */
     private void initViews() {
         totalRevenueTv = findViewById(R.id.totalRevenueTv);
         totalOrdersTv = findViewById(R.id.totalOrdersTv);
@@ -62,6 +51,7 @@ public class AnalyticsDashboardActivity extends AppCompatActivity {
         completedOrdersTv = findViewById(R.id.completedOrdersTv);
     }
 
+    /** Fetches aggregated performance metrics and updates the UI. */
     private void loadAnalyticsData() {
         // Total Revenue
         double revenue = dbHelper.getTotalRevenue();
@@ -84,6 +74,7 @@ public class AnalyticsDashboardActivity extends AppCompatActivity {
         completedOrdersTv.setText(String.valueOf(deliveredCount));
     }
 
+    /** Handles toolbar menu selections. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

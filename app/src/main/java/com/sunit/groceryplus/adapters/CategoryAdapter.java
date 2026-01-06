@@ -15,24 +15,19 @@ import com.sunit.groceryplus.models.Category;
 
 import java.util.List;
 
-/**
- * Adapter for displaying categories in a horizontal RecyclerView.
- * Used primarily on the Home Screen.
- * Assigns specific icons based on category names if image URLs are not available.
- */
+/** CategoryAdapter - Displays product categories on the home screen with static icon fallbacks. */
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
 
     private Context context;
     private List<Category> categories;
     private OnCategoryClickListener listener;
 
-    /**
-     * Interface to handle category selection.
-     */
+        /** Interface to handle category selection. */
     public interface OnCategoryClickListener {
         void onCategoryClick(Category category);
     }
 
+    /** Constructor. */
     public CategoryAdapter(Context context, List<Category> categories, OnCategoryClickListener listener) {
         this.context = context;
         this.categories = categories;
@@ -58,16 +53,15 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         return categories != null ? categories.size() : 0;
     }
 
+    /** Updates the data source and refreshes the UI. */
     public void updateCategories(List<Category> newCategories) {
         this.categories = newCategories;
         notifyDataSetChanged();
     }
 
-    /**
-     * ViewHolder for Category item.
-     * Maps category name to static drawable resources for visual appeal.
-     */
+    /** ViewHolder for Category item. */
     class CategoryViewHolder extends RecyclerView.ViewHolder {
+        // UI Components
         TextView categoryNameTv;
         ImageView categoryIcon;
 
@@ -84,6 +78,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             });
         }
 
+        /** Binds name and applies static icons based on category strings. */
         public void bind(Category category) {
             categoryNameTv.setText(category.getCategoryName());
             

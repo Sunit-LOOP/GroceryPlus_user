@@ -1,42 +1,19 @@
 package com.sunit.groceryplus.models;
 
-/**
- * User Model Class
- * 
- * Represents a registered user in the application.
- * Can be either a regular 'customer' or an 'admin'.
- */
+/** User - Model representing a registered customer or administrator account. */
 public class User {
     
-    // Unique ID for the user
-    private int userId;
-    
-    // Full Name
-    private String name;
-    
-    // Email Address (Login credential)
-    private String email;
-    
-    // Phone Number (Login credential)
-    private String phone;
-    
-    // User Role: 'admin' or 'customer'
-    private String userType; 
+    private int userId;         // Unique DB identifier
+    private String name;        // Full Name
+    private String email;       // Email (Login Credential)
+    private String phone;       // Phone Number (Login Credential)
+    private String userType;    // Account Type ('admin', 'customer') 
+
+    /** Default Constructor. */
+    public User() {}
 
     /**
-     * Default Constructor
-     */
-    public User() {
-    }
-
-    /**
-     * Full Constructor
-     * 
-     * @param userId Unique ID
-     * @param name Full Name
-     * @param email Email Address
-     * @param phone Phone Number
-     * @param userType Role (admin/customer)
+     * Full Constructor.
      */
     public User(int userId, String name, String email, String phone, String userType) {
         this.userId = userId;

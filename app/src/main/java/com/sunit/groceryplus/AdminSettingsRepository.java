@@ -7,14 +7,17 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.sunit.groceryplus.models.AdminSettings;
 
+/** Repository for managing global administrative application settings in the database. */
 public class AdminSettingsRepository {
+    // Infrastructure
     private DatabaseHelper dbHelper;
 
+    /** Initializes the repository with a DatabaseHelper. */
     public AdminSettingsRepository(Context context) {
         dbHelper = new DatabaseHelper(context);
     }
 
-    // Get admin settings (singleton pattern - only one row)
+    /** Retrieves the global admin settings, or defaults if none exist. */
     public AdminSettings getSettings() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.query(DatabaseContract.AdminSettingsEntry.TABLE_NAME, null,
@@ -31,7 +34,7 @@ public class AdminSettingsRepository {
         return settings;
     }
 
-    // Update or insert settings
+    /** Saves or updates the global admin settings in the database. */
     public boolean saveSettings(AdminSettings settings) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = settingsToContentValues(settings);
@@ -54,14 +57,14 @@ public class AdminSettingsRepository {
         return result != -1;
     }
 
-    // Reset to defaults
+    /** Resets the administrator settings to their default system values. */
     public boolean resetToDefaults() {
         AdminSettings defaults = new AdminSettings();
         setDefaults(defaults);
         return saveSettings(defaults);
     }
 
-    // Helper methods
+    /** Converts a database cursor to an AdminSettings object. */
     private AdminSettings cursorToSettings(Cursor cursor) {
         AdminSettings settings = new AdminSettings();
         settings.setId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.AdminSettingsEntry.COLUMN_NAME_SETTINGS_ID)));
@@ -103,6 +106,7 @@ public class AdminSettingsRepository {
         return settings;
     }
 
+    /** Converts an AdminSettings object to ContentValues for database operations. */
     private ContentValues settingsToContentValues(AdminSettings settings) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.AdminSettingsEntry.COLUMN_NAME_STORE_NAME, settings.getStoreName());
@@ -142,6 +146,7 @@ public class AdminSettingsRepository {
         return values;
     }
 
+    /** Sets the default values for administrative settings. */
     private void setDefaults(AdminSettings settings) {
         settings.setStoreName("GroceryPlus");
         settings.setStoreEmail("admin@groceryplus.com");

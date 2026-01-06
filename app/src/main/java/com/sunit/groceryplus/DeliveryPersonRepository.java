@@ -10,13 +10,17 @@ import com.sunit.groceryplus.models.DeliveryPerson;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Repository for managing delivery personnel information in the database. */
 public class DeliveryPersonRepository {
+    // Infrastructure
     private DatabaseHelper dbHelper;
 
+    /** Initializes the repository with a DatabaseHelper. */
     public DeliveryPersonRepository(Context context) {
         dbHelper = new DatabaseHelper(context);
     }
 
+    /** Retrieves all delivery personnel from the database. */
     public List<DeliveryPerson> getAllDeliveryPersonnel() {
         List<DeliveryPerson> personnel = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -41,6 +45,7 @@ public class DeliveryPersonRepository {
         return personnel;
     }
 
+    /** Adds a new delivery person to the database. */
     public long addDeliveryPerson(String name, String phone) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -52,6 +57,7 @@ public class DeliveryPersonRepository {
         return db.insert(DatabaseContract.DeliveryPersonEntry.TABLE_NAME, null, values);
     }
 
+    /** Updates an existing delivery person's information. */
     public boolean updateDeliveryPerson(int personId, String name, String phone) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -63,6 +69,7 @@ public class DeliveryPersonRepository {
         return rows > 0;
     }
 
+    /** Deletes a delivery person by their ID. */
     public boolean deleteDeliveryPerson(int personId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int rows = db.delete(DatabaseContract.DeliveryPersonEntry.TABLE_NAME,
@@ -71,6 +78,7 @@ public class DeliveryPersonRepository {
         return rows > 0;
     }
 
+    /** Sets the availability status of a delivery person. */
     public boolean setAvailability(int personId, boolean available) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -84,6 +92,7 @@ public class DeliveryPersonRepository {
         return rows > 0;
     }
 
+    /** Finds the first available delivery person. */
     public DeliveryPerson getNextAvailableDeliveryPerson() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String selection = DatabaseContract.DeliveryPersonEntry.COLUMN_NAME_AVAILABLE + " = 1";
@@ -104,6 +113,7 @@ public class DeliveryPersonRepository {
         return null;
     }
 
+    /** Assigns an order to a specific delivery person. */
     public boolean assignOrderToDeliveryPerson(int personId, int orderId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -115,6 +125,7 @@ public class DeliveryPersonRepository {
         return rows > 0;
     }
 
+    /** Releases a delivery person from their current assignment. */
     public boolean releaseDeliveryPerson(int personId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();

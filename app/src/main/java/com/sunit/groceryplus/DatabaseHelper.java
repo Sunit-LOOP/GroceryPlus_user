@@ -21,75 +21,21 @@ import static com.sunit.groceryplus.DatabaseContract.OrderItemEntry;
 import static com.sunit.groceryplus.DatabaseContract.ProductEntry;
 import static com.sunit.groceryplus.DatabaseContract.UserEntry;
 
-/**
- * DatabaseHelper - Core database management class for GroceryPlus
- * 
- * This class manages all SQLite database operations for the GroceryPlus application.
- * It handles database creation, version management, and provides methods for all
- * CRUD operations across all data models.
- * 
- * Key Features:
- * - Complete database schema management
- * - User authentication with salted password hashing
- * - Product, order, and payment management
- * - Shopping cart functionality
- * - Delivery personnel management
- * - Notification system integration
- * - Database versioning and migrations
- * 
- * Database Structure:
- * - users (customers and admin accounts)
- * - categories (product categories)
- * - products (grocery items)
- * - orders (customer orders)
- * - order_items (order line items)
- * - cart_items (shopping cart)
- * - payments (payment records)
- * - delivery_personnel (delivery staff)
- * - notifications (system notifications)
- * - favorites (user favorites)
- * - reviews (product reviews)
- * - messages (user messaging)
- * - promotions (discount codes)
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** Core database management class for handling SQLite operations, schema versioning, and unified data access. */
 public class DatabaseHelper extends SQLiteOpenHelper {
-
-    // Tag for logging database operations
+    // Infrastructure
     private static final String TAG = "DatabaseHelper";
-
-    // Database configuration constants
     private static final String DATABASE_NAME = "GroceryPlus.db";
     private static final int DATABASE_VERSION = 10;
 
-    /**
-     * Constructor for DatabaseHelper
-     * 
-     * Initializes the SQLiteOpenHelper with database name and version.
-     * The database will be created if it doesn't exist, or upgraded if
-     * the version number is increased.
-     * 
-     * @param context Application context for database operations
-     */
+    /** Initializes the helper with application context and predefined database settings. */
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
-    /**
-     * Called when the database is created for the first time
-     * 
-     * This method executes all the SQL statements to create the database
-     * tables according to the schema defined in DatabaseContract.
-     * It creates all necessary tables for the GroceryPlus application.
-     * 
-     * @param db The SQLiteDatabase instance to write to
-     */
+    /** Executes SQL statements to create all database tables and inserts initial seeds. */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Create all tables using DatabaseContract constants
         db.execSQL(DatabaseContract.SQL_CREATE_USERS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_CATEGORIES_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_PRODUCTS_TABLE);
@@ -109,20 +55,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(DatabaseContract.SQL_CREATE_ADMIN_SETTINGS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_WISHLISTS_TABLE);
 
-        // Insert default admin user
         insertDefaultAdmin(db);
-        
-        // Insert sample categories and products
         insertSampleCategoriesAndProducts(db);
     }
 
+    /** Manages database upgrades and schema migrations based on version changes. */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);
         
-        // Non-destructive migration strategy
         if (oldVersion < 10) {
-            // Add image column to categories if it doesn't exist (added in v10)
             try {
                 db.execSQL("ALTER TABLE " + CategoryEntry.TABLE_NAME + " ADD COLUMN " + CategoryEntry.COLUMN_NAME_IMAGE + " TEXT");
                 Log.d(TAG, "Added image column to categories table");
@@ -131,11 +73,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         }
         
-        // Ensure all sample data is present
         insertSampleData();
     }
 
-    /** Insert default admin user */
+    /** Inserts a default administrator account into the users table. */
     private void insertDefaultAdmin(SQLiteDatabase db) {
         try {
             String adminPassword = "admin123";
@@ -143,21 +84,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String hashedPassword = hashPassword(adminPassword, salt);
 
             ContentValues values = new ContentValues();
-            values.put(DatabaseContract.UserEntry.COLUMN_NAME_USER_NAME, "Admin User");
-            values.put(DatabaseContract.UserEntry.COLUMN_NAME_USER_EMAIL, "admin@gmail.com");
-            values.put(DatabaseContract.UserEntry.COLUMN_NAME_USER_PHONE, "9815689963");
-            values.put(DatabaseContract.UserEntry.COLUMN_NAME_USER_PASSWORD, hashedPassword);
-            values.put(DatabaseContract.UserEntry.COLUMN_NAME_USER_SALT, salt);
-            values.put(DatabaseContract.UserEntry.COLUMN_NAME_USER_TYPE, "admin");
+            values.put(UserEntry.COLUMN_NAME_USER_NAME, "Admin User");
+            values.put(UserEntry.COLUMN_NAME_USER_EMAIL, "admin@gmail.com");
+            values.put(UserEntry.COLUMN_NAME_USER_PHONE, "9815689963");
+            values.put(UserEntry.COLUMN_NAME_USER_PASSWORD, hashedPassword);
+            values.put(UserEntry.COLUMN_NAME_USER_SALT, salt);
+            values.put(UserEntry.COLUMN_NAME_USER_TYPE, "admin");
 
-            db.insert(DatabaseContract.UserEntry.TABLE_NAME, null, values);
+            db.insert(UserEntry.TABLE_NAME, null, values);
             Log.d(TAG, "Default admin created");
         } catch (Exception e) {
             Log.e(TAG, "Error creating default admin", e);
         }
     }
 
-    /** Generate random salt */
+    /** Generates a cryptographically strong random salt. */
     private String generateSalt() {
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[16];
@@ -165,7 +106,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return bytesToHex(salt);
     }
 
-    /** Hash password with SHA-256 + salt */
+    /** Hashes a plain text password using SHA-256 with a provided salt. */
     private String hashPassword(String password, String salt) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(salt.getBytes());
@@ -173,7 +114,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return bytesToHex(hashed);
     }
 
-    /** Convert byte array to hex string */
+    /** Converts a byte array into a hexadecimal representation string. */
     private String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
@@ -182,9 +123,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return sb.toString();
     }
 
-    /**
-     * Add a new user to the database
-     */
+    /** Registers a new user with a salted and hashed password. */
     public long addUser(String name, String email, String phone, String password, String userType) {
         SQLiteDatabase db = this.getWritableDatabase();
         
@@ -193,42 +132,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String hashedPassword = hashPassword(password, salt);
             
             ContentValues values = new ContentValues();
-            values.put(DatabaseContract.UserEntry.COLUMN_NAME_USER_NAME, name);
-            values.put(DatabaseContract.UserEntry.COLUMN_NAME_USER_EMAIL, email);
-            values.put(DatabaseContract.UserEntry.COLUMN_NAME_USER_PHONE, phone);
-            values.put(DatabaseContract.UserEntry.COLUMN_NAME_USER_PASSWORD, hashedPassword);
-            values.put(DatabaseContract.UserEntry.COLUMN_NAME_USER_SALT, salt);
-            values.put(DatabaseContract.UserEntry.COLUMN_NAME_USER_TYPE, userType);
+            values.put(UserEntry.COLUMN_NAME_USER_NAME, name);
+            values.put(UserEntry.COLUMN_NAME_USER_EMAIL, email);
+            values.put(UserEntry.COLUMN_NAME_USER_PHONE, phone);
+            values.put(UserEntry.COLUMN_NAME_USER_PASSWORD, hashedPassword);
+            values.put(UserEntry.COLUMN_NAME_USER_SALT, salt);
+            values.put(UserEntry.COLUMN_NAME_USER_TYPE, userType);
             
-            // Inserting Row
-            long userId = db.insert(DatabaseContract.UserEntry.TABLE_NAME, null, values);
-            return userId;
+            return db.insert(UserEntry.TABLE_NAME, null, values);
         } catch (Exception e) {
             Log.e(TAG, "Error adding user", e);
             return -1;
         }
     }
     
-    /**
-     * Check user credentials for login
-     */
+    /** Authenticates a user by verifying their email and hashed password. */
     public User authenticateUser(String email, String password) {
         SQLiteDatabase db = this.getReadableDatabase();
         
         Log.d(TAG, "Authenticating user with email: " + email);
-        String selectQuery = "SELECT * FROM " + DatabaseContract.UserEntry.TABLE_NAME + " WHERE " + DatabaseContract.UserEntry.COLUMN_NAME_USER_EMAIL + " = ?";
+        String selectQuery = "SELECT * FROM " + UserEntry.TABLE_NAME + " WHERE " + UserEntry.COLUMN_NAME_USER_EMAIL + " = ?";
         
         Cursor cursor = db.rawQuery(selectQuery, new String[]{email});
         
         if (cursor != null && cursor.moveToFirst()) {
             try {
-                int saltIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_SALT);
-                int passwordIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_PASSWORD);
-                int userIdIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_ID);
-                int userNameIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_NAME);
-                int userEmailIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_EMAIL);
-                int userPhoneIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_PHONE);
-                int userTypeIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_TYPE);
+                int saltIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_SALT);
+                int passwordIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_PASSWORD);
+                int userIdIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_ID);
+                int userNameIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_NAME);
+                int userEmailIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_EMAIL);
+                int userPhoneIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_PHONE);
+                int userTypeIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_TYPE);
                 
                 if (saltIndex >= 0 && passwordIndex >= 0) {
                     String storedSalt = cursor.getString(saltIndex);
@@ -269,9 +204,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null; // Authentication failed
     }
     
-    /**
-     * Force refresh sample data (useful for testing)
-     */
+    /** Wipes and re-inserts all sample data for testing and demonstration purposes. */
     public void forceRefreshSampleData() {
         SQLiteDatabase db = this.getWritableDatabase();
         try {
@@ -527,23 +460,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d(TAG, "Sample categories and products inserted successfully");
     }
 
-    /**
-     * Get user by email
-     */
+    /** Retrieves a user object by their email address. */
     public User getUserByEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
-        
-        String selectQuery = "SELECT * FROM " + DatabaseContract.UserEntry.TABLE_NAME + " WHERE " + DatabaseContract.UserEntry.COLUMN_NAME_USER_EMAIL + " = ?";
-        
+        String selectQuery = "SELECT * FROM " + UserEntry.TABLE_NAME + " WHERE " + UserEntry.COLUMN_NAME_USER_EMAIL + " = ?";
         Cursor cursor = db.rawQuery(selectQuery, new String[]{email});
         
         if (cursor != null && cursor.moveToFirst()) {
             try {
-                int userIdIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_ID);
-                int userNameIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_NAME);
-                int userEmailIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_EMAIL);
-                int userPhoneIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_PHONE);
-                int userTypeIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_TYPE);
+                int userIdIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_ID);
+                int userNameIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_NAME);
+                int userEmailIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_EMAIL);
+                int userPhoneIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_PHONE);
+                int userTypeIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_TYPE);
                 
                 int userId = (userIdIndex >= 0) ? cursor.getInt(userIdIndex) : -1;
                 String userName = (userNameIndex >= 0) ? cursor.getString(userNameIndex) : "";
@@ -551,8 +480,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 String userPhone = (userPhoneIndex >= 0) ? cursor.getString(userPhoneIndex) : "";
                 String userType = (userTypeIndex >= 0) ? cursor.getString(userTypeIndex) : "";
                 
-                User user = new User(userId, userName, userEmail, userPhone, userType);
-                return user;
+                return new User(userId, userName, userEmail, userPhone, userType);
             } catch (Exception e) {
                 Log.e(TAG, "Error getting user by email", e);
             } finally {
@@ -567,23 +495,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null;
     }
     
-    /**
-     * Get user by ID
-     */
+    /** Retrieves a user object by their numeric ID. */
     public User getUserById(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
-        
-        String selectQuery = "SELECT * FROM " + DatabaseContract.UserEntry.TABLE_NAME + " WHERE " + DatabaseContract.UserEntry.COLUMN_NAME_USER_ID + " = ?";
-        
+        String selectQuery = "SELECT * FROM " + UserEntry.TABLE_NAME + " WHERE " + UserEntry.COLUMN_NAME_USER_ID + " = ?";
         Cursor cursor = db.rawQuery(selectQuery, new String[]{String.valueOf(userId)});
         
         if (cursor != null && cursor.moveToFirst()) {
             try {
-                int userIdIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_ID);
-                int userNameIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_NAME);
-                int userEmailIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_EMAIL);
-                int userPhoneIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_PHONE);
-                int userTypeIndex = cursor.getColumnIndex(DatabaseContract.UserEntry.COLUMN_NAME_USER_TYPE);
+                int userIdIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_ID);
+                int userNameIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_NAME);
+                int userEmailIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_EMAIL);
+                int userPhoneIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_PHONE);
+                int userTypeIndex = cursor.getColumnIndex(UserEntry.COLUMN_NAME_USER_TYPE);
                 
                 int id = (userIdIndex >= 0) ? cursor.getInt(userIdIndex) : -1;
                 String userName = (userNameIndex >= 0) ? cursor.getString(userNameIndex) : "";
@@ -591,8 +515,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 String userPhone = (userPhoneIndex >= 0) ? cursor.getString(userPhoneIndex) : "";
                 String userType = (userTypeIndex >= 0) ? cursor.getString(userTypeIndex) : "";
                 
-                User user = new User(id, userName, userEmail, userPhone, userType);
-                return user;
+                return new User(id, userName, userEmail, userPhone, userType);
             } catch (Exception e) {
                 Log.e(TAG, "Error getting user by ID", e);
             } finally {
@@ -607,9 +530,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null;
     }
     
-    /**
-     * Update user profile
-     */
+    /** Updates a user's core profile information in the database. */
     public boolean updateUser(int userId, String name, String email, String phone, String address) {
         SQLiteDatabase db = this.getWritableDatabase();
         
@@ -618,7 +539,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             values.put(UserEntry.COLUMN_NAME_USER_NAME, name);
             values.put(UserEntry.COLUMN_NAME_USER_EMAIL, email);
             values.put(UserEntry.COLUMN_NAME_USER_PHONE, phone);
-            // Address field removed - User table doesn't have address column
             
             int result = db.update(UserEntry.TABLE_NAME, values, 
                                   UserEntry.COLUMN_NAME_USER_ID + " = ?", 
@@ -630,14 +550,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
     
-    /**
-     * Check if user exists
-     */
+    /** Checks whether a user with the specified email already exists. */
     public boolean isUserExists(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
         
         Log.d(TAG, "Checking if user exists with email: " + email);
-        String selectQuery = "SELECT * FROM " + DatabaseContract.UserEntry.TABLE_NAME + " WHERE " + DatabaseContract.UserEntry.COLUMN_NAME_USER_EMAIL + " = ?";
+        String selectQuery = "SELECT * FROM " + UserEntry.TABLE_NAME + " WHERE " + UserEntry.COLUMN_NAME_USER_EMAIL + " = ?";
         
         Cursor cursor = db.rawQuery(selectQuery, new String[]{email});
         
@@ -651,24 +569,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return exists;
     }
 
-    /**
-     * Get all users
-     */
+    /** Retrieves a list of all users registered in the system. */
     public java.util.List<User> getAllUsers() {
         java.util.List<User> users = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         
-        String query = "SELECT * FROM " + DatabaseContract.UserEntry.TABLE_NAME;
+        String query = "SELECT * FROM " + UserEntry.TABLE_NAME;
         Cursor cursor = db.rawQuery(query, null);
         
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 try {
-                    int userId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.UserEntry.COLUMN_NAME_USER_ID));
-                    String userName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.UserEntry.COLUMN_NAME_USER_NAME));
-                    String userEmail = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.UserEntry.COLUMN_NAME_USER_EMAIL));
-                    String userPhone = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.UserEntry.COLUMN_NAME_USER_PHONE));
-                    String userType = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.UserEntry.COLUMN_NAME_USER_TYPE));
+                    int userId = cursor.getInt(cursor.getColumnIndexOrThrow(UserEntry.COLUMN_NAME_USER_ID));
+                    String userName = cursor.getString(cursor.getColumnIndexOrThrow(UserEntry.COLUMN_NAME_USER_NAME));
+                    String userEmail = cursor.getString(cursor.getColumnIndexOrThrow(UserEntry.COLUMN_NAME_USER_EMAIL));
+                    String userPhone = cursor.getString(cursor.getColumnIndexOrThrow(UserEntry.COLUMN_NAME_USER_PHONE));
+                    String userType = cursor.getString(cursor.getColumnIndexOrThrow(UserEntry.COLUMN_NAME_USER_TYPE));
                     
                     User user = new User(userId, userName, userEmail, userPhone, userType);
                     users.add(user);
@@ -1011,9 +927,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return products;
     }
     
-    /**
-     * Search products by name
-     */
+    /** Retrieves a list of products by searching for a partial name match. */
     public java.util.List<com.sunit.groceryplus.models.Product> searchProducts(String query) {
         java.util.List<com.sunit.groceryplus.models.Product> products = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1057,9 +971,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return products;
     }
     
-    /**
-     * Update product
-     */
+    /** Updates an existing product's details in the database. */
     public boolean updateProduct(int productId, String productName, int categoryId, double price, String description, String image, int stockQuantity, int vendorId) {
         SQLiteDatabase db = this.getWritableDatabase();
         
@@ -1083,9 +995,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
     
-    /**
-     * Delete product
-     */
+    /** Permanently removes a product from the database. */
     public boolean deleteProduct(int productId) {
         SQLiteDatabase db = this.getWritableDatabase();
         
@@ -1102,9 +1012,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     
     // ==================== CATEGORY METHODS ====================
     
-    /**
-     * Get all categories
-     */
+    // ==================== CATEGORY METHODS ====================
+    
+    /** Retrieves a list of all product categories. */
     public java.util.List<com.sunit.groceryplus.models.Category> getAllCategories() {
         java.util.List<com.sunit.groceryplus.models.Category> categories = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1134,9 +1044,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return categories;
     }
     
-    /**
-     * Get category by ID
-     */
+    /** Retrieves a specific category by its numeric ID. */
     public com.sunit.groceryplus.models.Category getCategoryById(int categoryId) {
         SQLiteDatabase db = this.getReadableDatabase();
         
@@ -1165,9 +1073,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null;
     }
     
-    /**
-     * Update category
-     */
+    /** Updates an existing category's name, description, and image. */
     public boolean updateCategory(int categoryId, String categoryName, String categoryDescription, String image) {
         SQLiteDatabase db = this.getWritableDatabase();
         
@@ -1187,9 +1093,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
     
-    /**
-     * Delete category
-     */
+    /** Permanently deletes a category from the database. */
     public boolean deleteCategory(int categoryId) {
         SQLiteDatabase db = this.getWritableDatabase();
         
@@ -1206,9 +1110,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     
     // ==================== CART METHODS ====================
     
-    /**
-     * Get cart items with product details
-     */
+    /** Retrieves shopping cart items with joined product details for a user. */
     public java.util.List<com.sunit.groceryplus.models.CartItem> getCartItemsWithDetails(int userId) {
         java.util.List<com.sunit.groceryplus.models.CartItem> cartItems = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1245,9 +1147,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return cartItems;
     }
     
-    /**
-     * Update cart item quantity
-     */
+    /** Updates the quantity of a specific item in the shopping cart. */
     public boolean updateCartQuantity(int cartId, int quantity) {
         SQLiteDatabase db = this.getWritableDatabase();
         
@@ -1265,9 +1165,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
     
-    /**
-     * Get cart total
-     */
+    /** Calculates the total monetary value of all items in a user's cart. */
     public double getCartTotal(int userId) {
         double total = 0.0;
         java.util.List<com.sunit.groceryplus.models.CartItem> items = getCartItemsWithDetails(userId);
@@ -1281,9 +1179,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     
     // ==================== ORDER METHODS ====================
     
-    /**
-     * Get all orders (for admin)
-     */
+    /** Retrieves a list of all global orders with joined user and delivery personnel details. */
     public java.util.List<com.sunit.groceryplus.models.Order> getAllOrders() {
         java.util.List<com.sunit.groceryplus.models.Order> orders = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1357,9 +1253,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return orders;
     }
     
-    /**
-     * Get orders by user
-     */
+    /** Retrieves a list of orders specifically for a given user. */
     public java.util.List<com.sunit.groceryplus.models.Order> getOrdersByUser(int userId) {
         java.util.List<com.sunit.groceryplus.models.Order> orders = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1416,9 +1310,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return orders;
     }
     
-    /**
-     * Get order items for an order
-     */
+    /** Retrieves all individual items belonging to a specific order. */
     public java.util.List<com.sunit.groceryplus.models.OrderItem> getOrderItems(int orderId) {
         java.util.List<com.sunit.groceryplus.models.OrderItem> orderItems = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1713,6 +1605,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
     
+    /** Returns the total number of orders stored in the system. */
     public int getTotalOrdersCount() {
         SQLiteDatabase db = this.getReadableDatabase();
         int count = 0;
@@ -1725,6 +1618,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
 
+    /** Returns the total number of products currently in the database. */
     public int getTotalProductsCount() {
         SQLiteDatabase db = this.getReadableDatabase();
         int count = 0;
@@ -1737,6 +1631,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
 
+    /** Returns the total number of registered customers (excluding admins). */
     public int getTotalCustomersCount() {
         SQLiteDatabase db = this.getReadableDatabase();
         int count = 0;
@@ -1751,6 +1646,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ==================== PROMOTION METHODS ====================
 
+    /** Adds a new promotional code with associated discount and validity period. */
     public long addPromotion(String code, double discount, String validUntil, String imageUrl) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -1762,6 +1658,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(DatabaseContract.PromotionEntry.TABLE_NAME, null, values);
     }
 
+    /** Retreives a specific promotion by its unique code, if active. */
     public com.sunit.groceryplus.models.Promotion getPromotionByCode(String code) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(DatabaseContract.PromotionEntry.TABLE_NAME, null,
@@ -1782,11 +1679,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null;
     }
     
+    /** Retrieves all promotional records from the database. */
     public Cursor getAllPromotions() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(DatabaseContract.PromotionEntry.TABLE_NAME, null, null, null, null, null, null);
     }
 
+    /** Permanently deletes a promotional record. */
     public boolean deletePromotion(int promoId) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(DatabaseContract.PromotionEntry.TABLE_NAME, 
@@ -1796,6 +1695,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ==================== REVIEW METHODS ====================
     
+    // ==================== REVIEW METHODS ====================
+    
+    /** Retrieves all product reviews with joined product and user names. */
     public Cursor getAllReviews() {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT r.*, p." + DatabaseContract.ProductEntry.COLUMN_NAME_PRODUCT_NAME + ", u." + DatabaseContract.UserEntry.COLUMN_NAME_USER_NAME +
@@ -1805,6 +1707,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(query, null);
     }
     
+    /** Deletes a specific review by its numeric ID. */
     public boolean deleteReview(int reviewId) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(DatabaseContract.ReviewEntry.TABLE_NAME,
@@ -1814,6 +1717,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ==================== DELIVERY PERSONNEL METHODS ====================
     
+    /** Registers a new delivery person in the system. */
     public long addDeliveryPerson(String name, String phone, String status) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -1823,11 +1727,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(DatabaseContract.DeliveryPersonEntry.TABLE_NAME, null, values);
     }
     
+    /** Retrieves a cursor containing all registered delivery personnel. */
     public Cursor getAllDeliveryPersonnel() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(DatabaseContract.DeliveryPersonEntry.TABLE_NAME, null, null, null, null, null, null);
     }
     
+    /** Updates the availability or assignment status of a delivery person. */
     public boolean updateDeliveryPersonStatus(int personId, String status) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -1839,6 +1745,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     
     // ==================== PAYMENT METHODS ====================
     
+    /** Records a new payment transaction associated with an order. */
     public long addPayment(int orderId, double amount, String paymentMethod, String transactionId) {
         SQLiteDatabase db = this.getWritableDatabase();
         
@@ -1849,20 +1756,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             values.put(DatabaseContract.PaymentEntry.COLUMN_NAME_PAYMENT_METHOD, paymentMethod);
             values.put(DatabaseContract.PaymentEntry.COLUMN_NAME_TRANSACTION_ID, transactionId);
             
-            // Inserting Row
-            long paymentId = db.insert(DatabaseContract.PaymentEntry.TABLE_NAME, null, values);
-            return paymentId;
+            return db.insert(DatabaseContract.PaymentEntry.TABLE_NAME, null, values);
         } catch (Exception e) {
             Log.e(TAG, "Error adding payment", e);
             return -1;
         }
     }
     
+    /** Retrieves a list of all payment transactions, ordered by date. */
     public Cursor getAllPayments() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(DatabaseContract.PaymentEntry.TABLE_NAME, null, null, null, null, null, DatabaseContract.PaymentEntry.COLUMN_NAME_PAYMENT_DATE + " DESC");
     }
     
+    /** Updates the status (e.g., 'completed', 'pending') of a specific payment. */
     public boolean updatePaymentStatus(int paymentId, String status) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -1875,6 +1782,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return rowsAffected > 0;
     }
     
+    /** Updates the status of a payment transaction using its linked order ID. */
     public boolean updatePaymentStatusByOrderId(int orderId, String status) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -1889,8 +1797,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ==================== MESSAGING METHODS ====================
     
-    // ==================== MESSAGING METHODS ====================
-    
+    /** Retrieves all system messages with joined sender names. */
     public Cursor getAllMessages() {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT m.*, s." + DatabaseContract.UserEntry.COLUMN_NAME_USER_NAME + " as sender_name" +
@@ -1900,6 +1807,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(query, null);
     }
 
+    /** Sends a new message between two users. */
     public long sendMessage(int senderId, int receiverId, String message) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -1909,19 +1817,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(DatabaseContract.MessageEntry.TABLE_NAME, null, values);
     }
 
+    /** Retrieves the message history between two specific users. */
     public Cursor getConversation(int userId1, int userId2) {
         SQLiteDatabase db = this.getReadableDatabase();
-        // Get messages between two users (sent by either)
         String query = "SELECT m.*, s." + DatabaseContract.UserEntry.COLUMN_NAME_USER_NAME + " as sender_name" +
                        " FROM " + DatabaseContract.MessageEntry.TABLE_NAME + " m " +
                        " LEFT JOIN " + DatabaseContract.UserEntry.TABLE_NAME + " s ON m." + DatabaseContract.MessageEntry.COLUMN_NAME_SENDER_ID + " = s." + DatabaseContract.UserEntry.COLUMN_NAME_USER_ID +
                        " WHERE (m." + DatabaseContract.MessageEntry.COLUMN_NAME_SENDER_ID + " = ? AND m." + DatabaseContract.MessageEntry.COLUMN_NAME_RECEIVER_ID + " = ?) OR " +
                        "(m." + DatabaseContract.MessageEntry.COLUMN_NAME_SENDER_ID + " = ? AND m." + DatabaseContract.MessageEntry.COLUMN_NAME_RECEIVER_ID + " = ?) " +
-                       " ORDER BY " + DatabaseContract.MessageEntry.COLUMN_NAME_CREATED_AT + " ASC"; // Oldest first for chat
+                       " ORDER BY " + DatabaseContract.MessageEntry.COLUMN_NAME_CREATED_AT + " ASC";
         
         return db.rawQuery(query, new String[]{String.valueOf(userId1), String.valueOf(userId2), String.valueOf(userId2), String.valueOf(userId1)});
     }
 
+    /** Retrieves the unique ID of the primary administrator user. */
     public int getAdminId() {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT " + DatabaseContract.UserEntry.COLUMN_NAME_USER_ID + 
@@ -1936,9 +1845,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return adminId;
     }
 
-    /**
-     * Get the latest message for each unique conversation involving the admin.
-     */
+    /** Retrieves the latest message for each active conversation involving the admin. */
     public Cursor getConversations(int adminId) {
         SQLiteDatabase db = this.getReadableDatabase();
         
@@ -1965,6 +1872,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(mainQuery, new String[]{sAdminId});
     }
 
+    /** Marks all unread messages from a specific sender as read. */
     public boolean markMessagesAsRead(int receiverId, int senderId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -1979,6 +1887,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Add a product review
      */
+    /** Adds a new product review with rating and text comment. */
     public long addReview(int userId, int productId, float rating, String comment) {
         SQLiteDatabase db = this.getWritableDatabase();
         try {
@@ -1994,9 +1903,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    /**
-     * Get reviews for a specific product
-     */
+    /** Retrieves all reviews for a specific product, ordered by date. */
     public java.util.List<com.sunit.groceryplus.models.Review> getReviewsForProduct(int productId) {
         java.util.List<com.sunit.groceryplus.models.Review> reviews = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -2032,9 +1939,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return reviews;
     }
 
-    /**
-     * Get all reviews for collaborative filtering
-     */
+    /** Retrieves all system reviews for recommendation engine purposes. */
     public java.util.List<com.sunit.groceryplus.models.Review> getAllReviewsForRecommendations() {
         java.util.List<com.sunit.groceryplus.models.Review> reviews = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -2056,9 +1961,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return reviews;
     }
 
-    /**
-     * Get all user purchase history (compact)
-     */
+    /** Retrieves a map of user IDs to products and quantities purchased. */
     public java.util.Map<Integer, java.util.Map<Integer, Integer>> getAllUserPurchaseHistory() {
         java.util.Map<Integer, java.util.Map<Integer, Integer>> history = new java.util.HashMap<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -2083,9 +1986,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return history;
     }
 
-    /**
-     * Get average rating for a product
-     */
+    /** Calculates the numerical average rating for a specific product. */
     public float getAverageRatingForProduct(int productId) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT AVG(" + DatabaseContract.ReviewEntry.COLUMN_NAME_RATING + ") FROM " + DatabaseContract.ReviewEntry.TABLE_NAME +
@@ -2102,6 +2003,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ==================== NOTIFICATION METHODS ====================
 
+    /** Dispatches a new notification to a specific user. */
     public long addNotification(int userId, String title, String message, String type, String refId) {
         SQLiteDatabase db = this.getWritableDatabase();
         try {
@@ -2118,6 +2020,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /** Updates a notification's state to 'read'. */
     public boolean markNotificationRead(int notificationId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -2127,6 +2030,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(notificationId)}) > 0;
     }
 
+    /** Retrieves all notifications for a specific user, ordered by date. */
     public Cursor getUserNotifications(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + DatabaseContract.NotificationEntry.TABLE_NAME +
@@ -2135,6 +2039,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(query, new String[]{String.valueOf(userId)});
     }
 
+    /** Retrieves a specific order by its numeric ID. */
     public com.sunit.groceryplus.models.Order getOrderById(int orderId) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT o.*, u." + UserEntry.COLUMN_NAME_USER_NAME + 
@@ -2160,6 +2065,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null;
     }
 
+    /** Retrieves a specific saved address by its numeric ID. */
     public com.sunit.groceryplus.models.Address getAddressById(int addressId) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(DatabaseContract.AddressEntry.TABLE_NAME, null, 
@@ -2184,9 +2090,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ==================== QUICK COMMERCE METHODS ====================
 
-    /**
-     * Decrement product stock when order is placed
-     */
+    /** Decrements the available stock for a product when an order is successful. */
     public boolean decrementStock(int productId, int quantity) {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "UPDATE " + ProductEntry.TABLE_NAME + 
@@ -2194,12 +2098,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                        " WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_ID + " = ? AND " + ProductEntry.COLUMN_NAME_STOCK + " >= ?";
         
         db.execSQL(query, new Object[]{productId, quantity});
-        return true; // Simplified for now
+        return true;
     }
 
-    /**
-     * Add a new saved address
-     */
+    /** Saves a new location address for a user. */
     public long addAddress(int userId, String type, String fullAddress, String landmark, String city, String area, double latitude, double longitude, boolean isDefault) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -2216,9 +2118,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(DatabaseContract.AddressEntry.TABLE_NAME, null, values);
     }
 
-    /**
-     * Get all saved addresses for a user
-     */
+    /** Retrieves all saved addresses belonging to a specific user. */
     public java.util.List<com.sunit.groceryplus.models.Address> getUserAddresses(int userId) {
         java.util.List<com.sunit.groceryplus.models.Address> addresses = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -2250,6 +2150,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return addresses;
     }
 
+    /** Permanently deletes a saved address. */
     public boolean deleteAddress(int addressId) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(DatabaseContract.AddressEntry.TABLE_NAME, 
@@ -2257,16 +2158,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(addressId)}) > 0;
     }
 
+    /** Designates a specific address as the default for a user, resetting others. */
     public boolean setDefaultAddress(int userId, int addressId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        // Reset all to 0
         ContentValues valuesReset = new ContentValues();
         valuesReset.put(DatabaseContract.AddressEntry.COLUMN_NAME_IS_DEFAULT, 0);
         db.update(DatabaseContract.AddressEntry.TABLE_NAME, valuesReset, 
                 DatabaseContract.AddressEntry.COLUMN_NAME_USER_ID + " = ?", 
                 new String[]{String.valueOf(userId)});
         
-        // Set selected to 1
         ContentValues valuesSet = new ContentValues();
         valuesSet.put(DatabaseContract.AddressEntry.COLUMN_NAME_IS_DEFAULT, 1);
         return db.update(DatabaseContract.AddressEntry.TABLE_NAME, valuesSet, 
@@ -2274,6 +2174,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(addressId)}) > 0;
     }
 
+    /** Updates the details of an existing saved address. */
     public boolean updateAddress(int addressId, String type, String fullAddress, String landmark, String city, String area, double latitude, double longitude, boolean isDefault) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -2292,6 +2193,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
     // ==================== VENDOR METHODS ====================
 
+    // ==================== VENDOR METHODS ====================
+    
+    /** Registers a new vendor or store in the system. */
     public long addVendor(String name, String address, double lat, double lng, String icon, double rating) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -2304,8 +2208,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(DatabaseContract.VendorEntry.TABLE_NAME, null, values);
     }
 
-    public List<com.sunit.groceryplus.models.Vendor> getAllVendors() {
-        List<com.sunit.groceryplus.models.Vendor> vendors = new ArrayList<>();
+    /** Retrieves a list of all vendors stored in the database. */
+    public java.util.List<com.sunit.groceryplus.models.Vendor> getAllVendors() {
+        java.util.List<com.sunit.groceryplus.models.Vendor> vendors = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(DatabaseContract.VendorEntry.TABLE_NAME, null, null, null, null, null, null);
 
@@ -2326,6 +2231,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return vendors;
     }
 
+    /** Retrieves a specific vendor's details by their numeric ID. */
     public com.sunit.groceryplus.models.Vendor getVendorById(int vendorId) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(DatabaseContract.VendorEntry.TABLE_NAME, null,
@@ -2346,6 +2252,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor != null) cursor.close();
         return null;
     }
+
+    /** Updates the profile information for an existing vendor. */
     public boolean updateVendor(int vendorId, String name, String address, double lat, double lng, String icon, double rating) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -2360,6 +2268,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(vendorId)}) > 0;
     }
 
+    /** Permanently deletes a vendor record from the database. */
     public boolean deleteVendor(int vendorId) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(DatabaseContract.VendorEntry.TABLE_NAME, 
@@ -2367,14 +2276,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(vendorId)}) > 0;
     }
 
-    /**
-     * Data Migration: Ensure all products have a valid vendor.
-     * If no vendor exists, creates a default one.
-     */
+    /** Ensures all products are linked to a valid vendor; creates a default vendor if none exist. */
     public void checkAndAssignDefaultVendor() {
         SQLiteDatabase db = this.getWritableDatabase();
         try {
-            // 1. Check if any vendor exists
             int vendorId = -1;
             Cursor cursor = db.query(DatabaseContract.VendorEntry.TABLE_NAME, 
                     new String[]{DatabaseContract.VendorEntry.COLUMN_NAME_VENDOR_ID}, 
@@ -2384,7 +2289,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 vendorId = cursor.getInt(0);
                 cursor.close();
             } else {
-                // 2. Create default vendor if none exists
                 ContentValues vValues = new ContentValues();
                 vValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_VENDOR_NAME, "General Store");
                 vValues.put(DatabaseContract.VendorEntry.COLUMN_NAME_ADDRESS, "City Center");
@@ -2396,7 +2300,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 if (cursor != null) cursor.close();
             }
 
-            // 3. Update products with missing vendor (0 or null)
             ContentValues pValues = new ContentValues();
             pValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, vendorId);
             db.update(ProductEntry.TABLE_NAME, pValues, 
@@ -2409,6 +2312,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /** Records a user's search query for future suggestions. */
     public long addSearchQuery(int userId, String query) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -2417,6 +2321,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(DatabaseContract.SearchHistoryEntry.TABLE_NAME, null, values);
     }
 
+    /** Retrieves the most recent unique search queries for a specific user. */
     public Cursor getRecentSearchQueries(int userId, int limit) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT DISTINCT " + DatabaseContract.SearchHistoryEntry.COLUMN_NAME_QUERY + 
@@ -2427,6 +2332,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(query, new String[]{String.valueOf(userId)});
     }
 
+    /** Clears the entire search history for a specific user. */
     public boolean clearSearchHistory(int userId) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(DatabaseContract.SearchHistoryEntry.TABLE_NAME,
@@ -2434,9 +2340,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(userId)}) > 0;
     }
 
-    /**
-     * Get all order items
-     */
+    /** Retrieves a collection of every order item recorded in the system. */
     public java.util.List<com.sunit.groceryplus.models.OrderItem> getAllOrderItems() {
         java.util.List<com.sunit.groceryplus.models.OrderItem> orderItems = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -2469,9 +2373,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return orderItems;
     }
 
-    /**
-     * Update order item quantity
-     */
+    /** Updates the quantity of a specific item within an existing order. */
     public boolean updateOrderItemQuantity(int orderItemId, int quantity) {
         SQLiteDatabase db = this.getWritableDatabase();
         
@@ -2489,9 +2391,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    /**
-     * Delete order item
-     */
+    /** Permanently removes an item from an existing order. */
     public boolean deleteOrderItem(int orderItemId) {
         SQLiteDatabase db = this.getWritableDatabase();
         
@@ -2509,14 +2409,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Validate product stock
      */
+    /** Verifies if the requested quantity of a product is available in stock. */
     public boolean validateStock(int productId, int requestedQuantity) {
         com.sunit.groceryplus.models.Product product = getProductById(productId);
         return product != null && product.getStock() >= requestedQuantity;
     }
 
-    /**
-     * Get total cart value for user
-     */
+    /** Calculates the cumulative monetary value of all items in a user's cart. */
     public double getTotalCartValue(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
         
@@ -2545,24 +2444,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return total;
     }
 
-    /**
-     * Check if product is available
-     */
+    /** Checks if a product has any remaining stock. */
     public boolean isProductAvailable(int productId) {
         com.sunit.groceryplus.models.Product product = getProductById(productId);
         return product != null && product.getStock() > 0;
     }
 
-    /**
-     * Format currency consistently
-     */
+    /** Formats a numerical amount as a currency string. */
     public static String formatCurrency(double amount) {
         return String.format("Rs. %.2f", amount);
     }
 
-    /**
-     * Calculate delivery fee based on cart value
-     */
+    /** Determines the appropriate delivery fee based on the current cart value. */
     public double calculateDeliveryFee(int userId) {
         double cartValue = getTotalCartValue(userId);
         if (cartValue >= com.sunit.groceryplus.utils.PaymentConfig.FREE_DELIVERY_THRESHOLD) {
@@ -2571,9 +2464,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return com.sunit.groceryplus.utils.PaymentConfig.DELIVERY_FEE;
     }
     
-    /**
-     * Get orders by user (or all orders if userId = -1)
-     */
+    /** Retrieves orders for a user, or all orders if the provided ID is -1. */
     public java.util.List<com.sunit.groceryplus.models.Order> getUserOrders(int userId) {
         if (userId == -1) {
             return getAllOrders();
@@ -2582,9 +2473,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
     
-    /**
-     * Get orders by delivery person and status
-     */
+    /** Retrieves orders filtered by delivery personnel and their current status. */
     public java.util.List<com.sunit.groceryplus.models.Order> getOrdersByDeliveryPersonAndStatus(int deliveryPersonId, String status) {
         java.util.List<com.sunit.groceryplus.models.Order> orders = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();

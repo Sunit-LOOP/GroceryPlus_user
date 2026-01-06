@@ -14,17 +14,18 @@ import java.util.List;
 import static com.sunit.groceryplus.DatabaseContract.FavoriteEntry;
 import static com.sunit.groceryplus.DatabaseContract.ProductEntry;
 
+/** Repository for managing user favorite products in the database. */
 public class FavoriteRepository {
+    // Infrastructure
     private static final String TAG = "FavoriteRepository";
     private DatabaseHelper dbHelper;
 
+    /** Initializes the repository with a DatabaseHelper. */
     public FavoriteRepository(Context context) {
         this.dbHelper = new DatabaseHelper(context);
     }
 
-    /**
-     * Add product to favorites
-     */
+    /** Adds a product to the user's favorites list. */
     public boolean addToFavorites(int userId, int productId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         
@@ -48,9 +49,7 @@ public class FavoriteRepository {
         }
     }
 
-    /**
-     * Remove product from favorites
-     */
+    /** Removes a product from the user's favorites list. */
     public boolean removeFromFavorites(int userId, int productId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         
@@ -68,9 +67,7 @@ public class FavoriteRepository {
         }
     }
 
-    /**
-     * Check if product is in favorites
-     */
+    /** Checks if a specific product is in the user's favorites. */
     public boolean isInFavorites(int userId, int productId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         
@@ -98,9 +95,7 @@ public class FavoriteRepository {
         }
     }
 
-    /**
-     * Get all favorite products for a user
-     */
+    /** Retrieves all favorite products with details for a specific user. */
     public List<Product> getFavoriteProducts(int userId) {
         List<Product> favorites = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -144,9 +139,7 @@ public class FavoriteRepository {
         return favorites;
     }
 
-    /**
-     * Get count of favorite products for a user
-     */
+    /** Gets the total number of favorite products for a user. */
     public int getFavoritesCount(int userId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         
@@ -173,9 +166,7 @@ public class FavoriteRepository {
         }
     }
 
-    /**
-     * Clear all favorites for a user
-     */
+    /** Removes all favorite products for a specific user. */
     public boolean clearFavorites(int userId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         

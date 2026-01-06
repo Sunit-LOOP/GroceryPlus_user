@@ -11,14 +11,17 @@ import com.sunit.groceryplus.models.Wishlist;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Repository for managing user wishlist items in the database. */
 public class WishlistRepository {
+    // Infrastructure
     private DatabaseHelper dbHelper;
 
+    /** Initializes the repository with a DatabaseHelper. */
     public WishlistRepository(Context context) {
         dbHelper = new DatabaseHelper(context);
     }
 
-    // Add product to wishlist
+    /** Adds a product to the user's wishlist. */
     public long addToWishlist(int userId, int productId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -28,7 +31,7 @@ public class WishlistRepository {
         return result;
     }
 
-    // Remove from wishlist
+    /** Removes a product from the user's wishlist. */
     public boolean removeFromWishlist(int userId, int productId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int rows = db.delete(DatabaseContract.WishlistEntry.TABLE_NAME,
@@ -37,7 +40,7 @@ public class WishlistRepository {
         return rows > 0;
     }
 
-    // Check if product is in wishlist
+    /** Checks if a specific product is already in the user's wishlist. */
     public boolean isInWishlist(int userId, int productId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String selection = DatabaseContract.WishlistEntry.COLUMN_NAME_USER_ID + " = ? AND " + DatabaseContract.WishlistEntry.COLUMN_NAME_PRODUCT_ID + " = ?";
@@ -48,7 +51,7 @@ public class WishlistRepository {
         return exists;
     }
 
-    // Get all wishlist items for a user (returns Product list)
+    /** Retrieves all products in the user's wishlist with full product details. */
     public List<Product> getWishlistProducts(int userId) {
         List<Product> products = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -78,7 +81,7 @@ public class WishlistRepository {
         return products;
     }
 
-    // Get wishlist entries (for debugging)
+    /** Retrieves the formal wishlist entries for a specific user. */
     public List<Wishlist> getWishlistEntries(int userId) {
         List<Wishlist> list = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();

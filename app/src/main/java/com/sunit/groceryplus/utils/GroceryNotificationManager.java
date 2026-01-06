@@ -21,22 +21,7 @@ import com.sunit.groceryplus.OrderTrackingActivity;
 import com.sunit.groceryplus.ProductDetailActivity;
 import com.sunit.groceryplus.R;
 
-/**
- * GroceryNotificationManager - Centralized notification management system.
- * 
- * This class provides comprehensive notification functionality for the GroceryPlus app.
- * It handles both local notifications and Firebase Cloud Messaging (FCM) integration.
- * Notifications are categorized by type and can be customized based on user preferences.
- * 
- * Key Features:
- * - Multiple notification types (orders, payments, delivery, etc.)
- * - Permission handling for Android 13+
- * - User preference integration
- * - Database storage for notification history
- * - Intent routing for different notification types
- * - Icon customization by notification type
- * - Testing and debugging capabilities
- */
+/** Centralized manager for handling local and Firebase notifications across multiple categories (Orders, Payments, Promo, etc.). */
 public class GroceryNotificationManager {
 
     // Notification channel configuration
@@ -44,46 +29,31 @@ public class GroceryNotificationManager {
     private static final String CHANNEL_NAME = "Grocery Plus Alerts";
     private static final String CHANNEL_DESC = "Notifications for orders, payments, and account updates";
 
-    // Notification type constants for categorization
-    public static final String TYPE_ORDER = "ORDER";       // Order status updates
-    public static final String TYPE_PAYMENT = "PAYMENT";   // Payment confirmations
-    public static final String TYPE_ACCOUNT = "ACCOUNT";   // Account-related notifications
-    public static final String TYPE_PROMO = "PROMO";       // Promotional offers
-    public static final String TYPE_STOCK = "STOCK";       // Stock alerts
-    public static final String TYPE_DELIVERY = "DELIVERY";   // Delivery updates
-    public static final String TYPE_VENDOR = "VENDOR";     // Vendor notifications
-    public static final String TYPE_REVIEW = "REVIEW";     // Review requests
-    public static final String TYPE_CART = "CART";         // Cart updates
-    public static final String TYPE_SYSTEM = "SYSTEM";     // System notifications
+    // Notification types
+    public static final String TYPE_ORDER = "ORDER";
+    public static final String TYPE_PAYMENT = "PAYMENT";
+    public static final String TYPE_ACCOUNT = "ACCOUNT";
+    public static final String TYPE_PROMO = "PROMO";
+    public static final String TYPE_STOCK = "STOCK";
+    public static final String TYPE_DELIVERY = "DELIVERY";
+    public static final String TYPE_VENDOR = "VENDOR";
+    public static final String TYPE_REVIEW = "REVIEW";
+    public static final String TYPE_CART = "CART";
+    public static final String TYPE_SYSTEM = "SYSTEM";
 
-    // Singleton instance for global access
+    // Infrastructure
     private static GroceryNotificationManager instance;
     private Context context;
     private DatabaseHelper dbHelper;
 
-    /**
-     * Private constructor for singleton pattern.
-     * 
-     * @param context Application context for system services
-     */
+    /** Private constructor initializing the database helper and notification channels. */
     private GroceryNotificationManager(Context context) {
-        // Use application context to avoid memory leaks
         this.context = context.getApplicationContext();
-        // Initialize database helper for notification storage
         this.dbHelper = new DatabaseHelper(this.context);
-        // Create notification channel for Android O and above
         createNotificationChannel();
     }
 
-    /**
-     * Get singleton instance of GroceryNotificationManager.
-     * 
-     * This method implements the singleton pattern to ensure only one instance
-     * of the notification manager exists throughout the app lifecycle.
-     * 
-     * @param context Application context
-     * @return Singleton instance of GroceryNotificationManager
-     */
+    /** Returns the singleton instance of the GroceryNotificationManager. */
     public static synchronized GroceryNotificationManager getInstance(Context context) {
         if (instance == null) {
             instance = new GroceryNotificationManager(context);
@@ -91,18 +61,7 @@ public class GroceryNotificationManager {
         return instance;
     }
 
-    /**
-     * Send a notification to a specific user.
-     * 
-     * This is the main method for sending notifications. It handles permission checks,
-     * user preferences, database storage, intent routing, and notification display.
-     * 
-     * @param userId Target user ID for the notification
-     * @param title Notification title
-     * @param message Notification message content
-     * @param type Notification type (uses TYPE_* constants)
-     * @param refId Reference ID for routing (order_id, product_id, etc.)
-     */
+    /** Dispatches a standard notification based on user preferences and permission status. */
     public void sendNotification(int userId, String title, String message, String type, String refId) {
         Log.d("GroceryNotificationManager", "Attempting to send notification: " + title + " - " + message);
         
@@ -192,12 +151,7 @@ public class GroceryNotificationManager {
         }
     }
 
-    /**
-     * Force send notification regardless of user preferences (for testing).
-     * 
-     * This method bypasses user preference checks to send notifications immediately.
-     * Useful for testing and critical system notifications.
-     */
+    /** Immediately sends a notification bypassing user preference checks (used for testing or critical alerts). */
     public void forceSendNotification(int userId, String title, String message, String type, String refId) {
         Log.d("GroceryNotificationManager", "Force sending notification: " + title + " - " + message);
         
@@ -255,9 +209,7 @@ public class GroceryNotificationManager {
         }
     }
 
-    /**
-     * Test method to verify notification system functionality.
-     */
+    /** Static test method to verify that the notification system is working correctly. */
     public static void testNotification(Context context, int userId) {
         GroceryNotificationManager manager = getInstance(context);
         manager.forceSendNotification(userId, "Test Notification", "This is a test notification to verify the system works.", TYPE_ORDER, "test_" + System.currentTimeMillis());
@@ -266,60 +218,46 @@ public class GroceryNotificationManager {
     // ==================== CONVENIENCE METHODS ====================
     // These methods provide easy-to-use interfaces for specific notification types
 
-    /**
-     * Send delivery status update notification.
-     */
+    /** Sends a delivery status update notification for a specific order. */
     public void sendDeliveryNotification(int userId, int orderId, String status) {
         String title = "Delivery Update";
         String message = "Your order #" + orderId + " delivery status: " + status;
         sendNotification(userId, title, message, TYPE_DELIVERY, String.valueOf(orderId));
     }
 
-    /**
-     * Send vendor-related notification.
-     */
+    /** Sends a notification regarding updates from a vendor. */
     public void sendVendorNotification(int userId, String message) {
         String title = "Vendor Update";
         sendNotification(userId, title, message, TYPE_VENDOR, null);
     }
 
-    /**
-     * Send review request notification.
-     */
+    /** Sends a request for the user to review a purchased product. */
     public void sendReviewNotification(int userId, int productId, String productName) {
         String title = "Review Request";
         String message = "How was your experience with " + productName + "? Leave a review!";
         sendNotification(userId, title, message, TYPE_REVIEW, String.valueOf(productId));
     }
 
-    /**
-     * Send cart update notification.
-     */
+    /** Sends a notification regarding shopping cart updates. */
     public void sendCartNotification(int userId, String message) {
         String title = "Cart Update";
         sendNotification(userId, title, message, TYPE_CART, null);
     }
 
-    /**
-     * Send system notification.
-     */
+    /** Sends a high-level system update notification. */
     public void sendSystemNotification(int userId, String message) {
         String title = "System Update";
         sendNotification(userId, title, message, TYPE_SYSTEM, null);
     }
 
-    /**
-     * Send low stock alert notification.
-     */
+    /** Sends a critical low stock notification for a product. */
     public void sendLowStockNotification(int userId, String productName) {
         String title = "Low Stock Alert";
         String message = productName + " is running low in stock. Order soon!";
         sendNotification(userId, title, message, TYPE_STOCK, null);
     }
 
-    /**
-     * Send promotional offer notification.
-     */
+    /** Sends a promotional offer or discount notification to the user. */
     public void sendPromoNotification(int userId, String promoCode, String discount) {
         String title = "Special Offer!";
         String message = "Use code " + promoCode + " to get " + discount + " off on your next order!";
@@ -328,15 +266,7 @@ public class GroceryNotificationManager {
 
     // ==================== HELPER METHODS ====================
 
-    /**
-     * Get appropriate icon resource based on notification type.
-     * 
-     * This method returns the appropriate icon drawable for each notification type,
-     * allowing for visual differentiation in the notification panel.
-     * 
-     * @param type Notification type
-     * @return Resource ID for the appropriate icon
-     */
+    /** Returns the appropriate icon resource based on the specific notification type. */
     private int getIconByType(String type) {
         switch (type) {
             case TYPE_ORDER: return R.drawable.order_icon;
@@ -353,13 +283,7 @@ public class GroceryNotificationManager {
         }
     }
 
-    /**
-     * Create notification channel for Android O and above.
-     * 
-     * This method creates the notification channel required for Android O (API 26)
-     * and above. Notification channels are required for all notifications on
-     * modern Android versions.
-     */
+    /** Creates the mandatory notification channel for Android O (API 26) and above. */
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             android.app.NotificationManager manager = context.getSystemService(android.app.NotificationManager.class);

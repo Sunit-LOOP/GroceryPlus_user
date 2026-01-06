@@ -17,26 +17,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * CustomerManagementActivity - Admin interface for viewing registered customers.
- * 
- * This activity displays a list of all registered users (customers) in the system.
- * It provides visibility into the user base but currently operates in a read-only mode regarding user profiles.
- * 
- * Key Features:
- * - List all registered customers
- * - View customer basic details (Name, Email, Phone)
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** CustomerManagementActivity - Admin interface for viewing registered customers. */
 public class CustomerManagementActivity extends AppCompatActivity {
 
+    // UI Components
     private RecyclerView customersRv;
+    
+    // Adapter & Data
     private AdminCustomerAdapter adapter;
     private UserRepository userRepository;
 
+    /**
+     * Initializes activity, setups toolbar and recycler view, and loads customer data.
+     * @param savedInstanceState Saved instance state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,17 +49,26 @@ public class CustomerManagementActivity extends AppCompatActivity {
         loadCustomers();
     }
 
+    /**
+     * Configures the RecyclerView with AdminCustomerAdapter.
+     */
     private void setupRecyclerView() {
         customersRv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AdminCustomerAdapter(this, new ArrayList<>());
         customersRv.setAdapter(adapter);
     }
 
+    /**
+     * Fetches all registered users from repository and updates the adapter.
+     */
     private void loadCustomers() {
         List<User> users = userRepository.getAllUsers();
         adapter.updateUsers(users);
     }
 
+    /**
+     * Handles toolbar menu actions (Back button).
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Delivery boy management layout -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -6,11 +7,13 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
+    <!-- App bar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
+        <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -23,6 +26,7 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Delivery boys list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/deliveryBoyRv"
         android:layout_width="match_parent"

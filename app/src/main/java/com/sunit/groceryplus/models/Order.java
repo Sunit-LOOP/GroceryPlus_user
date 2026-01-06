@@ -3,47 +3,37 @@ package com.sunit.groceryplus.models;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Order Model Class
- * 
- * Represents a customer's order in the system.
- * This is a central entity that links user, products (via OrderItems), 
- * payment status, and delivery details.
- */
+/** Order - Core entity representing a customer transaction, containing items, status, and delivery info. */
 public class Order {
     
-    // Unique ID for the order
-    private int orderId;
+    // Identity
+    private int orderId;        // Unique DB identifier
+    private int userId;         // Customer ID
     
-    // ID of the user who placed the order
-    private int userId;
-    
-    // -- User Snapshot Data (Preserved in case user profile changes) --
+    // User Snapshot (Preserved data)
     private String userName;
     private String userEmail;
     private String userPhone;
     
-    // Financial Details
-    private double totalAmount;
-    private double deliveryFee;
+    // Financials
+    private double totalAmount; // Subtotal of items
+    private double deliveryFee; // Shipping cost
     
-    // Current Order Lifecycle Status (Pending -> Processing -> Shipped -> Delivered)
-    private String status;
+    // Status & Timing
+    private String status;      // Current state (pending, shipped, etc.)
+    private String orderDate;   // Creation timestamp
+    private String shippedDate; // Shipping timestamp
     
-    // Timestamps
-    private String orderDate;
-    private String shippedDate;
+    // Data Structure
+    private List<OrderItem> items; // List of purchased products
     
-    // List of items in this order
-    private List<OrderItem> items;
+    // Payment
+    private boolean paymentReceived; // Payment confirmation flag
+    private String paymentMethod;    // COD, Stripe, etc.
     
-    // Payment Status Information
-    private boolean paymentReceived;
-    private String paymentMethod;
-    
-    // Delivery Details
-    private int addressId;
-    private String deliveryInstructions;
+    // Delivery Info
+    private int addressId;              // Delivery Address ID
+    private String deliveryInstructions;// Special notes
 
     // -- Order Status Constants --
     public static final String STATUS_PENDING = "pending";
@@ -52,27 +42,13 @@ public class Order {
     public static final String STATUS_DELIVERED = "delivered";
     public static final String STATUS_CANCELLED = "cancelled";
 
-    /**
-     * Default Constructor
-     * Initializes an empty list of items.
-     */
+    /** Default Constructor. */
     public Order() {
         this.items = new ArrayList<>();
     }
 
     /**
-     * Full Constructor
-     * Used for retrieving complete order history.
-     * 
-     * @param orderId Unique ID
-     * @param userId User ID
-     * @param userName Name snapshot
-     * @param userEmail Email snapshot
-     * @param userPhone Phone snapshot
-     * @param totalAmount Total cost
-     * @param deliveryFee Delivery cost
-     * @param status Current Status
-     * @param orderDate Creation Date
+     * Full Constructor for history retrieval.
      */
     public Order(int orderId, int userId, String userName, String userEmail, String userPhone,
                  double totalAmount, double deliveryFee, String status, String orderDate) {
@@ -89,8 +65,7 @@ public class Order {
     }
 
     /**
-     * Creation Constructor
-     * Used when creating a NEW order before it is saved to the DB.
+     * Constructor for creating NEW orders.
      */
     public Order(int userId, double totalAmount, double deliveryFee, String status) {
         this.userId = userId;
@@ -101,8 +76,7 @@ public class Order {
     }
 
     /**
-     * Minimal Constructor with Address
-     * Used for specific queries where full user details aren't needed but location is.
+     * Minimal Constructor with Address ID.
      */
     public Order(int orderId, int userId, String userName, double totalAmount, double deliveryFee, String status, String orderDate, int addressId) {
         this.orderId = orderId;
@@ -243,6 +217,7 @@ public class Order {
     }
 
     // Delivery Person
+    // Delivery Personnel Assignment
     private int deliveryPersonId;
     private String deliveryPersonName;
 

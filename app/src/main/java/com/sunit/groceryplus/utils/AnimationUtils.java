@@ -18,16 +18,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sunit.groceryplus.R;
 
-/**
- * Utility class for handling various UI animations in the application.
- * Provides a centralized collection of animation methods for Views, RecyclerViews, and more.
- * Enhances user experience with visual feedback and smooth transitions.
- */
+/** Utility class providing a centralized collection of UI animations and transitions. */
 public class AnimationUtils {
 
-    /**
-     * Animates a view to fade in from invisible to visible.
-     */
+    /** Animates a view to fade in from invisible to visible. */
     public static void fadeIn(View view, long duration) {
         view.setAlpha(0f);
         view.setVisibility(View.VISIBLE);
@@ -38,9 +32,7 @@ public class AnimationUtils {
                 .start();
     }
 
-    /**
-     * Animates a view to fade out from visible to gone.
-     */
+    /** Animates a view to fade out from visible to gone. */
     public static void fadeOut(View view, long duration) {
         view.animate()
                 .alpha(0f)
@@ -50,9 +42,7 @@ public class AnimationUtils {
                 .start();
     }
 
-    /**
-     * Scales up a view (pop-in effect).
-     */
+    /** Scales up a view with a pop-in effect. */
     public static void scaleUp(View view, long duration) {
         view.setScaleX(0f);
         view.setScaleY(0f);
@@ -65,9 +55,7 @@ public class AnimationUtils {
                 .start();
     }
 
-    /**
-     * Scales down a view (pop-out effect) and sets visibility to GONE.
-     */
+    /** Scales down a view with a pop-out effect and hides it. */
     public static void scaleDown(View view, long duration) {
         view.animate()
                 .scaleX(0f)
@@ -78,9 +66,7 @@ public class AnimationUtils {
                 .start();
     }
 
-    /**
-     * Slides a view up into position from the bottom.
-     */
+    /** Slides a view up into position from the bottom. */
     public static void slideUp(View view, long duration) {
         view.setTranslationY(view.getHeight());
         view.setVisibility(View.VISIBLE);
@@ -91,9 +77,7 @@ public class AnimationUtils {
                 .start();
     }
 
-    /**
-     * Slides a view down from the top.
-     */
+    /** Slides a view down into position from the top. */
     public static void slideDown(View view, long duration) {
         view.setTranslationY(-view.getHeight());
         view.setVisibility(View.VISIBLE);
@@ -104,9 +88,7 @@ public class AnimationUtils {
                 .start();
     }
 
-    /**
-     * Applies a pulse animation (scale up slightly then back to normal).
-     */
+    /** Applies a scaling pulse animation to a view. */
     public static void pulse(View view, long duration) {
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(view, "scaleX", 1f, 1.1f, 1f);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(view, "scaleY", 1f, 1.1f, 1f);
@@ -118,9 +100,7 @@ public class AnimationUtils {
         animatorSet.start();
     }
 
-    /**
-     * Starts a shimmer loading effect on a view.
-     */
+    /** Starts a repeated shimmer alpha animation on a view. */
     public static void startShimmerAnimation(View view) {
         ObjectAnimator animator = ObjectAnimator.ofFloat(view, "alpha", 0.3f, 1f, 0.3f);
         animator.setDuration(1500);
@@ -129,17 +109,13 @@ public class AnimationUtils {
         animator.start();
     }
 
-    /**
-     * Stops the shimmer effect and resets alpha.
-     */
+    /** Stops any shimmer animation and resets alpha. */
     public static void stopShimmerAnimation(View view) {
         view.clearAnimation();
         view.setAlpha(1f);
     }
 
-    /**
-     * Sets a slide-in animation for RecyclerView items.
-     */
+    /** Sets a slide-in layout animation for RecyclerView items. */
     public static void setRecyclerViewAnimation(RecyclerView recyclerView) {
         android.view.animation.Animation animation = android.view.animation.AnimationUtils.loadAnimation(recyclerView.getContext(), R.anim.slide_in_from_bottom);
         LayoutAnimationController controller = new LayoutAnimationController(animation);
@@ -148,9 +124,7 @@ public class AnimationUtils {
         recyclerView.setLayoutAnimation(controller);
     }
 
-    /**
-     * Simulates a button press effect (scale down then up).
-     */
+    /** Simulates a button press effect by scaling the view down and then back up. */
     public static void buttonPressAnimation(View view) {
         view.animate()
                 .scaleX(0.95f)
@@ -164,9 +138,7 @@ public class AnimationUtils {
                 .start();
     }
 
-    /**
-     * Success animation (e.g. for checkmarks), scaling up with alpha fade in.
-     */
+    /** Applies a success-themed animation with scaling and alpha fade-in. */
     public static void successAnimation(View view) {
         view.setScaleX(0f);
         view.setScaleY(0f);
@@ -185,34 +157,26 @@ public class AnimationUtils {
         animatorSet.start();
     }
 
-    /**
-     * Error shake animation (horizontal shake).
-     */
+    /** Applies a horizontal shake animation usually indicating an error. */
     public static void shakeAnimation(View view) {
         ObjectAnimator shake = ObjectAnimator.ofFloat(view, "translationX", 0, -25, 25, -25, 25, -15, 15, -5, 5, 0);
         shake.setDuration(500);
         shake.start();
     }
 
-    /**
-     * Starts a loading spinner (ProgressBar).
-     */
+    /** Makes a ProgressBar visible and sets it to indeterminate mode. */
     public static void startLoadingAnimation(ProgressBar progressBar) {
         progressBar.setVisibility(View.VISIBLE);
         progressBar.setIndeterminate(true);
     }
 
-    /**
-     * Stops a loading spinner.
-     */
+    /** Hides a ProgressBar and stops its indeterminate state. */
     public static void stopLoadingAnimation(ProgressBar progressBar) {
         progressBar.setVisibility(View.GONE);
         progressBar.setIndeterminate(false);
     }
 
-    /**
-     * Typewriter effect for text views (character by character reveal).
-     */
+    /** Applies a character-by-character typewriter effect to a TextView. */
     public static void typewriterEffect(TextView textView, String text, long delay) {
         textView.setText("");
         textView.setVisibility(View.VISIBLE);
@@ -229,9 +193,7 @@ public class AnimationUtils {
         animator.start();
     }
 
-    /**
-     * 3D Card flip animation between two views.
-     */
+    /** Executes a 3D card flip animation between two views. */
     public static void flipCard(View frontView, View backView, long duration) {
         ObjectAnimator flipOut = ObjectAnimator.ofFloat(frontView, "rotationY", 0f, 90f);
         flipOut.setDuration(duration / 2);
@@ -251,23 +213,18 @@ public class AnimationUtils {
         flipOut.start();
     }
 
-    /**
-     * Circular reveal animation (Material Design style).
-     */
+    /** Applies a Material Design circular reveal animation to a view. */
     public static void circularReveal(View view, int centerX, int centerY, float startRadius, float endRadius, long duration) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             android.view.ViewAnimationUtils.createCircularReveal(view, centerX, centerY, startRadius, endRadius)
                     .setDuration(duration)
                     .start();
         } else {
-            // Fallback for older versions
             fadeIn(view, duration);
         }
     }
 
-    /**
-     * Staggered animation for a group of views (e.g. list items).
-     */
+    /** Applies a staggered slide-up and fade-in animation to an array of views. */
     public static void staggeredAnimation(View[] views, long delayBetweenViews) {
         for (int i = 0; i < views.length; i++) {
             View view = views[i];
@@ -287,9 +244,7 @@ public class AnimationUtils {
         }
     }
 
-    /**
-     * Vertical bounce animation.
-     */
+    /** Applies a vertical bounce animation to a view. */
     public static void bounce(View view, long duration) {
         ObjectAnimator bounce = ObjectAnimator.ofFloat(view, "translationY", 0, -30, 0);
         bounce.setDuration(duration);
@@ -297,18 +252,14 @@ public class AnimationUtils {
         bounce.start();
     }
 
-    /**
-     * Rotate animation given degrees.
-     */
+    /** Rotates a view between specified degrees over a duration. */
     public static void rotate(View view, long duration, float fromDegrees, float toDegrees) {
         ObjectAnimator rotate = ObjectAnimator.ofFloat(view, "rotation", fromDegrees, toDegrees);
         rotate.setDuration(duration);
         rotate.start();
     }
 
-    /**
-     * Continuous rotation (e.g. for custom loading indicators).
-     */
+    /** Starts an infinite continuous rotation animation on a view. */
     public static void startContinuousRotation(View view, long duration) {
         ObjectAnimator rotate = ObjectAnimator.ofFloat(view, "rotation", 0f, 360f);
         rotate.setDuration(duration);
@@ -317,17 +268,13 @@ public class AnimationUtils {
         rotate.start();
     }
 
-    /**
-     * Stops continuous rotation.
-     */
+    /** Stops any continuous rotation and resets the view's rotation. */
     public static void stopContinuousRotation(View view) {
         view.clearAnimation();
         view.setRotation(0f);
     }
 
-    /**
-     * Elastic scale effect.
-     */
+    /** Applies an elastic scaling animation effect to a view. */
     public static void elasticScale(View view, long duration) {
         AnimatorSet animatorSet = new AnimatorSet();
         
@@ -340,9 +287,7 @@ public class AnimationUtils {
         animatorSet.start();
     }
 
-    /**
-     * Slides view in from left.
-     */
+    /** Slides a view into position from the left. */
     public static void slideInFromLeft(View view, long duration) {
         view.setTranslationX(-view.getWidth());
         view.setVisibility(View.VISIBLE);
@@ -353,9 +298,7 @@ public class AnimationUtils {
                 .start();
     }
 
-    /**
-     * Slides view in from right.
-     */
+    /** Slides a view into position from the right. */
     public static void slideInFromRight(View view, long duration) {
         view.setTranslationX(view.getWidth());
         view.setVisibility(View.VISIBLE);
@@ -366,9 +309,7 @@ public class AnimationUtils {
                 .start();
     }
 
-    /**
-     * Slides view in from bottom.
-     */
+    /** Slides a view into position from the bottom. */
     public static void slideInFromBottom(View view, long duration) {
         view.setTranslationY(view.getHeight());
         view.setVisibility(View.VISIBLE);
@@ -379,9 +320,7 @@ public class AnimationUtils {
                 .start();
     }
 
-    /**
-     * Crossfade effect between two views (one out, one in).
-     */
+    /** Executes a crossfade transition between two views. */
     public static void crossFade(View viewOut, View viewIn, long duration) {
         viewOut.animate()
                 .alpha(0f)

@@ -27,30 +27,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * DeliveryPersonnelActivity - Admin interface for managing delivery staff.
- * 
- * This activity allows the admin to recruit (add), update, and manage the availability of delivery personnel.
- * It serves as a fleet management tool.
- * 
- * Key Features:
- * - List delivery personnel
- * - Add/Edit delivery person
- * - Toggle availability (Online/Offline)
- * - Integration with DeliveryOptimizer for assignment (via availability status)
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** DeliveryPersonnelActivity - Admin interface for recruiting, updating, and managing availability of delivery staff (fleet management). */
 public class DeliveryPersonnelActivity extends AppCompatActivity {
 
+    // UI Components
     private RecyclerView personnelRv;
     private FloatingActionButton addPersonFab;
+    
+    // Data & Adapters
     private DeliveryPersonnelAdapter adapter;
     private DeliveryPersonRepository repository;
     private List<DeliveryPerson> personnelList;
 
+    /**
+     * Initializes activity, sets up toolbar, recycler view and floating action button.
+     * @param savedInstanceState Saved instance state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,11 +69,19 @@ public class DeliveryPersonnelActivity extends AppCompatActivity {
         loadData();
     }
 
+    /**
+     * Refreshes the list of delivery personnel from the repository.
+     */
     private void loadData() {
         personnelList = repository.getAllDeliveryPersonnel();
         adapter.updateList(personnelList);
     }
 
+    /**
+     * Toggles the availability status of a delivery person.
+     * Callback for adapter item clicks.
+     * @param person The delivery person to update.
+     */
     private void onToggleAvailability(DeliveryPerson person) {
         boolean newAvailability = !person.isAvailable();
         boolean updated = repository.setAvailability(person.getPersonId(), newAvailability);
@@ -93,10 +93,17 @@ public class DeliveryPersonnelActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * wrapper for showing dialog for adding new person.
+     */
     private void showAddDialog() {
         showDeliveryPersonDialog(null);
     }
 
+    /**
+     * Displays a dialog to add a new delivery person or edit an existing one.
+     * @param person The person object to edit, or null for creating new.
+     */
     private void showDeliveryPersonDialog(DeliveryPerson person) {
         boolean isEdit = person != null;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -154,6 +161,9 @@ public class DeliveryPersonnelActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    /**
+     * Handles toolbar menu actions.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

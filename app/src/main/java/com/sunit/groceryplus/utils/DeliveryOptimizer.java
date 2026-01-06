@@ -2,12 +2,7 @@ package com.sunit.groceryplus.utils;
 
 import java.util.*;
 
-/**
- * Advanced Delivery Optimization Utility.
- * Implements Dijkstra's Algorithm for shortest path finding and 
- * Nearest Neighbor Heuristic for TSP (Traveling Salesman Problem).
- * Helps in optimizing delivery routes and assigning delivery personnel.
- */
+/** Advanced logic for delivery route optimization using Dijkstra's shortest path and Nearest Neighbor heuristics. */
 public class DeliveryOptimizer {
 
     // Simulated Graph for Delivery Network (Location Name -> Map of Neighbors with distance/time)
@@ -30,12 +25,7 @@ public class DeliveryOptimizer {
         deliveryGraph.computeIfAbsent(to, k -> new HashMap<>()).put(from, time);
     }
 
-    /**
-     * Dijkstra's Algorithm: Find the shortest path (time) from store to a location.
-     * 
-     * @param targetLocation The name of the destination area
-     * @return Estimated delivery time in minutes
-     */
+    /** Uses Dijkstra's algorithm to calculate the shortest estimated delivery time (minutes) from the store to a target area. */
     public static int calculateShortestDeliveryTime(String targetLocation) {
         String startNode = "Store";
         if (!deliveryGraph.containsKey(targetLocation)) return 15; // Default if area not in graph
@@ -68,13 +58,7 @@ public class DeliveryOptimizer {
         return 20; // Default fallback
     }
 
-    /**
-     * Nearest Neighbor Heuristic: Optimize route sequence for multiple orders.
-     * This is a simple solution to the Traveling Salesman Problem (TSP).
-     * 
-     * @param locations List of delivery locations
-     * @return Optimized sequence of locations to visit
-     */
+    /** Uses Nearest Neighbor heuristic to solve TSP and provide an optimized visit sequence for multiple order locations. */
     public static List<String> optimizeRoutePath(List<String> locations) {
         if (locations == null || locations.isEmpty()) return new ArrayList<>();
 
@@ -117,14 +101,7 @@ public class DeliveryOptimizer {
         return 10; // Default estimated direct time
     }
 
-    /**
-     * Suggest the best delivery person based on proximity to the store or delivery location.
-     * Uses shortest path calculation to estimate travel times.
-     * 
-     * @param targetArea The area where order needs to be delivered
-     * @param personnel List of available delivery personnel
-     * @return The suggested delivery person
-     */
+    /** Suggests the best available delivery person by calculating the shortest travel time to the store or target area. */
     public static com.sunit.groceryplus.models.DeliveryPerson getBestDeliveryPerson(String targetArea, List<com.sunit.groceryplus.models.DeliveryPerson> personnel) {
         if (personnel == null || personnel.isEmpty()) return null;
 

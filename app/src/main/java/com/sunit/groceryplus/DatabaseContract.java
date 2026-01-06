@@ -2,12 +2,9 @@ package com.sunit.groceryplus;
 
 import android.provider.BaseColumns;
 
-/**
- * Database contract class that defines the database schema
- */
+/** Contract class defining the database schema, table names, and column definitions for the application. */
 public final class DatabaseContract {
-    // To prevent someone from accidentally instantiating the contract class,
-    // make the constructor private.
+    /** Private constructor to prevent instantiation. */
     private DatabaseContract() {}
 
     /* Inner class that defines the users table contents */

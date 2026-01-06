@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Message activity layout -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/messageRoot"
@@ -7,6 +8,7 @@
     android:orientation="vertical"
     android:background="#F5F5F5">
 
+    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/messageToolbar"
         android:layout_width="match_parent"
@@ -15,6 +17,7 @@
         app:title="Chat with Support"
         app:titleTextColor="@android:color/white" />
 
+    <!-- Chat messages list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRv"
         android:layout_width="match_parent"
@@ -24,6 +27,7 @@
         android:clipToPadding="false"
         android:scrollbars="vertical" />
 
+    <!-- Message input area -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

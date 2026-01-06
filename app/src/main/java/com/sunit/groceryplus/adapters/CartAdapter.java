@@ -17,26 +17,20 @@ import com.sunit.groceryplus.utils.ProductImageLoader;
 
 import java.util.List;
 
-/**
- * Adapter for managing and displaying items in the Shopping Cart.
- * Handles quantity updates (+/-) and removal of items.
- * Also calculates total price for the cart summary.
- */
+/** CartAdapter - Manages and displays items in the Shopping Cart, including quantity updates and subtotal calculations. */
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
 
     private Context context;
     private List<CartItem> cartItems;
     private OnQuantityChangeListener quantityChangeListener;
 
-    /**
-     * Interface for listening to quantity changes.
-     * Activities/Fragments implementing this can update total price UI in real-time.
-     */
+    /** Interface for listening to quantity changes to update UI in real-time. */
     public interface OnQuantityChangeListener {
         void onQuantityChanged(int cartItemId, int newQuantity);
         void onItemRemoved(int cartItemId);
     }
 
+    /** Constructor. */
     public CartAdapter(Context context, List<CartItem> cartItems, OnQuantityChangeListener quantityChangeListener) {
         this.context = context;
         this.cartItems = cartItems;
@@ -61,15 +55,13 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
         return cartItems.size();
     }
 
-    /**
-     * Updates the list of cart items and refreshes view.
-     */
+    /** Updates the list of cart items and refreshes view. */
     public void updateCartItems(List<CartItem> items) {
         this.cartItems = items;
         notifyDataSetChanged();
     }
 
-    // Method to calculate total price
+    /** Calculates the current total price of all items in the cart. */
     public double getTotalPrice() {
         double total = 0;
         for (CartItem item : cartItems) {
@@ -78,7 +70,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
         return total;
     }
     
-    // Method to calculate total price including delivery fee
+    /** Calculates the total price including delivery fees based on thresholds. */
     public double getTotalPriceWithDelivery() {
         double subtotal = getTotalPrice();
         if (subtotal >= com.sunit.groceryplus.utils.PaymentConfig.FREE_DELIVERY_THRESHOLD) {
@@ -87,10 +79,9 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
         return subtotal + com.sunit.groceryplus.utils.PaymentConfig.DELIVERY_FEE;
     }
 
-    /**
-     * ViewHolder for Cart Items.
-     */
+    /** ViewHolder for Cart Items. */
     class ViewHolder extends RecyclerView.ViewHolder {
+        // UI Components
         TextView productNameTv, priceTv, quantityTv, subtotalTv;
         ImageButton increaseBtn, decreaseBtn, removeBtn;
         ImageView productImageIv;
@@ -108,6 +99,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
             productImageIv = itemView.findViewById(R.id.cartProductImageIv);
         }
 
+        /** Binds data and handles quantity interactions. */
         public void bind(CartItem item) {
             productNameTv.setText(item.getProductName());
             priceTv.setText("Rs. " + String.format("%.2f", item.getPrice()));
@@ -150,10 +142,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
             });
         }
 
-        /**
-         * Get specific image resource based on product name
-         * Used as a fallback if the main image fails or isn't set.
-         */
+        /** Maps product names to specific fallback icons for a better UI experience. */
         private int getSpecificImageForProduct(String productName) {
             if (productName == null) {
                 return R.drawable.product_icon;

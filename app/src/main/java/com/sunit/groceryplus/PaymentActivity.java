@@ -35,69 +35,42 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/**
- * PaymentActivity - Handles order payment and placement.
- * 
- * This activity is the final step in the checkout process. It allows users to review their order totals,
- * select a delivery address, apply promo codes, and choose a payment method (Stripe or Cash on Delivery).
- * Upon successful payment or order placement, it creates the order record and notifies the user.
- * 
- * Key Features:
- * - Order summary display (Subtotal, Delivery Fee, Discount, Total)
- * - Address selection and management
- * - Promo code application
- * - Payment method selection (Card vs COD)
- * - INTEGRATION with REAL Stripe PaymentSheet
- * - Order creation and inventory management
- * - Notification triggers upon order success
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** PaymentActivity - Final checkout gateway supporting Stripe integration, promo codes, and address management. */
 public class PaymentActivity extends AppCompatActivity {
 
+    // Infrastructure & User
     private static final String TAG = "PaymentActivity";
+    private int userId = -1;
+    private GroceryNotificationManager notificationManager;
+    private DatabaseHelper dbHelper;
 
-    // UI Elements
-    private TextView totalAmountTv, summarySubtotal, summaryDeliveryFee;
+    // UI Elements - Order Summary
+    private TextView totalAmountTv, summarySubtotal, summaryDeliveryFee, summaryDiscount;
+    private View discountRow;
     private android.widget.EditText instructionsEt;
-    private Button payNowBtn;
+    private TextInputEditText promoCodeEt;
+    private Button applyPromoBtn, payNowBtn;
+
+    // UI Elements - Address & Options
+    private TextView addressTypeTv, addressDetailTv;
+    private View changeAddressBtn, pickOnMapBtn;
     private RadioButton creditCardRadio, cashOnDeliveryRadio;
     private MaterialCardView stripeCard, codCard;
 
-    private TextView addressTypeTv;
-    private TextView addressDetailTv;
-    private View changeAddressBtn;
-    private View pickOnMapBtn;
-
-    private TextInputEditText promoCodeEt;
-    private Button applyPromoBtn;
-    private View discountRow;
-    private TextView summaryDiscount;
-
     // Transaction Data
-    private double finalAmount = 0.0;
-    private double baseSubtotal = 0.0;
-    private double deliveryFee = 0.0;
-    private double discountAmount = 0.0;
+    private double finalAmount = 0.0, baseSubtotal = 0.0, deliveryFee = 0.0, discountAmount = 0.0;
     private String appliedPromoCode = null;
 
-    // User & Session
-    private int userId = -1;
-    private GroceryNotificationManager notificationManager;
-
+    // Domain Data
     private AddressRepository addressRepository;
     private Address selectedAddress;
     private int selectedAddressId = -1;
-
-    // Database helper
-    private DatabaseHelper dbHelper;
     
-    // Stripe
+    // Stripe Components
     private PaymentSheet paymentSheet;
     private String paymentClientSecret;
 
+    /** Initializes the activity, Stripe SDK, and loads order summary. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,6 +94,7 @@ public class PaymentActivity extends AppCompatActivity {
         loadSelectedAddress();
     }
 
+    /** Links UI components to functional fields and sets interaction listeners. */
     private void initViews() {
         totalAmountTv = findViewById(R.id.paymentTotalAmount);
         summarySubtotal = findViewById(R.id.summarySubtotal);
@@ -166,6 +140,7 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    /** Configures the toolbar with back navigation. */
     private void setupToolbar() {
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.paymentToolbar);
         setSupportActionBar(toolbar);
@@ -175,6 +150,7 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    /** Populates the order summary from intent extras. */
     private void loadCartData() {
         // Get amounts from intent
         baseSubtotal = getIntent().getDoubleExtra("subtotal_amount", 0.0);
@@ -200,6 +176,7 @@ public class PaymentActivity extends AppCompatActivity {
         updateCardStyles();
     }
 
+    /** Retrieves and displays the user's default delivery address. */
     private void loadSelectedAddress() {
         try {
             List<Address> addresses = addressRepository.getUserAddresses(userId);
@@ -246,12 +223,14 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    /** Navigates to the address management screen. */
     private void openAddressManagement() {
         Intent intent = new Intent(this, AddressManagementActivity.class);
         intent.putExtra("user_id", userId);
         startActivity(intent);
     }
 
+    /** Validates and applies a discount code to the total amount. */
     private void applyPromoCode() {
         if (promoCodeEt == null) return;
 
@@ -288,6 +267,7 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    /** Verifies if a promotion is still within its validity period. */
     private boolean isPromotionValid(com.sunit.groceryplus.models.Promotion promo) {
         try {
             if (promo == null || promo.getValidUntil() == null) return false;
@@ -304,6 +284,7 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    /** Updates the order total and discount displays. */
     private void updateTotalsUi() {
         if (summarySubtotal != null) {
             summarySubtotal.setText("Rs. " + String.format("%.2f", baseSubtotal));
@@ -329,6 +310,7 @@ public class PaymentActivity extends AppCompatActivity {
         updatePayButtonText();
     }
 
+    /** Configures UI for Stripe Card payment selection. */
     private void selectStripePayment() {
         creditCardRadio.setChecked(true);
         cashOnDeliveryRadio.setChecked(false);
@@ -336,6 +318,7 @@ public class PaymentActivity extends AppCompatActivity {
         updatePayButtonText();
     }
 
+    /** Configures UI for Cash on Delivery selection. */
     private void selectCodPayment() {
         creditCardRadio.setChecked(false);
         cashOnDeliveryRadio.setChecked(true);
@@ -343,6 +326,7 @@ public class PaymentActivity extends AppCompatActivity {
         updatePayButtonText();
     }
 
+    /** Orchestrates the payment flow based on the selected method. */
     private void processPayment() {
         if (selectedAddressId == -1) {
             Toast.makeText(this, "Please add/select a delivery address", Toast.LENGTH_SHORT).show();
@@ -359,6 +343,7 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    /** Initiates the Stripe payment flow by fetching a Client Secret. */
     private void startStripePayment() {
         // Safety check for placeholder key
         String secretKeyRaw = com.sunit.groceryplus.utils.PaymentConfig.STRIPE_SECRET_KEY;
@@ -370,6 +355,9 @@ public class PaymentActivity extends AppCompatActivity {
         payNowBtn.setEnabled(false);
         payNowBtn.setText("Processing...");
         
+        // Test: Show a simple toast to confirm button click works
+        Toast.makeText(this, "Starting Stripe payment...", Toast.LENGTH_SHORT).show();
+        
         // Use centralized Stripe Secret Key from PaymentConfig
         String secretKey = "Bearer " + secretKeyRaw;
         
@@ -379,6 +367,7 @@ public class PaymentActivity extends AppCompatActivity {
         // Use centralized Stripe Secret Key and Currency from PaymentConfig
         String currency = com.sunit.groceryplus.utils.PaymentConfig.CURRENCY;
         Log.d(TAG, "Starting Stripe Payment: Amount=" + amountInSmallestUnit + ", Currency=" + currency);
+        Log.d(TAG, "Secret Key (first 10 chars): " + secretKey.substring(0, Math.min(10, secretKey.length())) + "...");
         
         com.sunit.groceryplus.network.StripeApiClient.getClient().create(StripeService.class).createPaymentIntent(
             secretKey,
@@ -394,10 +383,27 @@ public class PaymentActivity extends AppCompatActivity {
                     
                     // 2. Present Payment Sheet
                     PaymentSheet.Configuration configuration = new PaymentSheet.Configuration.Builder("GroceryPlus")
-                        .allowsDelayedPaymentMethods(true)
+                        .allowsDelayedPaymentMethods(false)
                         .build();
+                    
+                    try {
+                        Log.d(TAG, "Presenting payment sheet...");
+                        Log.d(TAG, "Client secret: " + paymentClientSecret.substring(0, Math.min(10, paymentClientSecret.length())) + "...");
+                        paymentSheet.presentWithPaymentIntent(paymentClientSecret, configuration);
+                        Log.d(TAG, "Payment sheet presented successfully");
                         
-                    paymentSheet.presentWithPaymentIntent(paymentClientSecret, configuration);
+                        // Add debug delay to see if sheet appears
+                        new android.os.Handler().postDelayed(() -> {
+                            Log.d(TAG, "Payment sheet should be visible now");
+                        }, 1000);
+                        
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error presenting payment sheet", e);
+                        Toast.makeText(PaymentActivity.this, "Error showing payment form. Please try again.", Toast.LENGTH_LONG).show();
+                        payNowBtn.setEnabled(true);
+                        updatePayButtonText();
+                        return;
+                    }
                     
                     payNowBtn.setEnabled(true);
                     updatePayButtonText();
@@ -427,13 +433,28 @@ public class PaymentActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
                 Log.e(TAG, "Network Error: " + t.getMessage());
-                Toast.makeText(PaymentActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                String errorMessage = "Network error: " + t.getMessage();
+                
+                // Check for SSL/Certificate specific errors
+                if (t.getMessage() != null) {
+                    if (t.getMessage().contains("SSL") || t.getMessage().contains("certificate") || 
+                        t.getMessage().contains("trust") || t.getMessage().contains("handshake")) {
+                        errorMessage = "SSL Certificate Error. Please check your network connection and try again.";
+                    } else if (t.getMessage().contains("timeout") || t.getMessage().contains("Timeout")) {
+                        errorMessage = "Connection timeout. Please check your internet connection and try again.";
+                    } else if (t.getMessage().contains("UnknownHost") || t.getMessage().contains("Network")) {
+                        errorMessage = "Network connection error. Please check your internet connection.";
+                    }
+                }
+                
+                Toast.makeText(PaymentActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 payNowBtn.setEnabled(true);
                 updatePayButtonText();
             }
         });
     }
 
+    /** Callback for Stripe PaymentSheet results. */
     private void onPaymentSheetResult(PaymentSheetResult paymentSheetResult) {
         if (paymentSheetResult instanceof PaymentSheetResult.Completed) {
             Toast.makeText(this, "Payment Successful!", Toast.LENGTH_LONG).show();
@@ -446,6 +467,7 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    /** Orchestrates order creation in the local database. */
     private void createOrder(String paymentMethod) {
         Log.d(TAG, "Creating order with payment method: " + paymentMethod);
 
@@ -460,6 +482,7 @@ public class PaymentActivity extends AppCompatActivity {
         createOrderDatabase(paymentMethod);
     }
 
+    /** Persists order, items, and payment records to SQLite; triggers notifications. */
     private void createOrderDatabase(String paymentMethod) {
         // Create order using direct database method
         double subtotal = baseSubtotal;
@@ -525,11 +548,13 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    /** Resets the pay button to its idle state. */
     private void resetPayButton() {
         payNowBtn.setEnabled(true);
         payNowBtn.setText("Pay Rs. " + String.format("%.2f", finalAmount) + " with Stripe");
     }
 
+    /** Synchronizes action button text with the selected payment method. */
     private void updatePayButtonText() {
         if (creditCardRadio.isChecked()) {
             payNowBtn.setText("Pay Rs. " + String.format("%.2f", finalAmount) + " with Stripe");
@@ -538,6 +563,7 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    /** Updates visual styling for the payment method cards. */
     private void updateCardStyles() {
         try {
             if (stripeCard == null || codCard == null) return;
@@ -557,6 +583,7 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    /** Checks for active internet connectivity. */
     private boolean isNetworkAvailable() {
         android.net.ConnectivityManager cm = (android.net.ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         android.net.NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
@@ -569,6 +596,7 @@ public class PaymentActivity extends AppCompatActivity {
         loadSelectedAddress();
     }
 
+    /** Handles toolbar menu selections. */
     @Override
     public boolean onOptionsItemSelected(android.view.MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

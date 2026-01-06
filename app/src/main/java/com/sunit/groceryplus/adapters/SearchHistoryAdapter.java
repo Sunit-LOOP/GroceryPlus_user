@@ -13,30 +13,24 @@ import com.sunit.groceryplus.R;
 
 import java.util.List;
 
-/**
- * Adapter for displaying Search History.
- * Shows previous search queries in a list with an option to remove individual items.
- */
+/** SearchHistoryAdapter - Displays previous search queries with options to re-search or delete. */
 public class SearchHistoryAdapter extends RecyclerView.Adapter<SearchHistoryAdapter.ViewHolder> {
 
     private List<String> historyItems;
     private OnItemClickListener listener;
     private OnDeleteClickListener deleteListener;
 
-    /**
-     * Interface for clicking a history item (to search it again).
-     */
+    /** Interface for re-triggering a previous search query. */
     public interface OnItemClickListener {
         void onItemClick(String query);
     }
 
-    /**
-     * Interface for clicking the delete button on a history item.
-     */
+    /** Interface for removing a query from history. */
     public interface OnDeleteClickListener {
         void onDeleteClick(String query);
     }
 
+    /** Constructor. */
     public SearchHistoryAdapter(List<String> historyItems, OnItemClickListener listener) {
         this.historyItems = historyItems;
         this.listener = listener;
@@ -46,6 +40,7 @@ public class SearchHistoryAdapter extends RecyclerView.Adapter<SearchHistoryAdap
         this.deleteListener = deleteListener;
     }
 
+    /** Updates the data source and refreshes the UI. */
     public void updateItems(List<String> items) {
         this.historyItems = items;
         notifyDataSetChanged();
@@ -80,7 +75,9 @@ public class SearchHistoryAdapter extends RecyclerView.Adapter<SearchHistoryAdap
         return historyItems != null ? historyItems.size() : 0;
     }
 
+    /** ViewHolder for search history prompts. */
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        // UI Components
         TextView queryTv;
         ImageView deleteIv;
 

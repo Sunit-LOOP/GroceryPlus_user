@@ -7,18 +7,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.sunit.groceryplus.utils.CollaborativeFilteringTest; // Assuming this exists or will be needed
 
-/**
- * TestActivity - Activity to test collaborative filtering functionality
- * 
- * This activity provides a simple interface to test the collaborative filtering
- * system and verify it's working correctly.
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** Activity for testing various system features, primarily collaborative filtering functionality. */
 public class TestActivity extends AppCompatActivity {
-    
+    // Infrastructure
     private static final String TAG = "TestActivity";
     
     @Override

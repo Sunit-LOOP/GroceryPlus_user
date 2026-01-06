@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Notification row layout -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -7,6 +8,7 @@
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp">
 
+    <!-- Card content -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,6 +16,7 @@
         android:padding="16dp"
         android:gravity="center_vertical">
 
+        <!-- Notification icon -->
         <ImageView
             android:id="@+id/notificationIcon"
             android:layout_width="40dp"
@@ -21,6 +24,7 @@
             android:src="@drawable/ic_notifications"
             android:layout_marginEnd="16dp"/>
 
+        <!-- Notification content -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"

@@ -20,39 +20,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * OrderHistoryActivity - Displays the list of past user orders.
- * 
- * This activity fetches and lists all orders placed by the user. It allows users to view
- * details of past orders, reorder items from previous orders, or cancel pending orders directly
- * from the list.
- * 
- * Key Features:
- * - Comprehensive list of past orders
- * - Status indicators for each order
- * - "Reorder" functionality to quickly add items back to cart
- * - "Cancel" shortcut for eligible orders
- * - Navigation to detailed tracking view
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** OrderHistoryActivity - User interface for browsing past orders, reordering items, and tracking status. */
 public class OrderHistoryActivity extends AppCompatActivity {
 
+    // Infrastructure & UI
     private static final String TAG = "OrderHistoryActivity";
-    
-    // UI Components
     private RecyclerView ordersRecyclerView;
     private TextView emptyOrdersTv;
-    
+
     // Data & Repositories
     private int userId;
     private OrderRepository orderRepository;
     private OrderAdapter orderAdapter;
-
     private List<Order> orders = new ArrayList<>();
 
+    /** Initializes the activity, verifies user session, and loads order data. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,6 +84,7 @@ public class OrderHistoryActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
 
+    /** Handles toolbar menu selections. */
     @Override
     public boolean onOptionsItemSelected(android.view.MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -111,6 +94,7 @@ public class OrderHistoryActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /** Links UI components to functional fields. */
     private void initViews() {
         ordersRecyclerView = findViewById(R.id.ordersRecyclerView);
         emptyOrdersTv = findViewById(R.id.emptyOrdersTv);
@@ -119,6 +103,7 @@ public class OrderHistoryActivity extends AppCompatActivity {
         com.sunit.groceryplus.utils.NavigationHelper.setupNavigation(this, userId);
     }
 
+    /** Configures RecyclerView with its LayoutManager and adapter actions. */
     private void setupRecyclerView() {
         ordersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         orderAdapter = new OrderAdapter(this, orders, new OrderAdapter.OnOrderClickListener() {
@@ -140,10 +125,12 @@ public class OrderHistoryActivity extends AppCompatActivity {
         ordersRecyclerView.setAdapter(orderAdapter);
     }
 
+    /** Orchestrates order data loading. */
     private void loadOrders() {
         loadOrdersFromDatabase();
     }
 
+    /** Fetches orders and their respective items from the local repository. */
     private void loadOrdersFromDatabase() {
         try {
             orders = orderRepository.getUserOrders(userId);
@@ -169,6 +156,7 @@ public class OrderHistoryActivity extends AppCompatActivity {
         }
     }
 
+    /** Helper to map JSON data to an Order model. */
     private Order parseOrderFromJson(org.json.JSONObject orderJson) throws org.json.JSONException {
         Order order = new Order();
         order.setOrderId(orderJson.optInt("order_id", 0));
@@ -181,16 +169,19 @@ public class OrderHistoryActivity extends AppCompatActivity {
         return order;
     }
 
+    /** Shows the orders list view. */
     private void showOrders() {
         ordersRecyclerView.setVisibility(View.VISIBLE);
         emptyOrdersTv.setVisibility(View.GONE);
     }
 
+    /** Shows the empty state message. */
     private void showEmptyOrders() {
         ordersRecyclerView.setVisibility(View.GONE);
         emptyOrdersTv.setVisibility(View.VISIBLE);
     }
 
+    /** Navigates to the detailed tracking view for a specific order. */
     private void showOrderDetails(Order order) {
         // Launch Tracking Activity
         Intent intent = new Intent(this, OrderTrackingActivity.class);
@@ -199,6 +190,7 @@ public class OrderHistoryActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /** Adds all items from a past order back into the user's shopping cart. */
     private void reorderItems(Order order) {
         try {
             DatabaseHelper dbHelper = new DatabaseHelper(this);
@@ -222,6 +214,7 @@ public class OrderHistoryActivity extends AppCompatActivity {
         }
     }
 
+    /** Displays a confirmation dialog before cancelling an order. */
     private void showCancelConfirmation(Order order) {
         new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Cancel Order")
@@ -231,6 +224,7 @@ public class OrderHistoryActivity extends AppCompatActivity {
                 .show();
     }
 
+    /** Processes order cancellation and sends a system notification. */
     private void cancelOrder(Order order) {
         boolean success = orderRepository.updateOrderStatus(order.getOrderId(), userId, "Cancelled");
         if (success) {

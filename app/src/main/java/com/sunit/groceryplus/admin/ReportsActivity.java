@@ -25,29 +25,18 @@ import java.util.List;
 import java.util.Locale;
 
 
-/**
- * ReportsActivity - Data export center for the application.
- * 
- * This activity provides functionality to export various system datasets (Orders, Sales, Inventory, Customers)
- * into CSV format for external analysis. It handles file permission requests and writes files
- * to the device's Downloads directory.
- * 
- * Key Features:
- * - CSV Export for: Orders, Sales, Inventory, Customers
- * - Permission Handling (Write External Storage)
- * - Intent to view exported files immediately
- * 
- * @author GroceryPlus Development Team
- * @version 1.0
- * @since 1.0
- */
+/** ReportsActivity - Data export center for generating CSV reports of orders, sales, inventory, and customers. */
 public class ReportsActivity extends AppCompatActivity {
 
+    // UI Components
     private Button exportOrdersBtn, exportSalesBtn, exportInventoryBtn, exportCustomersBtn;
     private TextView lastExportTv;
+    
+    // Data & Constants
     private DatabaseHelper dbHelper;
     private static final int REQUEST_WRITE_STORAGE = 1;
 
+    /** Initializes the activity, UI components, and event listeners. */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +49,7 @@ public class ReportsActivity extends AppCompatActivity {
         setupClickListeners();
     }
 
+    /** Configures the toolbar with navigation features and title. */
     private void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -70,6 +60,7 @@ public class ReportsActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
     }
 
+    /** Binds UI components to their respective layout IDs. */
     private void initViews() {
         exportOrdersBtn = findViewById(R.id.exportOrdersBtn);
         exportSalesBtn = findViewById(R.id.exportSalesBtn);
@@ -78,6 +69,7 @@ public class ReportsActivity extends AppCompatActivity {
         lastExportTv = findViewById(R.id.lastExportTv);
     }
 
+    /** Sets click listeners for report export buttons. */
     private void setupClickListeners() {
         exportOrdersBtn.setOnClickListener(v -> checkStorageAndExport("orders"));
         exportSalesBtn.setOnClickListener(v -> checkStorageAndExport("sales"));
@@ -85,6 +77,7 @@ public class ReportsActivity extends AppCompatActivity {
         exportCustomersBtn.setOnClickListener(v -> checkStorageAndExport("customers"));
     }
 
+    /** Verifies storage permissions before initiating the export process. */
     private void checkStorageAndExport(String reportType) {
         // Check for storage permission (for Android < 10)
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
@@ -96,6 +89,7 @@ public class ReportsActivity extends AppCompatActivity {
         }
     }
 
+    /** Processes storage permission request results. */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -106,6 +100,7 @@ public class ReportsActivity extends AppCompatActivity {
         }
     }
 
+    /** Generates a CSV file for the specified report type in the Downloads directory. */
     private void exportReport(String reportType) {
         try {
             File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
@@ -148,6 +143,7 @@ public class ReportsActivity extends AppCompatActivity {
         }
     }
 
+    /** Orchestrates the CSV writing process for order data. */
     private void exportOrders(FileWriter writer) throws IOException {
         // Header
         writer.append("Order ID,User ID,User Name,User Email,Total Amount,Delivery Fee,Status,Order Date,Shipped Date,Delivery Person\n");
@@ -170,6 +166,7 @@ public class ReportsActivity extends AppCompatActivity {
         }
     }
 
+    /** Orchestrates the CSV writing process for sales summary data. */
     private void exportSales(FileWriter writer) throws IOException {
         // Header
         writer.append("Order ID,Order Date,Total Amount,Delivery Fee,Net Amount,Status\n");
@@ -189,6 +186,7 @@ public class ReportsActivity extends AppCompatActivity {
         }
     }
 
+    /** Orchestrates the CSV writing process for inventory data. */
     private void exportInventory(FileWriter writer) throws IOException {
         // Header
         writer.append("Product ID,Product Name,Category ID,Price,Stock,Vendor ID\n");
@@ -207,6 +205,7 @@ public class ReportsActivity extends AppCompatActivity {
         }
     }
 
+    /** Orchestrates the CSV writing process for customer data. */
     private void exportCustomers(FileWriter writer) throws IOException {
         // Header
         writer.append("User ID,Name,Email,Phone,User Type,Created At\n");
@@ -225,6 +224,7 @@ public class ReportsActivity extends AppCompatActivity {
         }
     }
 
+    /** Escapes special characters to ensure CSV compatibility. */
     private String escapeCsv(String value) {
         if (value == null) return "";
         if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
@@ -233,6 +233,7 @@ public class ReportsActivity extends AppCompatActivity {
         return value;
     }
 
+    /** Handles toolbar menu selections. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

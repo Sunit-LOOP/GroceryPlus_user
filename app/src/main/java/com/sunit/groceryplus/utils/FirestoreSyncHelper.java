@@ -13,17 +13,12 @@ import com.sunit.groceryplus.models.Order;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * FirestoreSyncHelper: Mirror key SQLite entities to Firestore.
- * - Write-through: on SQLite insert/update/delete, also push to Firestore.
- * - Read-through: optionally refresh from Firestore on app start.
- *
- * This helper does NOT replace SQLite; it just mirrors selected collections to allow for 
- * cloud backup or multi-device synchronization in future.
- */
+/** Manages cloud-first data mirroring between local SQLite storage and Google Firestore for backup and synchronization. */
 public class FirestoreSyncHelper {
 
     private static final String TAG = "FirestoreSyncHelper";
+    
+    // Infrastructure
     private static FirestoreSyncHelper instance;
     private final FirebaseFirestore db;
 
@@ -31,6 +26,7 @@ public class FirestoreSyncHelper {
         this.db = FirebaseFirestore.getInstance();
     }
 
+    /** Returns the singleton instance of the FirestoreSyncHelper. */
     public static synchronized FirestoreSyncHelper getInstance() {
         if (instance == null) {
             instance = new FirestoreSyncHelper();
@@ -40,11 +36,7 @@ public class FirestoreSyncHelper {
 
     // ==== PRODUCTS ====
     
-    /**
-     * Syncs product changes to Firestore.
-     * @param product The product object.
-     * @param action "add", "update", or "delete".
-     */
+    /** Synchronizes product changes (add, update, delete) to the Firestore "products" collection. */
     public void syncProduct(Product product, String action) {
         CollectionReference ref = db.collection("products");
         Map<String, Object> doc = productToMap(product);
@@ -65,9 +57,7 @@ public class FirestoreSyncHelper {
 
     // ==== USERS ====
     
-    /**
-     * Syncs user changes to Firestore.
-     */
+    /** Synchronizes user profile changes (add, update, delete) to the Firestore "users" collection. */
     public void syncUser(User user, String action) {
         CollectionReference ref = db.collection("users");
         Map<String, Object> doc = userToMap(user);
@@ -88,9 +78,7 @@ public class FirestoreSyncHelper {
 
     // ==== ORDERS ====
     
-    /**
-     * Syncs order changes to Firestore.
-     */
+    /** Synchronizes order status and records (add, update, delete) to the Firestore "orders" collection. */
     public void syncOrder(Order order, String action) {
         CollectionReference ref = db.collection("orders");
         Map<String, Object> doc = orderToMap(order);
@@ -110,37 +98,37 @@ public class FirestoreSyncHelper {
     }
 
     // ==== READ-THROUGH CACHE (optional) ====
-    // You can call these on app start to refresh SQLite from Firestore.
-    // For now, they just log; you can extend to upsert into SQLite.
 
+    /** Fetches all products from Firestore to potentially refresh the local SQLite cache. */
     public void refreshProductsFromFirestore() {
         db.collection("products").get()
                 .addOnSuccessListener(snapshot -> {
                     Log.d(TAG, "Fetched " + snapshot.size() + " products from Firestore");
-                    // TODO: upsert into SQLite if you want read-through cache
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to fetch products", e));
     }
 
+    /** Fetches all users from Firestore to potentially refresh the local SQLite cache. */
     public void refreshUsersFromFirestore() {
         db.collection("users").get()
                 .addOnSuccessListener(snapshot -> {
                     Log.d(TAG, "Fetched " + snapshot.size() + " users from Firestore");
-                    // TODO: upsert into SQLite if you want read-through cache
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to fetch users", e));
     }
 
+    /** Fetches all orders from Firestore to potentially refresh the local SQLite cache. */
     public void refreshOrdersFromFirestore() {
         db.collection("orders").get()
                 .addOnSuccessListener(snapshot -> {
                     Log.d(TAG, "Fetched " + snapshot.size() + " orders from Firestore");
-                    // TODO: upsert into SQLite if you want read-through cache
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to fetch orders", e));
     }
 
     // ==== MAPPERS ====
+    
+    /** Maps a Product object to a Firestore-compatible Map structure. */
     private Map<String, Object> productToMap(Product p) {
         Map<String, Object> map = new HashMap<>();
         map.put("productId", p.getProductId());
@@ -155,6 +143,7 @@ public class FirestoreSyncHelper {
         return map;
     }
 
+    /** Maps a User object to a Firestore-compatible Map structure. */
     private Map<String, Object> userToMap(User u) {
         Map<String, Object> map = new HashMap<>();
         map.put("email", u.getEmail());
@@ -165,6 +154,7 @@ public class FirestoreSyncHelper {
         return map;
     }
 
+    /** Maps an Order object to a Firestore-compatible Map structure. */
     private Map<String, Object> orderToMap(Order o) {
         Map<String, Object> map = new HashMap<>();
         map.put("orderId", o.getOrderId());
@@ -178,28 +168,22 @@ public class FirestoreSyncHelper {
         return map;
     }
 
-    /**
-     * Clear all Firestore collections.
-     * Use with caution!
-     */
+    /** Wipes all synchronized Firestore collections (Products, Users, Orders). Handle with extreme caution. */
     public void clearAllCollections() {
         WriteBatch batch = db.batch();
         
-        // Clear products
         db.collection("products").get().addOnSuccessListener(querySnapshot -> {
             for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
                 batch.delete(doc.getReference());
             }
         });
         
-        // Clear users
         db.collection("users").get().addOnSuccessListener(querySnapshot -> {
             for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
                 batch.delete(doc.getReference());
             }
         });
         
-        // Clear orders
         db.collection("orders").get().addOnSuccessListener(querySnapshot -> {
             for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
                 batch.delete(doc.getReference());

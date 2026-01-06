@@ -6,23 +6,20 @@ import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.utils.FirestoreSyncHelper;
 import java.util.List;
 
-/**
- * ProductRepositoryWithSync: Local-first SQLite + Firestore mirror.
- * - All reads go to SQLite (fast, offline).
- * - All writes go to SQLite first, then mirror to Firestore (non-blocking).
- */
+/** Repository for managing products with SQLite local storage and Firestore cloud synchronization. */
 public class ProductRepositoryWithSync {
-
+    // Infrastructure
     private static final String TAG = "ProductRepoWithSync";
     private final DatabaseHelper dbHelper;
     private final FirestoreSyncHelper sync;
 
+    /** Initializes the repository with local database helper and cloud sync helper. */
     public ProductRepositoryWithSync(Context context) {
         this.dbHelper = new DatabaseHelper(context);
         this.sync = FirestoreSyncHelper.getInstance();
     }
 
-    // ==== CREATE ====
+    /** Adds a product locally to SQLite and mirrors the addition to Firestore. */
     public long addProduct(Product product) {
         long id = dbHelper.addProduct(
                 product.getProductName(),
@@ -43,7 +40,7 @@ public class ProductRepositoryWithSync {
         return id;
     }
 
-    // ==== UPDATE ====
+    /** Updates a product locally in SQLite and mirrors the update to Firestore. */
     public int updateProduct(Product product) {
         boolean success = dbHelper.updateProduct(
                 product.getProductId(),
@@ -65,7 +62,7 @@ public class ProductRepositoryWithSync {
         return rows;
     }
 
-    // ==== DELETE ====
+    /** Deletes a product locally from SQLite and mirrors the deletion to Firestore. */
     public int deleteProduct(int productId) {
         // Fetch product to mirror delete
         Product product = dbHelper.getProductById(productId);
@@ -80,21 +77,22 @@ public class ProductRepositoryWithSync {
         return rows;
     }
 
-    // ==== READS (local only) ====
+    /** Retrieves all products from the local SQLite database. */
     public List<Product> getAllProducts() {
         return dbHelper.getAllProducts();
     }
 
+    /** Retrieves a specific product from local SQLite by its ID. */
     public Product getProductById(int productId) {
         return dbHelper.getProductById(productId);
     }
 
+    /** Retrieves products for a specific category from local SQLite. */
     public List<Product> getProductsByCategory(int categoryId) {
         return dbHelper.getProductsByCategory(categoryId);
     }
 
-    // ==== OPTIONAL READ-THROUGH REFRESH ====
-    // Call on app start if you want to pull latest from Firestore into SQLite
+    /** Refreshes local SQLite product data by pulling the latest from Firestore. */
     public void refreshFromFirestore() {
         sync.refreshProductsFromFirestore();
     }

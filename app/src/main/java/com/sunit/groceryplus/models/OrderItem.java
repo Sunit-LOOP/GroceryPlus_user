@@ -1,53 +1,23 @@
 package com.sunit.groceryplus.models;
 
-/**
- * OrderItem Model Class
- * 
- * Represents a single line item within a finalized Order.
- * Unlike CartItem, this record is permanent and tied to a specific Order ID.
- * It stores snapshot data (price, product name) to preserve order history
- * even if the original Product is modified or deleted.
- */
+/** OrderItem - Model representing a specific product line item within a finalized Order. */
 public class OrderItem {
     
     // Unique ID for this order line item
-    private int orderItemId;
-    
-    // The ID of the parent Order
-    private int orderId;
-    
-    // The ID of the Product
-    private int productId;
-    
-    // Name of the product at time of purchase
-    private String productName;
-    
-    // Quantity purchased
-    private int quantity;
-    
-    // Price per unit at time of purchase
-    private double price;
-    
-    // Product image identifier
-    private String image;
+    private int orderItemId;    // Unique DB identifier
+    private int orderId;        // Parent Order ID
+    private int productId;      // Product Reference ID
+    private String productName; // Snapshot of Product Name
+    private int quantity;       // Quantity purchased
+    private double price;       // Snapshot of Unit Price
+    private String image;       // Snapshot of Image reference
 
-    /**
-     * Default Constructor
-     */
+    /** Default Constructor. */
     public OrderItem() {
     }
 
     /**
-     * Full Constructor
-     * Used when retrieving items from the database.
-     * 
-     * @param orderItemId Unique Line Item ID
-     * @param orderId Parent Order ID
-     * @param productId Product ID
-     * @param productName Product Name
-     * @param quantity Quantity
-     * @param price Unit Price
-     * @param image Image URL
+     * Full Constructor for history retrieval.
      */
     public OrderItem(int orderItemId, int orderId, int productId, String productName, 
                      int quantity, double price, String image) {
@@ -61,14 +31,7 @@ public class OrderItem {
     }
 
     /**
-     * Creation Constructor
-     * Used when creating a new OrderItem before it is saved to DB.
-     * 
-     * @param orderId Parent Order ID
-     * @param productId Product ID
-     * @param productName Product Name
-     * @param quantity Quantity
-     * @param price Unit Price
+     * Creation Constructor.
      */
     public OrderItem(int orderId, int productId, String productName, int quantity, double price) {
         this.orderId = orderId;

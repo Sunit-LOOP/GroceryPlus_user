@@ -15,17 +15,14 @@ import com.sunit.groceryplus.R;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Adapter for selecting drawable images in the Admin Panel (e.g. for Products/Categories).
- * Displays a simple list of image filenames available in the app resources.
- * Highlights the currently selected image.
- */
+/** DrawableImageAdapter - Handles image selection grid for products/categories in the Admin Panel. */
 public class DrawableImageAdapter extends BaseAdapter {
     private Context context;
     private List<DrawableImage> drawableImages;
     private LayoutInflater inflater;
     private int selectedPosition = -1;
 
+    /** Constructor. */
     public DrawableImageAdapter(Context context, List<DrawableImage> drawableImages) {
         this.context = context;
         this.drawableImages = drawableImages;
@@ -78,11 +75,13 @@ public class DrawableImageAdapter extends BaseAdapter {
         return convertView;
     }
 
+    /** Sets the current selected item index. */
     public void setSelectedPosition(int position) {
         this.selectedPosition = position;
         notifyDataSetChanged();
     }
 
+    /** Retrieves the currently selected image object. */
     public DrawableImage getSelectedImage() {
         if (selectedPosition >= 0 && selectedPosition < drawableImages.size()) {
             return drawableImages.get(selectedPosition);
@@ -90,14 +89,13 @@ public class DrawableImageAdapter extends BaseAdapter {
         return null;
     }
 
+    /** ViewHolder for caching image grid components. */
     private static class ViewHolder {
-        TextView textView;
-        ImageView imageView;
+        TextView textView; // Resource filename text
+        ImageView imageView; // Preview thumbnail
     }
 
-    /**
-     * Helper model class for holding drawable resource info.
-     */
+    /** DrawableImage - Represents a drawable resource with readable name and resource identifier. */
     public static class DrawableImage {
         private String name;
         private String resourceName;
