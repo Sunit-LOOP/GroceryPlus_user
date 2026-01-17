@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sunit.groceryplus.R;
 import com.sunit.groceryplus.models.CartItem;
-import com.sunit.groceryplus.utils.ProductImageLoader;
+import com.sunit.groceryplus.utils.RealDeviceImageSystem;
 
 import java.util.List;
 
@@ -106,10 +106,10 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
             quantityTv.setText(String.valueOf(item.getQuantity()));
             subtotalTv.setText("Subtotal: Rs. " + String.format("%.2f", item.getSubtotal()));
 
-            // Set product image with improved handling
+            // Set product image with RealDeviceImageSystem for guaranteed display
             String imageName = item.getImage();
-            int fallback = getSpecificImageForProduct(item.getProductName());
-            ProductImageLoader.load(context, productImageIv, imageName, fallback);
+            String productName = item.getProductName();
+            RealDeviceImageSystem.loadProductImage(context, productImageIv, imageName, productName);
 
             // Handle Quantity Increase
             increaseBtn.setOnClickListener(v -> {

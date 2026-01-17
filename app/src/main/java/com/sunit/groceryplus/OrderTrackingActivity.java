@@ -1,9 +1,13 @@
 package com.sunit.groceryplus;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.graphics.DashPathEffect;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -14,17 +18,39 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 
+import com.sunit.groceryplus.R;
+import com.sunit.groceryplus.DatabaseHelper;
+import com.sunit.groceryplus.models.DeliveryPersonnel;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /** OrderTrackingActivity - Real-time order visualization featuring OSMDroid map integration and ETA calculations. */
 public class OrderTrackingActivity extends AppCompatActivity {
 
+    private static final String TAG = "OrderTrackingActivity";
+
     // Infrastructure & UI
     private MapView map;
     private int orderId;
     private String orderStatus;
+    
+    // Real-time tracking
+    private Marker deliveryPersonMarker;
+    private Timer locationUpdateTimer;
+    private Handler uiHandler;
+    private DatabaseHelper dbHelper;
+    private GeoPoint vendorPoint, deliveryPoint;
+    private String vendorName;
+    
+    // Enhanced polylines for route visualization
+    private Polyline vendorToDeliveryRoute;
+    private Polyline deliveryPersonToCustomerRoute;
+    private Polyline completedRouteSegment;
+    private List<Polyline> allRoutePolylines;
 
     /** Initializes the map activity, configures OSMDroid, and plots delivery route. */
     @Override
@@ -59,11 +85,15 @@ public class OrderTrackingActivity extends AppCompatActivity {
         map.setMultiTouchControls(true);
         map.getController().setZoom(15.0);
         
+        // Initialize real-time tracking components
+        uiHandler = new Handler(Looper.getMainLooper());
+        dbHelper = new DatabaseHelper(this);
+        allRoutePolylines = new ArrayList<>();
+        
         // Fetch order and vendor location
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-        GeoPoint vendorPoint = new GeoPoint(27.7172, 85.3240); // Default KTM Center
-        GeoPoint deliveryPoint = new GeoPoint(27.7000, 85.3000); // Default User Location
-        String vendorName = "Warehouse";
+        vendorPoint = new GeoPoint(27.7172, 85.3240); // Default KTM Center
+        deliveryPoint = new GeoPoint(27.7000, 85.3000); // Default User Location
+        vendorName = "Warehouse";
         
         com.sunit.groceryplus.models.Order order = dbHelper.getOrderById(orderId);
         if (order != null) {
@@ -108,16 +138,14 @@ public class OrderTrackingActivity extends AppCompatActivity {
         deliveryMarker.setSnippet("Your delivery address");
         map.getOverlays().add(deliveryMarker);
 
-        // Draw Path from Vendor to Delivery
-        List<GeoPoint> geoPoints = new ArrayList<>();
-        geoPoints.add(vendorPoint);
-        geoPoints.add(deliveryPoint);
-
-        Polyline line = new Polyline();
-        line.setPoints(geoPoints);
-        line.setColor(0xFF4CAF50); // Green for delivery route
-        line.setWidth(5f);
-        map.getOverlays().add(line);
+        // Draw Path from Vendor to Delivery with enhanced polylines
+        createEnhancedRoute(vendorPoint, deliveryPoint);
+        
+        // Add Delivery Personnel Marker for real-time tracking
+        addDeliveryPersonnelMarker();
+        
+        // Start real-time location updates
+        startRealTimeTracking();
 
         // Initialize Cancel Button
         // This button allows users to cancel their order if it is still in PENDING state
@@ -260,5 +288,191 @@ public class OrderTrackingActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    
+    /** Adds delivery personnel marker to the map. */
+    private void addDeliveryPersonnelMarker() {
+        // Get delivery personnel assigned to this order
+        com.sunit.groceryplus.models.Order order = dbHelper.getOrderById(orderId);
+        if (order != null && order.getDeliveryPersonId() > 0) {
+            android.database.Cursor cursor = dbHelper.getDeliveryPersonnelById(order.getDeliveryPersonId());
+            if (cursor != null && cursor.moveToFirst()) {
+                com.sunit.groceryplus.models.DeliveryPersonnel deliveryPerson = new com.sunit.groceryplus.models.DeliveryPersonnel();
+                deliveryPerson.setDeliveryPersonId(cursor.getInt(cursor.getColumnIndexOrThrow("person_id")));
+                deliveryPerson.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
+                deliveryPerson.setPhone(cursor.getString(cursor.getColumnIndexOrThrow("phone")));
+                deliveryPerson.setLatitude(cursor.getDouble(cursor.getColumnIndexOrThrow("latitude")));
+                deliveryPerson.setLongitude(cursor.getDouble(cursor.getColumnIndexOrThrow("longitude")));
+                deliveryPerson.setAvailable(cursor.getInt(cursor.getColumnIndexOrThrow("available")) == 1);
+                cursor.close();
+                
+                deliveryPersonMarker = new Marker(map);
+                deliveryPersonMarker.setPosition(new GeoPoint(deliveryPerson.getLatitude(), deliveryPerson.getLongitude()));
+                deliveryPersonMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                deliveryPersonMarker.setTitle(deliveryPerson.getName() + " (Delivery Partner)");
+                deliveryPersonMarker.setSnippet("Your delivery partner");
+                deliveryPersonMarker.setIcon(getResources().getDrawable(R.drawable.ic_delivery_person));
+                map.getOverlays().add(deliveryPersonMarker);
+            }
+        }
+    }
+    
+    /** Starts real-time location updates for delivery personnel. */
+    private void startRealTimeTracking() {
+        if (locationUpdateTimer != null) {
+            locationUpdateTimer.cancel();
+        }
+        
+        locationUpdateTimer = new Timer();
+        locationUpdateTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                updateDeliveryPersonnelLocation();
+            }
+        }, 0, 5000); // Update every 5 seconds
+    }
+    
+    /** Updates delivery personnel location from database with enhanced route visualization. */
+    private void updateDeliveryPersonnelLocation() {
+        try {
+            com.sunit.groceryplus.models.Order order = dbHelper.getOrderById(orderId);
+            if (order != null && order.getDeliveryPersonId() > 0 && 
+                !"DELIVERED".equalsIgnoreCase(order.getStatus()) && 
+                !"CANCELLED".equalsIgnoreCase(order.getStatus())) {
+                
+                android.database.Cursor cursor = dbHelper.getDeliveryPersonnelById(order.getDeliveryPersonId());
+                if (cursor != null && cursor.moveToFirst()) {
+                    com.sunit.groceryplus.models.DeliveryPersonnel deliveryPerson = new com.sunit.groceryplus.models.DeliveryPersonnel();
+                    deliveryPerson.setDeliveryPersonId(cursor.getInt(cursor.getColumnIndexOrThrow("person_id")));
+                    deliveryPerson.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
+                    deliveryPerson.setPhone(cursor.getString(cursor.getColumnIndexOrThrow("phone")));
+                    deliveryPerson.setLatitude(cursor.getDouble(cursor.getColumnIndexOrThrow("latitude")));
+                    deliveryPerson.setLongitude(cursor.getDouble(cursor.getColumnIndexOrThrow("longitude")));
+                    deliveryPerson.setAvailable(cursor.getInt(cursor.getColumnIndexOrThrow("available")) == 1);
+                    cursor.close();
+                    
+                    if (deliveryPersonMarker != null) {
+                        GeoPoint newLocation = new GeoPoint(deliveryPerson.getLatitude(), deliveryPerson.getLongitude());
+                    
+                    uiHandler.post(() -> {
+                        deliveryPersonMarker.setPosition(newLocation);
+                        
+                        // Update route from delivery person to customer with enhanced polylines
+                        updateDeliveryRoute(newLocation, deliveryPoint);
+                        
+                        // Update route progress based on delivery status
+                        updateRouteProgress(order.getStatus(), newLocation);
+                        
+                        // Update ETA based on current location
+                        calculateAndDisplayEta(newLocation, deliveryPoint, order.getStatus());
+                    });
+                    }
+                }
+                cursor.close();
+            }
+        } catch (Exception e) {
+            // Log error but don't crash
+            Log.e(TAG, "Error updating delivery personnel location", e);
+        }
+    }
+    
+    /** Updates route progress visualization based on delivery status. */
+    private void updateRouteProgress(String status, GeoPoint currentLocation) {
+        // Clear completed route segments
+        if (completedRouteSegment != null) {
+            map.getOverlays().remove(completedRouteSegment);
+            allRoutePolylines.remove(completedRouteSegment);
+        }
+        
+        if ("SHIPPED".equalsIgnoreCase(status) || "OUT_FOR_DELIVERY".equalsIgnoreCase(status)) {
+            // Create completed route segment from vendor to current location
+            List<GeoPoint> completedPoints = new ArrayList<>();
+            completedPoints.add(vendorPoint);
+            completedPoints.add(currentLocation);
+            completedRouteSegment = createStyledPolyline(completedPoints, 0xFF4CAF50, 8f, false);
+            allRoutePolylines.add(completedRouteSegment);
+            map.getOverlays().add(completedRouteSegment);
+        }
+        
+        map.invalidate();
+    }
+    
+    /** Creates enhanced multi-segment route with intermediate waypoints. */
+    private void createEnhancedRoute(GeoPoint start, GeoPoint end) {
+        // Clear existing polylines
+        if (allRoutePolylines != null) {
+            for (Polyline polyline : allRoutePolylines) {
+                map.getOverlays().remove(polyline);
+            }
+            allRoutePolylines.clear();
+        }
+        
+        // Create simple route with start and end points
+        List<GeoPoint> waypoints = new ArrayList<>();
+        waypoints.add(start);
+        waypoints.add(end);
+        
+        // Create main route polyline (vendor to delivery)
+        vendorToDeliveryRoute = createStyledPolyline(waypoints, 0xFF4CAF50, 6f, true);
+        allRoutePolylines.add(vendorToDeliveryRoute);
+        map.getOverlays().add(vendorToDeliveryRoute);
+        
+        // Create route outline for better visibility
+        Polyline routeOutline = createStyledPolyline(waypoints, 0x804CAF50, 8f, false);
+        allRoutePolylines.add(routeOutline);
+        map.getOverlays().add(routeOutline);
+    }
+    
+    /** Updates delivery route from delivery person to customer with enhanced polylines. */
+    private void updateDeliveryRoute(GeoPoint from, GeoPoint to) {
+        // Clear existing delivery person route
+        if (deliveryPersonToCustomerRoute != null) {
+            map.getOverlays().remove(deliveryPersonToCustomerRoute);
+            allRoutePolylines.remove(deliveryPersonToCustomerRoute);
+        }
+        
+        // Create new route from delivery person to customer
+        List<GeoPoint> routePoints = new ArrayList<>();
+        routePoints.add(from);
+        routePoints.add(to);
+        deliveryPersonToCustomerRoute = createStyledPolyline(routePoints, 0xFF2196F3, 4f, true);
+        allRoutePolylines.add(deliveryPersonToCustomerRoute);
+        map.getOverlays().add(deliveryPersonToCustomerRoute);
+        
+        // Add animated pulse effect for active route
+        Polyline pulseRoute = createStyledPolyline(routePoints, 0x80FF9800, 6f, false);
+        allRoutePolylines.add(pulseRoute);
+        map.getOverlays().add(pulseRoute);
+        
+        map.invalidate();
+    }
+    
+    /** Creates a styled polyline with specified color, width, and pattern. */
+    private Polyline createStyledPolyline(List<GeoPoint> points, int color, float width, boolean isDashed) {
+        Polyline polyline = new Polyline();
+        polyline.setPoints(points);
+        polyline.setColor(color);
+        polyline.setWidth(width);
+        
+        if (isDashed) {
+            // Create dashed line effect
+            polyline.getPaint().setPathEffect(new android.graphics.DashPathEffect(new float[]{20f, 10f}, 0f));
+        }
+        
+        return polyline;
+    }
+    
+    /** Stop real-time location tracking. */
+    private void stopRealTimeTracking() {
+        if (locationUpdateTimer != null) {
+            locationUpdateTimer.cancel();
+            locationUpdateTimer = null;
+        }
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopRealTimeTracking();
     }
 }

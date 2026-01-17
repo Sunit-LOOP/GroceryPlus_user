@@ -3,8 +3,11 @@ package com.sunit.groceryplus.admin;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,6 +36,7 @@ import com.sunit.groceryplus.adapters.DrawableImageAdapter;
 import com.sunit.groceryplus.models.Category;
 import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.models.Vendor;
+import com.sunit.groceryplus.utils.PermanentImageManager;
 import com.sunit.groceryplus.utils.ImageStorageManager;
 import com.sunit.groceryplus.utils.ProductImageLoader;
 
@@ -44,6 +48,8 @@ import java.util.List;
 
 /** ProductManagementActivity - Core admin interface for viewing, adding, editing, and deleting products with image selection and category/vendor assignment. */
 public class ProductManagementActivity extends AppCompatActivity {
+
+    private static final String TAG = "ProductManagementActivity";
 
     // UI Components
     private RecyclerView productsRv;
@@ -188,6 +194,24 @@ public class ProductManagementActivity extends AppCompatActivity {
         productsRv.setLayoutManager(new GridLayoutManager(this, 1));
         adapter = new AdminProductAdapter(this, new ArrayList<>(), productRepository, categories, this);
         productsRv.setAdapter(adapter);
+    }
+
+    /**
+     * Gets the last inserted product ID from database
+     */
+    private int getLastInsertedProductId() {
+        try {
+            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            Cursor cursor = db.rawQuery("SELECT last_insert_rowid() FROM products ORDER BY product_id DESC LIMIT 1", null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int productId = cursor.getInt(0);
+                cursor.close();
+                return productId;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting last inserted product ID", e);
+        }
+        return -1;
     }
 
     /**
@@ -471,6 +495,13 @@ public class ProductManagementActivity extends AppCompatActivity {
             if (product == null) {
                 // Add
                 success = productRepository.addProduct(name, categoryId, price, description, image, stock, vendorId);
+                
+                // Save image permanently for ALL products (not just milk)
+                if (success) {
+                    // Get the newly added product ID using a query
+                    int newProductId = getLastInsertedProductId();
+                    PermanentImageManager.saveProductImagePermanently(this, newProductId, image, name);
+                }
             } else {
                 // Update - cleanup old image if it was changed and is a permanent storage path
                 String oldImage = product.getImage();
@@ -482,6 +513,11 @@ public class ProductManagementActivity extends AppCompatActivity {
                 
                 // Update
                 success = productRepository.updateProduct(product.getProductId(), name, categoryId, price, description, image, stock, vendorId);
+                
+                // Update permanent image for ALL products (not just milk)
+                if (success) {
+                    PermanentImageManager.updatePermanentImage(this, product.getProductId(), image, name);
+                }
             }
 
             if (success) {
@@ -521,13 +557,36 @@ public class ProductManagementActivity extends AppCompatActivity {
                 return null;
             }
             
-            // Load drawable as bitmap
+            // Load drawable as bitmap with optimized settings
             android.graphics.drawable.Drawable drawable = getResources().getDrawable(resId);
+            int originalWidth = drawable.getIntrinsicWidth();
+            int originalHeight = drawable.getIntrinsicHeight();
+            
+            // Limit maximum dimensions to reasonable size for product images
+            int maxWidth = 1024;
+            int maxHeight = 1024;
+            int finalWidth, finalHeight;
+            
+            if (originalWidth > maxWidth || originalHeight > maxHeight) {
+                // Calculate scaled dimensions maintaining aspect ratio
+                float aspectRatio = (float) originalWidth / originalHeight;
+                if (originalWidth > originalHeight) {
+                    finalWidth = maxWidth;
+                    finalHeight = (int) (maxWidth / aspectRatio);
+                } else {
+                    finalHeight = maxHeight;
+                    finalWidth = (int) (maxHeight * aspectRatio);
+                }
+            } else {
+                finalWidth = originalWidth;
+                finalHeight = originalHeight;
+            }
+            
+            // Create bitmap with RGB_565 for better performance on real devices
             android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(
-                drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), 
-                android.graphics.Bitmap.Config.ARGB_8888);
+                finalWidth, finalHeight, android.graphics.Bitmap.Config.RGB_565);
             android.graphics.Canvas canvas = new android.graphics.Canvas(bitmap);
-            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.setBounds(0, 0, finalWidth, finalHeight);
             drawable.draw(canvas);
             
             // Create permanent file
@@ -538,17 +597,19 @@ public class ProductManagementActivity extends AppCompatActivity {
             
             String uniqueFileName = drawableName + "_" + 
                 new java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(new java.util.Date()) + 
-                ".png";
+                ".jpg"; // Use JPG for better compression
             File destinationFile = new File(storageDir, uniqueFileName);
             
-            // Save bitmap to file
+            // Save bitmap to file with JPEG compression for better size/quality balance
             java.io.FileOutputStream out = new java.io.FileOutputStream(destinationFile);
-            bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out);
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 85, out); // 85% quality for good balance
+            out.flush(); // Ensure data is written
             out.close();
             
-            // Recycle bitmap
+            // Recycle bitmap to free memory
             bitmap.recycle();
             
+            android.util.Log.d("ProductManagement", "Drawable saved permanently: " + destinationFile.getAbsolutePath());
             return destinationFile.getAbsolutePath();
             
         } catch (Exception e) {

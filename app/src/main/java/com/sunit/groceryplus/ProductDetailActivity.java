@@ -20,7 +20,7 @@ import com.sunit.groceryplus.adapters.ReviewAdapter;
 import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.models.Review;
 import com.sunit.groceryplus.utils.RecentProductsHelper;
-import com.sunit.groceryplus.utils.ProductImageLoader;
+import com.sunit.groceryplus.utils.RealDeviceImageSystem;
 
 import org.json.JSONObject;
 
@@ -131,7 +131,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 }
                 quantityTv.setText(String.valueOf(quantity));
 
-                ProductImageLoader.load(this, productImageIv, product.getImage(), R.drawable.product_icon);
+                RealDeviceImageSystem.loadProductImage(this, productImageIv, product.getImage(), product.getProductName());
 
                 // Update save for later button icon
                 updateSaveForLaterIcon();

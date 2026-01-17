@@ -112,24 +112,22 @@ public class DeliveryPersonnelActivity extends AppCompatActivity {
         builder.setView(dialogView);
 
         // TODO: Add these fields to dialog_add_delivery_person layout
-        // TextInputEditText nameEt = dialogView.findViewById(R.id.nameEt);
-        // TextInputEditText phoneEt = dialogView.findViewById(R.id.phoneEt);
+        TextInputEditText nameEt = dialogView.findViewById(R.id.personNameEt);
+        TextInputEditText phoneEt = dialogView.findViewById(R.id.personPhoneEt);
         Button saveBtn = dialogView.findViewById(R.id.saveBtn);
         Button cancelBtn = dialogView.findViewById(R.id.cancelBtn);
 
         if (isEdit) {
-            // nameEt.setText(person.getName());
-            // phoneEt.setText(person.getPhone());
+            nameEt.setText(person.getName());
+            phoneEt.setText(person.getPhone());
         }
 
         AlertDialog dialog = builder.create();
 
         saveBtn.setOnClickListener(v -> {
-            // TODO: Uncomment when EditText fields are added to layout
-            // String name = nameEt.getText().toString().trim();
-            // String phone = phoneEt.getText().toString().trim();
-            String name = ""; // Placeholder
-            String phone = ""; // Placeholder
+            // Get actual user input from EditText fields
+            String name = nameEt.getText().toString().trim();
+            String phone = phoneEt.getText().toString().trim();
 
             if (name.isEmpty() || phone.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();

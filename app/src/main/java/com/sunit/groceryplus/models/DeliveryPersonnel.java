@@ -69,4 +69,45 @@ public class DeliveryPersonnel {
 
     public String getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+    
+    // Additional getters and setters for location tracking
+    public double getLatitude() { 
+        if (currentLocation != null && currentLocation.contains(",")) {
+            String[] parts = currentLocation.split(",");
+            return Double.parseDouble(parts[0]);
+        }
+        return 0.0;
+    }
+    
+    public double getLongitude() { 
+        if (currentLocation != null && currentLocation.contains(",")) {
+            String[] parts = currentLocation.split(",");
+            return Double.parseDouble(parts[1]);
+        }
+        return 0.0;
+    }
+    
+    public void setLatitude(double latitude) {
+        if (currentLocation == null) {
+            currentLocation = "";
+        }
+        if (currentLocation.contains(",")) {
+            String[] parts = currentLocation.split(",");
+            currentLocation = latitude + "," + parts[1];
+        } else {
+            currentLocation = latitude + ",0";
+        }
+    }
+    
+    public void setLongitude(double longitude) {
+        if (currentLocation == null) {
+            currentLocation = "0,";
+        }
+        if (currentLocation.contains(",")) {
+            String[] parts = currentLocation.split(",");
+            currentLocation = parts[0] + "," + longitude;
+        } else {
+            currentLocation = "0," + longitude;
+        }
+    }
 }

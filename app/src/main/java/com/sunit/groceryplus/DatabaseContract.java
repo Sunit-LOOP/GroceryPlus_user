@@ -464,6 +464,230 @@ public static final String SQL_DELETE_MESSAGES_TABLE = "DROP TABLE IF EXISTS " +
 public static final String SQL_DELETE_PROMOTIONS_TABLE = "DROP TABLE IF EXISTS " + PromotionEntry.TABLE_NAME;
 public static final String SQL_DELETE_REVIEWS_TABLE = "DROP TABLE IF EXISTS " + ReviewEntry.TABLE_NAME;
 public static final String SQL_DELETE_DELIVERY_PERSONNEL_TABLE = "DROP TABLE IF EXISTS " + DeliveryPersonEntry.TABLE_NAME;
+
+    // ==================== GUEST USER TABLE ====================
+    
+    public static class GuestUserEntry implements BaseColumns {
+        public static final String TABLE_NAME = "guest_users";
+        public static final String COLUMN_NAME_GUEST_ID = "guest_id";
+        public static final String COLUMN_NAME_SESSION_ID = "session_id";
+        public static final String COLUMN_NAME_EMAIL = "email";
+        public static final String COLUMN_NAME_PHONE = "phone";
+        public static final String COLUMN_NAME_FIRST_NAME = "first_name";
+        public static final String COLUMN_NAME_LAST_NAME = "last_name";
+        public static final String COLUMN_NAME_DELIVERY_ADDRESS = "delivery_address";
+        public static final String COLUMN_NAME_CITY = "city";
+        public static final String COLUMN_NAME_POSTAL_CODE = "postal_code";
+        public static final String COLUMN_NAME_CREATED_AT = "created_at";
+        public static final String COLUMN_NAME_LAST_ACTIVE = "last_active";
+        public static final String COLUMN_NAME_IS_ACTIVE = "is_active";
+        public static final String COLUMN_NAME_CART_ITEMS_COUNT = "cart_items_count";
+        public static final String COLUMN_NAME_CART_TOTAL = "cart_total";
+    }
+    
+    public static final String SQL_CREATE_GUEST_USERS_TABLE =
+            "CREATE TABLE " + GuestUserEntry.TABLE_NAME + " (" +
+                    GuestUserEntry.COLUMN_NAME_GUEST_ID + " TEXT PRIMARY KEY," +
+                    GuestUserEntry.COLUMN_NAME_SESSION_ID + " TEXT," +
+                    GuestUserEntry.COLUMN_NAME_EMAIL + " TEXT," +
+                    GuestUserEntry.COLUMN_NAME_PHONE + " TEXT," +
+                    GuestUserEntry.COLUMN_NAME_FIRST_NAME + " TEXT," +
+                    GuestUserEntry.COLUMN_NAME_LAST_NAME + " TEXT," +
+                    GuestUserEntry.COLUMN_NAME_DELIVERY_ADDRESS + " TEXT," +
+                    GuestUserEntry.COLUMN_NAME_CITY + " TEXT," +
+                    GuestUserEntry.COLUMN_NAME_POSTAL_CODE + " TEXT," +
+                    GuestUserEntry.COLUMN_NAME_CREATED_AT + " INTEGER," +
+                    GuestUserEntry.COLUMN_NAME_LAST_ACTIVE + " INTEGER," +
+                    GuestUserEntry.COLUMN_NAME_IS_ACTIVE + " INTEGER DEFAULT 1," +
+                    GuestUserEntry.COLUMN_NAME_CART_ITEMS_COUNT + " INTEGER DEFAULT 0," +
+                    GuestUserEntry.COLUMN_NAME_CART_TOTAL + " REAL DEFAULT 0.0)";
+
+    public static final String SQL_DELETE_GUEST_USERS_TABLE = "DROP TABLE IF EXISTS " + GuestUserEntry.TABLE_NAME;
+
+    // ==================== REFUNDS TABLE ====================
+    
+    public static class RefundEntry implements BaseColumns {
+        public static final String TABLE_NAME = "refunds";
+        public static final String COLUMN_NAME_REFUND_ID = "refund_id";
+        public static final String COLUMN_NAME_ORDER_ID = "order_id";
+        public static final String COLUMN_NAME_REFUND_NUMBER = "refund_number";
+        public static final String COLUMN_NAME_REFUND_AMOUNT = "refund_amount";
+        public static final String COLUMN_NAME_ORIGINAL_AMOUNT = "original_amount";
+        public static final String COLUMN_NAME_REFUND_REASON = "refund_reason";
+        public static final String COLUMN_NAME_REFUND_TYPE = "refund_type";
+        public static final String COLUMN_NAME_STATUS = "status";
+        public static final String COLUMN_NAME_REQUESTED_DATE = "requested_date";
+        public static final String COLUMN_NAME_PROCESSED_DATE = "processed_date";
+        public static final String COLUMN_NAME_COMPLETED_DATE = "completed_date";
+        public static final String COLUMN_NAME_PAYMENT_METHOD = "payment_method";
+        public static final String COLUMN_NAME_REFUND_METHOD = "refund_method";
+        public static final String COLUMN_NAME_TRANSACTION_ID = "transaction_id";
+        public static final String COLUMN_NAME_PROCESSOR_NOTES = "processor_notes";
+        public static final String COLUMN_NAME_ITEM_QUANTITY = "item_quantity";
+        public static final String COLUMN_NAME_ITEM_CONDITION = "item_condition";
+        public static final String COLUMN_NAME_RETURN_REASON = "return_reason";
+        public static final String COLUMN_NAME_CUSTOMER_ID = "customer_id";
+        public static final String COLUMN_NAME_CUSTOMER_NAME = "customer_name";
+        public static final String COLUMN_NAME_CUSTOMER_EMAIL = "customer_email";
+        public static final String COLUMN_NAME_PROCESSED_BY = "processed_by";
+        public static final String COLUMN_NAME_ADMIN_NOTES = "admin_notes";
+    }
+    
+    public static final String SQL_CREATE_REFUNDS_TABLE =
+            "CREATE TABLE " + RefundEntry.TABLE_NAME + " (" +
+                    RefundEntry.COLUMN_NAME_REFUND_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    RefundEntry.COLUMN_NAME_ORDER_ID + " INTEGER," +
+                    RefundEntry.COLUMN_NAME_REFUND_NUMBER + " TEXT," +
+                    RefundEntry.COLUMN_NAME_REFUND_AMOUNT + " REAL," +
+                    RefundEntry.COLUMN_NAME_ORIGINAL_AMOUNT + " REAL," +
+                    RefundEntry.COLUMN_NAME_REFUND_REASON + " TEXT," +
+                    RefundEntry.COLUMN_NAME_REFUND_TYPE + " TEXT," +
+                    RefundEntry.COLUMN_NAME_STATUS + " TEXT," +
+                    RefundEntry.COLUMN_NAME_REQUESTED_DATE + " TEXT," +
+                    RefundEntry.COLUMN_NAME_PROCESSED_DATE + " TEXT," +
+                    RefundEntry.COLUMN_NAME_COMPLETED_DATE + " TEXT," +
+                    RefundEntry.COLUMN_NAME_PAYMENT_METHOD + " TEXT," +
+                    RefundEntry.COLUMN_NAME_REFUND_METHOD + " TEXT," +
+                    RefundEntry.COLUMN_NAME_TRANSACTION_ID + " TEXT," +
+                    RefundEntry.COLUMN_NAME_PROCESSOR_NOTES + " TEXT," +
+                    RefundEntry.COLUMN_NAME_ITEM_QUANTITY + " INTEGER," +
+                    RefundEntry.COLUMN_NAME_ITEM_CONDITION + " TEXT," +
+                    RefundEntry.COLUMN_NAME_RETURN_REASON + " TEXT," +
+                    RefundEntry.COLUMN_NAME_CUSTOMER_ID + " INTEGER," +
+                    RefundEntry.COLUMN_NAME_CUSTOMER_NAME + " TEXT," +
+                    RefundEntry.COLUMN_NAME_CUSTOMER_EMAIL + " TEXT," +
+                    RefundEntry.COLUMN_NAME_PROCESSED_BY + " INTEGER," +
+                    RefundEntry.COLUMN_NAME_ADMIN_NOTES + " TEXT)";
+
+    public static final String SQL_DELETE_REFUNDS_TABLE = "DROP TABLE IF EXISTS " + RefundEntry.TABLE_NAME;
+
+    // ==================== SHIPPING OPTIONS TABLE ====================
+    
+    public static class ShippingOptionEntry implements BaseColumns {
+        public static final String TABLE_NAME = "shipping_options";
+        public static final String COLUMN_NAME_OPTION_ID = "option_id";
+        public static final String COLUMN_NAME_OPTION_NAME = "option_name";
+        public static final String COLUMN_NAME_OPTION_CODE = "option_code";
+        public static final String COLUMN_NAME_DESCRIPTION = "description";
+        public static final String COLUMN_NAME_BASE_COST = "base_cost";
+        public static final String COLUMN_NAME_COST_PER_KG = "cost_per_kg";
+        public static final String COLUMN_NAME_COST_PER_KM = "cost_per_km";
+        public static final String COLUMN_NAME_DELIVERY_DAYS = "delivery_days";
+        public static final String COLUMN_NAME_DELIVERY_TIME = "delivery_time";
+        public static final String COLUMN_NAME_CARRIER_NAME = "carrier_name";
+        public static final String COLUMN_NAME_SERVICE_TYPE = "service_type";
+        public static final String COLUMN_NAME_TRACKING_AVAILABLE = "tracking_available";
+        public static final String COLUMN_NAME_INSURANCE_AVAILABLE = "insurance_available";
+        public static final String COLUMN_NAME_MAX_WEIGHT = "max_weight";
+        public static final String COLUMN_NAME_MAX_DIMENSIONS = "max_dimensions";
+        public static final String COLUMN_NAME_AVAILABLE = "available";
+        public static final String COLUMN_NAME_MIN_ORDER_AMOUNT = "min_order_amount";
+        public static final String COLUMN_NAME_IS_DEFAULT = "is_default";
+        public static final String COLUMN_NAME_PRIORITY = "priority";
+        public static final String COLUMN_NAME_ICON = "icon";
+    }
+    
+    public static final String SQL_CREATE_SHIPPING_OPTIONS_TABLE =
+            "CREATE TABLE " + ShippingOptionEntry.TABLE_NAME + " (" +
+                    ShippingOptionEntry.COLUMN_NAME_OPTION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    ShippingOptionEntry.COLUMN_NAME_OPTION_NAME + " TEXT," +
+                    ShippingOptionEntry.COLUMN_NAME_OPTION_CODE + " TEXT," +
+                    ShippingOptionEntry.COLUMN_NAME_DESCRIPTION + " TEXT," +
+                    ShippingOptionEntry.COLUMN_NAME_BASE_COST + " REAL," +
+                    ShippingOptionEntry.COLUMN_NAME_COST_PER_KG + " REAL," +
+                    ShippingOptionEntry.COLUMN_NAME_COST_PER_KM + " REAL," +
+                    ShippingOptionEntry.COLUMN_NAME_DELIVERY_DAYS + " INTEGER," +
+                    ShippingOptionEntry.COLUMN_NAME_DELIVERY_TIME + " TEXT," +
+                    ShippingOptionEntry.COLUMN_NAME_CARRIER_NAME + " TEXT," +
+                    ShippingOptionEntry.COLUMN_NAME_SERVICE_TYPE + " TEXT," +
+                    ShippingOptionEntry.COLUMN_NAME_TRACKING_AVAILABLE + " INTEGER DEFAULT 1," +
+                    ShippingOptionEntry.COLUMN_NAME_INSURANCE_AVAILABLE + " INTEGER DEFAULT 0," +
+                    ShippingOptionEntry.COLUMN_NAME_MAX_WEIGHT + " REAL," +
+                    ShippingOptionEntry.COLUMN_NAME_MAX_DIMENSIONS + " REAL," +
+                    ShippingOptionEntry.COLUMN_NAME_AVAILABLE + " INTEGER DEFAULT 1," +
+                    ShippingOptionEntry.COLUMN_NAME_MIN_ORDER_AMOUNT + " REAL DEFAULT 0.0," +
+                    ShippingOptionEntry.COLUMN_NAME_IS_DEFAULT + " INTEGER DEFAULT 0," +
+                    ShippingOptionEntry.COLUMN_NAME_PRIORITY + " INTEGER DEFAULT 999," +
+                    ShippingOptionEntry.COLUMN_NAME_ICON + " TEXT)";
+
+    public static final String SQL_DELETE_SHIPPING_OPTIONS_TABLE = "DROP TABLE IF EXISTS " + ShippingOptionEntry.TABLE_NAME;
+
+    // ==================== INVOICES TABLE ====================
+    
+    public static class InvoiceEntry implements BaseColumns {
+        public static final String TABLE_NAME = "invoices";
+        public static final String COLUMN_NAME_INVOICE_ID = "invoice_id";
+        public static final String COLUMN_NAME_INVOICE_NUMBER = "invoice_number";
+        public static final String COLUMN_NAME_ORDER_ID = "order_id";
+        public static final String COLUMN_NAME_ORDER_NUMBER = "order_number";
+        public static final String COLUMN_NAME_CUSTOMER_ID = "customer_id";
+        public static final String COLUMN_NAME_CUSTOMER_NAME = "customer_name";
+        public static final String COLUMN_NAME_CUSTOMER_EMAIL = "customer_email";
+        public static final String COLUMN_NAME_CUSTOMER_PHONE = "customer_phone";
+        public static final String COLUMN_NAME_BILLING_ADDRESS = "billing_address";
+        public static final String COLUMN_NAME_SHIPPING_ADDRESS = "shipping_address";
+        public static final String COLUMN_NAME_INVOICE_DATE = "invoice_date";
+        public static final String COLUMN_NAME_DUE_DATE = "due_date";
+        public static final String COLUMN_NAME_STATUS = "status";
+        public static final String COLUMN_NAME_CURRENCY = "currency";
+        public static final String COLUMN_NAME_SUBTOTAL = "subtotal";
+        public static final String COLUMN_NAME_TAX_AMOUNT = "tax_amount";
+        public static final String COLUMN_NAME_SHIPPING_COST = "shipping_cost";
+        public static final String COLUMN_NAME_DISCOUNT_AMOUNT = "discount_amount";
+        public static final String COLUMN_NAME_TOTAL_AMOUNT = "total_amount";
+        public static final String COLUMN_NAME_PAYMENT_METHOD = "payment_method";
+        public static final String COLUMN_NAME_PAYMENT_STATUS = "payment_status";
+        public static final String COLUMN_NAME_TRANSACTION_ID = "transaction_id";
+        public static final String COLUMN_NAME_PAID_DATE = "paid_date";
+        public static final String COLUMN_NAME_BUSINESS_NAME = "business_name";
+        public static final String COLUMN_NAME_BUSINESS_ADDRESS = "business_address";
+        public static final String COLUMN_NAME_BUSINESS_PHONE = "business_phone";
+        public static final String COLUMN_NAME_BUSINESS_EMAIL = "business_email";
+        public static final String COLUMN_NAME_TAX_ID = "tax_id";
+        public static final String COLUMN_NAME_NOTES = "notes";
+        public static final String COLUMN_NAME_TERMS = "terms";
+        public static final String COLUMN_NAME_CREATED_BY = "created_by";
+        public static final String COLUMN_NAME_PDF_PATH = "pdf_path";
+        public static final String COLUMN_NAME_EMAIL_SENT = "email_sent";
+    }
+    
+    public static final String SQL_CREATE_INVOICES_TABLE =
+            "CREATE TABLE " + InvoiceEntry.TABLE_NAME + " (" +
+                    InvoiceEntry.COLUMN_NAME_INVOICE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    InvoiceEntry.COLUMN_NAME_INVOICE_NUMBER + " TEXT UNIQUE," +
+                    InvoiceEntry.COLUMN_NAME_ORDER_ID + " INTEGER," +
+                    InvoiceEntry.COLUMN_NAME_ORDER_NUMBER + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_CUSTOMER_ID + " INTEGER," +
+                    InvoiceEntry.COLUMN_NAME_CUSTOMER_NAME + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_CUSTOMER_EMAIL + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_CUSTOMER_PHONE + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_BILLING_ADDRESS + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_SHIPPING_ADDRESS + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_INVOICE_DATE + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_DUE_DATE + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_STATUS + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_CURRENCY + " TEXT DEFAULT 'NPR'," +
+                    InvoiceEntry.COLUMN_NAME_SUBTOTAL + " REAL," +
+                    InvoiceEntry.COLUMN_NAME_TAX_AMOUNT + " REAL," +
+                    InvoiceEntry.COLUMN_NAME_SHIPPING_COST + " REAL DEFAULT 0.0," +
+                    InvoiceEntry.COLUMN_NAME_DISCOUNT_AMOUNT + " REAL DEFAULT 0.0," +
+                    InvoiceEntry.COLUMN_NAME_TOTAL_AMOUNT + " REAL," +
+                    InvoiceEntry.COLUMN_NAME_PAYMENT_METHOD + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_PAYMENT_STATUS + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_TRANSACTION_ID + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_PAID_DATE + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_BUSINESS_NAME + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_BUSINESS_ADDRESS + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_BUSINESS_PHONE + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_BUSINESS_EMAIL + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_TAX_ID + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_NOTES + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_TERMS + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_CREATED_BY + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_PDF_PATH + " TEXT," +
+                    InvoiceEntry.COLUMN_NAME_EMAIL_SENT + " INTEGER DEFAULT 0)";
+
+    public static final String SQL_DELETE_INVOICES_TABLE = "DROP TABLE IF EXISTS " + InvoiceEntry.TABLE_NAME;
 public static final String SQL_DELETE_PAYMENTS_TABLE = "DROP TABLE IF EXISTS " + PaymentEntry.TABLE_NAME;
 public static final String SQL_DELETE_ADDRESSES_TABLE = "DROP TABLE IF EXISTS " + AddressEntry.TABLE_NAME;
 public static final String SQL_DELETE_VENDORS_TABLE = "DROP TABLE IF EXISTS " + VendorEntry.TABLE_NAME;

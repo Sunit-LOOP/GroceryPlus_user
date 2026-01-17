@@ -451,13 +451,36 @@ public class CategoryManagementActivity extends AppCompatActivity {
                 return null;
             }
             
-            // Load drawable as bitmap
+            // Load drawable as bitmap with optimized settings
             android.graphics.drawable.Drawable drawable = getResources().getDrawable(resId);
+            int originalWidth = drawable.getIntrinsicWidth();
+            int originalHeight = drawable.getIntrinsicHeight();
+            
+            // Limit maximum dimensions to reasonable size for category images
+            int maxWidth = 512; // Smaller for category icons
+            int maxHeight = 512;
+            int finalWidth, finalHeight;
+            
+            if (originalWidth > maxWidth || originalHeight > maxHeight) {
+                // Calculate scaled dimensions maintaining aspect ratio
+                float aspectRatio = (float) originalWidth / originalHeight;
+                if (originalWidth > originalHeight) {
+                    finalWidth = maxWidth;
+                    finalHeight = (int) (maxWidth / aspectRatio);
+                } else {
+                    finalHeight = maxHeight;
+                    finalWidth = (int) (maxHeight * aspectRatio);
+                }
+            } else {
+                finalWidth = originalWidth;
+                finalHeight = originalHeight;
+            }
+            
+            // Create bitmap with RGB_565 for better performance on real devices
             android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(
-                drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), 
-                android.graphics.Bitmap.Config.ARGB_8888);
+                finalWidth, finalHeight, android.graphics.Bitmap.Config.RGB_565);
             android.graphics.Canvas canvas = new android.graphics.Canvas(bitmap);
-            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.setBounds(0, 0, finalWidth, finalHeight);
             drawable.draw(canvas);
             
             // Create permanent file
@@ -468,17 +491,19 @@ public class CategoryManagementActivity extends AppCompatActivity {
             
             String uniqueFileName = drawableName + "_" + 
                 new java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(new java.util.Date()) + 
-                ".png";
+                ".jpg"; // Use JPG for better compression
             File destinationFile = new File(storageDir, uniqueFileName);
             
-            // Save bitmap to file
+            // Save bitmap to file with JPEG compression for better size/quality balance
             java.io.FileOutputStream out = new java.io.FileOutputStream(destinationFile);
-            bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out);
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 85, out); // 85% quality for good balance
+            out.flush(); // Ensure data is written
             out.close();
             
-            // Recycle bitmap
+            // Recycle bitmap to free memory
             bitmap.recycle();
             
+            android.util.Log.d("CategoryManagement", "Drawable saved permanently: " + destinationFile.getAbsolutePath());
             return destinationFile.getAbsolutePath();
             
         } catch (Exception e) {

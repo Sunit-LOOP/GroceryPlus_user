@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.sunit.groceryplus.models.User;
+import com.sunit.groceryplus.database.MigrationHelper;
 import static com.sunit.groceryplus.DatabaseContract.CartItemEntry;
 import static com.sunit.groceryplus.DatabaseContract.CategoryEntry;
 import static com.sunit.groceryplus.DatabaseContract.OrderEntry;
@@ -47,6 +48,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(DatabaseContract.SQL_CREATE_PROMOTIONS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_REVIEWS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_DELIVERY_PERSONNEL_TABLE);
+        db.execSQL(DatabaseContract.SQL_CREATE_GUEST_USERS_TABLE);
+        db.execSQL(DatabaseContract.SQL_CREATE_REFUNDS_TABLE);
+        db.execSQL(DatabaseContract.SQL_CREATE_SHIPPING_OPTIONS_TABLE);
+        db.execSQL(DatabaseContract.SQL_CREATE_INVOICES_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_PAYMENTS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_NOTIFICATIONS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_ADDRESSES_TABLE);
@@ -64,15 +69,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);
         
-        if (oldVersion < 10) {
-            try {
-                db.execSQL("ALTER TABLE " + CategoryEntry.TABLE_NAME + " ADD COLUMN " + CategoryEntry.COLUMN_NAME_IMAGE + " TEXT");
-                Log.d(TAG, "Added image column to categories table");
-            } catch (Exception e) {
-                Log.w(TAG, "Note: Category image column might already exist", e);
-            }
+        // Use MigrationHelper for proper schema migration
+        MigrationHelper.migrateDatabase(db, oldVersion, newVersion);
+        
+        // Validate database after migration
+        if (!MigrationHelper.validateDatabase(db)) {
+            Log.e(TAG, "Database validation failed after migration");
+            // In production, you might want to handle this more gracefully
+            // For now, we'll log the error and continue
         }
         
+        // Insert sample data if needed
         insertSampleData();
     }
 
@@ -1733,6 +1740,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.query(DatabaseContract.DeliveryPersonEntry.TABLE_NAME, null, null, null, null, null, null);
     }
     
+    /** Retrieves a specific delivery person by their ID. */
+    public Cursor getDeliveryPersonnelById(int personId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(DatabaseContract.DeliveryPersonEntry.TABLE_NAME, null,
+                DatabaseContract.DeliveryPersonEntry.COLUMN_NAME_PERSON_ID + " = ?",
+                new String[]{String.valueOf(personId)}, null, null, null);
+    }
+    
     /** Updates the availability or assignment status of a delivery person. */
     public boolean updateDeliveryPersonStatus(int personId, String status) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -2508,5 +2523,52 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         
         return orders;
+    }
+    
+    /** Get today's revenue. */
+    public double getTodayRevenue() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
+        
+        Cursor cursor = db.rawQuery("SELECT SUM(total_amount) FROM orders WHERE DATE(created_at) = ?", new String[]{today});
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            double revenue = cursor.getDouble(0);
+            cursor.close();
+            return revenue;
+        }
+        return 0.0;
+    }
+    
+    /** Get monthly revenue. */
+    public double getMonthRevenue(int month, int year) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        
+        Cursor cursor = db.rawQuery(
+                "SELECT SUM(total_amount) FROM orders WHERE strftime('%m', created_at) = ? AND strftime('%Y', created_at) = ?",
+                new String[]{String.format("%02d", month), String.valueOf(year)});
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            double revenue = cursor.getDouble(0);
+            cursor.close();
+            return revenue;
+        }
+        return 0.0;
+    }
+    
+    /** Get daily revenue. */
+    public double getDailyRevenue(int day, int month, int year) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        
+        Cursor cursor = db.rawQuery(
+                "SELECT SUM(total_amount) FROM orders WHERE strftime('%d', created_at) = ? AND strftime('%m', created_at) = ? AND strftime('%Y', created_at) = ?",
+                new String[]{String.format("%02d", day), String.format("%02d", month), String.valueOf(year)});
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            double revenue = cursor.getDouble(0);
+            cursor.close();
+            return revenue;
+        }
+        return 0.0;
     }
 }

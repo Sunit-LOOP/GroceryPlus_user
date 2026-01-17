@@ -20,7 +20,9 @@ import com.sunit.groceryplus.R;
 import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.DatabaseHelper;
 import com.sunit.groceryplus.FavoriteRepository;
-import com.sunit.groceryplus.utils.ProductImageLoader;
+import com.sunit.groceryplus.utils.RealDeviceImageSystem;
+import com.sunit.groceryplus.utils.PermanentImageManager;
+import com.sunit.groceryplus.utils.ImageDebugHelper;
 import com.sunit.groceryplus.utils.AnimationUtils;
 import com.sunit.groceryplus.utils.UIComponents;
 
@@ -108,23 +110,47 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             holder.productVendor.setVisibility(View.GONE);
         }
 
-        // Load product image with better fallbacks
+        // Load product image with permanent image system for guaranteed display across installations
         String imageName = product.getImage();
-        if (imageName != null && !imageName.isEmpty() &&
-                (imageName.startsWith("content://") || imageName.startsWith("file://") || imageName.startsWith("android.resource://") ||
-                        imageName.startsWith("http://") || imageName.startsWith("https://"))) {
-            ProductImageLoader.load(context, holder.productImage, imageName, getSpecificImageForProduct(product.getProductName()));
-        } else if (imageName != null && !imageName.isEmpty()) {
-            int resourceId = context.getResources().getIdentifier(imageName, "drawable", context.getPackageName());
-            if (resourceId != 0) {
-                holder.productImage.setImageResource(resourceId);
-            } else {
-                int specificImage = getSpecificImageForProduct(product.getProductName());
-                holder.productImage.setImageResource(specificImage);
-            }
+        String productName = product.getProductName();
+        int productId = product.getProductId();
+        
+        Log.d("ProductAdapter", "=== LOADING PRODUCT IMAGE ===");
+        Log.d("ProductAdapter", "Product Name: " + productName);
+        Log.d("ProductAdapter", "Product ID: " + productId);
+        Log.d("ProductAdapter", "Original Image: " + imageName);
+        
+        // Test drawables on first load
+        if (position == 0) {
+            ImageDebugHelper.testDrawables(context);
+            ImageDebugHelper.testProductMapping(context);
+        }
+        
+        // Debug the actual image loading process
+        Log.d("ProductAdapter", "=== DEBUGGING IMAGE LOADING FOR: " + productName + " ===");
+        ImageDebugHelper.debugImageLoading(context, PermanentImageManager.loadPermanentProductImage(context, productId, productName), holder.productImage);
+        
+        // Ensure ALL products have permanent images
+        PermanentImageManager.ensureProductImagePermanently(context, productId, productName, imageName);
+        
+        // Load permanent image
+        String permanentImage = PermanentImageManager.loadPermanentProductImage(context, productId, productName);
+        Log.d("ProductAdapter", "Permanent Image: " + permanentImage);
+        
+        // FIX: Always use product-specific drawable first, then fallback to permanent image
+        String productDrawableName = getProductDrawableName(productName);
+        Log.d("ProductAdapter", "Product-specific drawable: " + productDrawableName);
+        
+        // Try product-specific drawable first
+        int productDrawableId = context.getResources().getIdentifier(
+            productDrawableName, "drawable", context.getPackageName());
+        
+        if (productDrawableId != 0) {
+            Log.d("ProductAdapter", "✓ Using product-specific drawable: " + productDrawableName);
+            holder.productImage.setImageResource(productDrawableId);
         } else {
-            int specificImage = getSpecificImageForProduct(product.getProductName());
-            holder.productImage.setImageResource(specificImage);
+            Log.d("ProductAdapter", "✗ Product drawable not found, using permanent image system");
+            RealDeviceImageSystem.loadProductImage(context, holder.productImage, permanentImage, productName);
         }
 
         // Stock Badge Logic with enhanced UI
@@ -278,6 +304,57 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         }
     }
 
+    /** Gets drawable name for product (same as PermanentImageManager logic) */
+    private String getProductDrawableName(String productName) {
+        if (productName == null || productName.trim().isEmpty()) {
+            return "product_icon";
+        }
+        
+        String lowerName = productName.toLowerCase();
+        
+        if (lowerName.contains("milk")) {
+            if (lowerName.contains("skim")) return "skim_milk";
+            return "bottle_milk";
+        } else if (lowerName.contains("cheese")) {
+            return "cheese_slice";
+        } else if (lowerName.contains("butter")) {
+            return "butter";
+        } else if (lowerName.contains("curd") || lowerName.contains("yogurt") || lowerName.contains("dahi")) {
+            return "dahi";
+        } else if (lowerName.contains("tomato")) {
+            return "tomato_red";
+        } else if (lowerName.contains("apple")) {
+            return "apple";
+        } else if (lowerName.contains("banana")) {
+            return "banana";
+        } else if (lowerName.contains("bread") || lowerName.contains("bakery")) {
+            return "bread";
+        } else if (lowerName.contains("rice") || lowerName.contains("staple")) {
+            return "rice_sack";
+        } else if (lowerName.contains("oil")) {
+            return "oil_bottle";
+        } else if (lowerName.contains("juice") || lowerName.contains("drink") || lowerName.contains("beverage")) {
+            return "juice_bottle";
+        } else if (lowerName.contains("cabbage")) {
+            return "cabbage";
+        } else if (lowerName.contains("cauliflower")) {
+            return "cauliflower";
+        } else if (lowerName.contains("lettuce")) {
+            return "lettuce_leaf";
+        } else if (lowerName.contains("paneer")) {
+            return "paneer_cubes";
+        } else if (lowerName.contains("bottle") && lowerName.contains("gourd")) {
+            return "bottle_gourd";
+        } else if (lowerName.contains("okra") || lowerName.contains("lady") || lowerName.contains("vindi")) {
+            return "vindi";
+        } else if (lowerName.contains("green") && (lowerName.contains("vegetable") || lowerName.contains("leaf"))) {
+            if (lowerName.contains("small")) return "small_green_leaf_vegetable";
+            return "green_vegetable";
+        }
+        
+        return "product_icon";
+    }
+
     /** Resolves specific local drawable resources based on product name keywords. */
     private int getSpecificImageForProduct(String productName) {
         if (productName == null) {
@@ -286,14 +363,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         
         String lowerName = productName.toLowerCase();
         
-        // Detailed mapping based on available drawables
+        // Enhanced Dairy Mapping - Fixed for dairy products
         if (lowerName.contains("milk")) {
             if (lowerName.contains("skim")) return R.drawable.skim_milk;
             return R.drawable.bottle_milk;
         } else if (lowerName.contains("cheese")) {
             return R.drawable.cheese_slice;
+        } else if (lowerName.contains("butter")) {
+            return R.drawable.butter;
         } else if (lowerName.contains("curd") || lowerName.contains("yogurt") || lowerName.contains("dahi")) {
             return R.drawable.dahi;
+        } else if (lowerName.contains("dairy")) {
+            return R.drawable.bottle_milk;  // Generic dairy fallback
         } else if (lowerName.contains("tomato")) {
             return R.drawable.tomato_red;
         } else if (lowerName.contains("cabbage")) {
