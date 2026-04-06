@@ -40,5 +40,21 @@ public class UserProfileActivity extends AppCompatActivity {
             addressIntent.putExtra("user_id", userId);
             startActivity(addressIntent);
         });
+
+        // Wallet Management
+        findViewById(R.id.myWalletButton).setOnClickListener(v -> {
+            Intent walletIntent = new Intent(this, UserWalletActivity.class);
+            walletIntent.putExtra("user_id", userId);
+            startActivity(walletIntent);
+        });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

@@ -60,7 +60,7 @@
                 android:id="@+id/freeDeliveryTv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Add ₹200 more for FREE delivery"
+                android:text="Add Rs. 200 more for FREE delivery"
                 android:textColor="#2E7D32"
                 android:textStyle="bold"
                 android:textSize="13sp"/>

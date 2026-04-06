@@ -72,6 +72,12 @@ public class MessageActivity extends AppCompatActivity {
         setClickListeners();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadMessages();
+    }
+
     /** Links UI components to functional fields. */
     private void initViews() {
         messageEditText = findViewById(R.id.messageEditText);

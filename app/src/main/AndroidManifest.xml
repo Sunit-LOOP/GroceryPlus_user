@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -66,6 +68,10 @@
             android:name=".UserSettingViewActivity"
             android:exported="false" />
         <activity
+            android:name=".UserWalletActivity"
+            android:label="My Wallet"
+            android:exported="false" />
+        <activity
             android:name=".ProductDetailActivity"
             android:exported="false" />
         <activity
@@ -112,6 +118,15 @@
             android:name=".admin.AdminMessagesActivity"
             android:exported="false" />
         <activity
+            android:name=".admin.AdminChatActivity"
+            android:label="Admin Chat"
+            android:exported="false" />
+
+        <activity
+            android:name=".admin.AdminRefundManagementActivity"
+            android:label="Refund Management"
+            android:exported="false" />
+        <activity
             android:name=".OrderTrackingActivity"
             android:label="Track Order"
             android:parentActivityName=".OrderHistoryActivity"
@@ -138,6 +153,46 @@
             android:exported="false" />
         <activity
             android:name=".FakePaymentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EditProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".WishlistActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DatabaseInitActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TestActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NetworkTestActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HybridDatabaseDemoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DatabaseTestActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AlgorithmDemoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".OrderDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ReportIssueActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SupportCenterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AdminSupportActivity"
+            android:exported="false" />
+        <activity
+            android:name=".RefundRequestActivity"
+            android:label="Refund Request"
             android:exported="false" />
 
         <service

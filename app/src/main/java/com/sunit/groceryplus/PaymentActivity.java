@@ -60,11 +60,19 @@ public class PaymentActivity extends AppCompatActivity {
     private MaterialCardView stripeCard, codCard;
 
     // Transaction Data
-    private double finalAmount = 0.0, baseSubtotal = 0.0, deliveryFee = 0.0, discountAmount = 0.0;
+    private double finalAmount = 0.0, baseSubtotal = 0.0, deliveryFee = 0.0, discountAmount = 0.0, pointsDiscount = 0.0;
+    private int userPoints = 0;
     private String appliedPromoCode = null;
+    private boolean isUsingPoints = false;
+
+    // UI Elements - Loyalty Points
+    private TextView availablePointsTv, pointsValueTv, summaryPointsDiscount;
+    private View pointsDiscountRow;
+    private com.google.android.material.switchmaterial.SwitchMaterial usePointsSwitch;
 
     // Domain Data
     private AddressRepository addressRepository;
+    private OrderRepository orderRepository;
     private Address selectedAddress;
     private int selectedAddressId = -1;
     
@@ -90,6 +98,7 @@ public class PaymentActivity extends AppCompatActivity {
         notificationManager = GroceryNotificationManager.getInstance(this);
 
         addressRepository = new AddressRepository(this);
+        orderRepository = new OrderRepository(this);
 
         userId = getIntent().getIntExtra("user_id", -1);
 
@@ -97,6 +106,7 @@ public class PaymentActivity extends AppCompatActivity {
         setupToolbar();
         loadCartData();
         loadSelectedAddress();
+        setupLoyaltyPoints();
     }
 
     /** Links UI components to functional fields and sets interaction listeners. */
@@ -149,6 +159,20 @@ public class PaymentActivity extends AppCompatActivity {
         if (applyPromoBtn != null) {
             applyPromoBtn.setOnClickListener(v -> applyPromoCode());
         }
+
+        // Initialize Loyalty Points Views
+        availablePointsTv = findViewById(R.id.availablePointsTv);
+        pointsValueTv = findViewById(R.id.pointsValueTv);
+        usePointsSwitch = findViewById(R.id.usePointsSwitch);
+        pointsDiscountRow = findViewById(R.id.pointsDiscountRow);
+        summaryPointsDiscount = findViewById(R.id.summaryPointsDiscount);
+
+        if (usePointsSwitch != null) {
+            usePointsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                isUsingPoints = isChecked;
+                calculateTotals();
+            });
+        }
     }
 
     /** Configures the toolbar with back navigation. */
@@ -156,7 +180,7 @@ public class PaymentActivity extends AppCompatActivity {
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.paymentToolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Payment");
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
@@ -181,17 +205,17 @@ public class PaymentActivity extends AppCompatActivity {
         appliedPromoCode = null;
 
         // Update UI
-        summarySubtotal.setText("Rs. " + String.format("%.2f", baseSubtotal));
+        summarySubtotal.setText("NPR " + String.format("%.2f", baseSubtotal));
         if (summaryDeliveryFee != null) {
             if (deliveryFee == 0.0) {
                 summaryDeliveryFee.setText("FREE");
                 summaryDeliveryFee.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
             } else {
-                summaryDeliveryFee.setText("Rs. " + String.format("%.2f", deliveryFee));
+                summaryDeliveryFee.setText("NPR " + String.format("%.2f", deliveryFee));
                 summaryDeliveryFee.setTextColor(getResources().getColor(R.color.text_primary));
             }
         }
-        totalAmountTv.setText("Rs. " + String.format("%.2f", finalAmount));
+        totalAmountTv.setText("NPR " + String.format("%.2f", finalAmount));
 
         if (discountRow != null) {
             discountRow.setVisibility(View.GONE);
@@ -199,8 +223,50 @@ public class PaymentActivity extends AppCompatActivity {
 
         // Enable pay button and set initial text based on selected payment method
         payNowBtn.setEnabled(true);
-        updatePayButtonText();
-        updateCardStyles();
+        calculateTotals();
+    }
+
+    /** Fetches the user's loyalty points and updates the discount UI section. */
+    private void setupLoyaltyPoints() {
+        if (userId == -1) return;
+        
+        userPoints = (int) dbHelper.getLoyaltyPoints(userId);
+        if (availablePointsTv != null) {
+            availablePointsTv.setText("Available: " + userPoints + " Points");
+        }
+        
+        if (pointsValueTv != null) {
+            pointsValueTv.setText("(Equivalent to NPR " + String.format("%.2f", (double) userPoints) + ")");
+        }
+        
+        if (usePointsSwitch != null) {
+            usePointsSwitch.setEnabled(userPoints > 0);
+        }
+    }
+
+    /** Calculates the final amount considering subtotal, delivery fee, promo codes, and loyalty points. */
+    private void calculateTotals() {
+        // 1. Reset from base
+        finalAmount = baseSubtotal + deliveryFee;
+        
+        // 2. Apply Promo Code
+        if (appliedPromoCode != null) {
+            // Already calculated in applyPromoCode() logic
+            finalAmount -= discountAmount;
+        }
+        
+        // 3. Apply Loyalty Points
+        if (isUsingPoints && userPoints > 0) {
+            pointsDiscount = Math.min(finalAmount, (double) userPoints);
+            finalAmount -= pointsDiscount;
+        } else {
+            pointsDiscount = 0.0;
+        }
+        
+        // 4. Ensure total is not negative
+        if (finalAmount < 0) finalAmount = 0;
+        
+        updateTotalsUi();
     }
 
     /** Retrieves and displays the user's default delivery address. */
@@ -285,8 +351,7 @@ public class PaymentActivity extends AppCompatActivity {
                 discountAmount = baseSubtotal;
             }
 
-            finalAmount = (baseSubtotal - discountAmount) + deliveryFee;
-            updateTotalsUi();
+            calculateTotals();
             Toast.makeText(this, "Promo applied", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Log.e(TAG, "Error applying promo", e);
@@ -314,7 +379,7 @@ public class PaymentActivity extends AppCompatActivity {
     /** Updates the order total and discount displays. */
     private void updateTotalsUi() {
         if (summarySubtotal != null) {
-            summarySubtotal.setText("Rs. " + String.format("%.2f", baseSubtotal));
+            summarySubtotal.setText("NPR " + String.format("%.2f", baseSubtotal));
         }
 
         if (summaryDeliveryFee != null) {
@@ -322,7 +387,7 @@ public class PaymentActivity extends AppCompatActivity {
                 summaryDeliveryFee.setText("FREE");
                 summaryDeliveryFee.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
             } else {
-                summaryDeliveryFee.setText("Rs. " + String.format("%.2f", deliveryFee));
+                summaryDeliveryFee.setText("NPR " + String.format("%.2f", deliveryFee));
                 summaryDeliveryFee.setTextColor(getResources().getColor(R.color.text_primary));
             }
         }
@@ -330,17 +395,27 @@ public class PaymentActivity extends AppCompatActivity {
         if (discountRow != null && summaryDiscount != null) {
             if (discountAmount > 0.0) {
                 discountRow.setVisibility(View.VISIBLE);
-                summaryDiscount.setText("-Rs. " + String.format("%.2f", discountAmount));
+                summaryDiscount.setText("-NPR " + String.format("%.2f", discountAmount));
             } else {
                 discountRow.setVisibility(View.GONE);
             }
         }
 
         if (totalAmountTv != null) {
-            totalAmountTv.setText("Rs. " + String.format("%.2f", finalAmount));
+            totalAmountTv.setText("NPR " + String.format("%.2f", finalAmount));
+        }
+
+        if (pointsDiscountRow != null && summaryPointsDiscount != null) {
+            if (pointsDiscount > 0.0) {
+                pointsDiscountRow.setVisibility(View.VISIBLE);
+                summaryPointsDiscount.setText("-NPR " + String.format("%.2f", pointsDiscount));
+            } else {
+                pointsDiscountRow.setVisibility(View.GONE);
+            }
         }
 
         updatePayButtonText();
+        updateCardStyles();
     }
 
     /** Configures UI for Stripe Card payment selection. */
@@ -448,35 +523,34 @@ public class PaymentActivity extends AppCompatActivity {
     /** Presents the Stripe PaymentSheet with proper configuration and focus handling. */
     private void presentPaymentSheet() {
         try {
-            // Use simple configuration to avoid input field issues
+            if (paymentClientSecret == null || !paymentClientSecret.startsWith("pi_")) {
+                showFinalErrorMessage("Invalid client secret received from Stripe.");
+                return;
+            }
+
+            // Use simple configuration for maximum compatibility
             PaymentSheet.Configuration configuration = new PaymentSheet.Configuration.Builder("GroceryPlus")
-                .allowsDelayedPaymentMethods(false)
+                .allowsDelayedPaymentMethods(true)
                 .build();
             
             Log.d(TAG, "Presenting payment sheet...");
-            Log.d(TAG, "Client secret: " + paymentClientSecret.substring(0, Math.min(10, paymentClientSecret.length())) + "...");
             
-            // Ensure activity is in proper state for PaymentSheet
-            runOnUiThread(() -> {
-                // Request focus for activity
-                getWindow().getDecorView().requestFocus();
-                
-                // Present payment sheet with a small delay to ensure UI is ready
-                new android.os.Handler().postDelayed(() -> {
-                    try {
-                        // Clear any current focus that might interfere
-                        if (getCurrentFocus() != null) {
-                            getCurrentFocus().clearFocus();
-                        }
-                        
-                        paymentSheet.presentWithPaymentIntent(paymentClientSecret, configuration);
-                        Log.d(TAG, "Payment sheet presented successfully");
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error presenting payment sheet", e);
-                        handlePaymentSheetError(e);
-                    }
-                }, 300); // 300ms delay to ensure UI is settled
-            });
+            // Clear any current focus that might interfere
+            View currentFocus = getCurrentFocus();
+            if (currentFocus != null) {
+                currentFocus.clearFocus();
+            }
+
+            // Small delay to ensure any keyboard or processing UI is settled
+            new android.os.Handler(Looper.getMainLooper()).postDelayed(() -> {
+                try {
+                    paymentSheet.presentWithPaymentIntent(paymentClientSecret, configuration);
+                    Log.d(TAG, "Payment sheet present() called with secret: " + paymentClientSecret.substring(0, 10));
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception during paymentSheet.present", e);
+                    handlePaymentSheetError(e);
+                }
+            }, 500); // 500ms delay for UI stability
             
         } catch (Exception e) {
             Log.e(TAG, "Error preparing payment sheet", e);
@@ -488,7 +562,7 @@ public class PaymentActivity extends AppCompatActivity {
     private void handlePaymentSheetError(Exception e) {
         Log.e(TAG, "PaymentSheet error: " + e.getMessage(), e);
         runOnUiThread(() -> {
-            Toast.makeText(this, "Error showing payment form: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "UI Error: Unable to show payment sheet. " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             payNowBtn.setEnabled(true);
             updatePayButtonText();
         });
@@ -496,94 +570,111 @@ public class PaymentActivity extends AppCompatActivity {
 
     /** Initiates the Stripe payment flow by fetching a Client Secret. */
     private void startStripePayment() {
-        // Safety check for placeholder key
-        String secretKeyRaw = com.sunit.groceryplus.utils.PaymentConfig.STRIPE_SECRET_KEY;
-        if (secretKeyRaw == null || secretKeyRaw.contains("...") || secretKeyRaw.isEmpty()) {
-            Toast.makeText(this, "Please set your actual Stripe Secret Key in PaymentConfig.java", Toast.LENGTH_LONG).show();
-            return;
-        }
+        try {
+            // Safety check for placeholder key
+            String secretKeyRaw = com.sunit.groceryplus.utils.PaymentConfig.STRIPE_SECRET_KEY;
+            if (secretKeyRaw == null || secretKeyRaw.contains("...") || secretKeyRaw.isEmpty()) {
+                Toast.makeText(this, "Please set your actual Stripe Secret Key in PaymentConfig.java", Toast.LENGTH_LONG).show();
+                return;
+            }
 
-        payNowBtn.setEnabled(false);
-        payNowBtn.setText("Processing...");
-        
-        // Run debugging tests before starting payment
-        testOtherInputFields();
-        checkForOverlays();
-        logSystemInfo();
-        
-        // Test: Show a simple toast to confirm button click works
-        Toast.makeText(this, "Starting Stripe payment...", Toast.LENGTH_SHORT).show();
-        
-        // Use centralized Stripe Secret Key from PaymentConfig
-        String secretKey = "Bearer " + secretKeyRaw;
-        
-        // Use Math.round to avoid precision issues with floating point
-        int amountInSmallestUnit = (int) Math.round(finalAmount * 100); 
-        
-        // Use centralized Stripe Secret Key and Currency from PaymentConfig
-        String currency = com.sunit.groceryplus.utils.PaymentConfig.CURRENCY;
-        Log.d(TAG, "Starting Stripe Payment: Amount=" + amountInSmallestUnit + ", Currency=" + currency);
-        Log.d(TAG, "Secret Key (first 10 chars): " + secretKey.substring(0, Math.min(10, secretKey.length())) + "...");
-        
-        com.sunit.groceryplus.network.StripeApiClient.getClient().create(StripeService.class).createPaymentIntent(
-            secretKey,
-            amountInSmallestUnit,
-            currency,
-            true
-        ).enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().has("client_secret")) {
-                    paymentClientSecret = response.body().get("client_secret").getAsString();
-                    Log.d(TAG, "Successfully received client secret");
-                    
-                    // Present Payment Sheet with proper configuration
-                    presentPaymentSheet();
-                    
-                } else {
-                    String errorMsg = "Failed to initialize payment.";
-                    try {
-                        if (response.errorBody() != null) {
-                            String errorBody = response.errorBody().string();
-                            Log.e(TAG, "Stripe Error Body: " + errorBody);
-                            if (errorBody.contains("invalid_api_key")) {
-                                errorMsg += " (Invalid API Key)";
-                            } else if (errorBody.contains("invalid_request_error")) {
-                                errorMsg += " (Invalid Request)";
+            if (finalAmount <= 0) {
+                Toast.makeText(this, "Invalid order amount", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            payNowBtn.setEnabled(false);
+            payNowBtn.setText("Step 1/2: Preparing…");
+            
+            Log.d(TAG, "Starting Stripe payment request with NPR...");
+            
+            // Use centralized Stripe Secret Key from PaymentConfig
+            String authHeader = "Bearer " + secretKeyRaw;
+            
+            // Use Math.round to avoid precision issues with floating point
+            // For NPR, 100 paisa = 1 Rupee, so * 100 is correct for Stripe smallest unit
+            int amountInSmallestUnit = (int) Math.round(finalAmount * 100); 
+            
+            // Stripe minimum requirement check
+            if (amountInSmallestUnit < 50) { // Essential minimum
+                amountInSmallestUnit = 50; 
+            }
+            
+            String currency = com.sunit.groceryplus.utils.PaymentConfig.CURRENCY.toLowerCase(Locale.US);
+            
+            // Use Map for flexible parameters
+            java.util.Map<String, String> params = new java.util.HashMap<>();
+            params.put("amount", String.valueOf(amountInSmallestUnit));
+            params.put("currency", currency);
+            
+            // Standard modern approach for mobile PaymentSheet
+            params.put("automatic_payment_methods[enabled]", "true");
+            params.put("description", "GroceryPlus Order for User ID: " + userId);
+            
+            Log.d(TAG, "Requesting PaymentIntent: Amount=" + amountInSmallestUnit + " " + currency);
+
+            com.sunit.groceryplus.network.StripeApiClient.getClient().create(StripeService.class).createPaymentIntent(
+                authHeader,
+                params
+            ).enqueue(new Callback<JsonObject>() {
+                @Override
+                public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().has("client_secret")) {
+                        paymentClientSecret = response.body().get("client_secret").getAsString();
+                        Log.d(TAG, "Successfully received client secret: " + paymentClientSecret.substring(0, Math.min(10, paymentClientSecret.length())) + "...");
+                        
+                        runOnUiThread(() -> {
+                            Toast.makeText(PaymentActivity.this, "Connecting to Stripe...", Toast.LENGTH_SHORT).show();
+                            payNowBtn.setText("Step 2/2: Opening Form…");
+                        });
+
+                        // Present Payment Sheet
+                        presentPaymentSheet();
+                        
+                    } else {
+                        String errorMsg = "Stripe Error: " + response.code();
+                        try {
+                            if (response.errorBody() != null) {
+                                String errorBody = response.errorBody().string();
+                                Log.e(TAG, "Stripe API Error Body: " + errorBody);
+                                
+                                try {
+                                    JsonObject errorObj = com.google.gson.JsonParser.parseString(errorBody).getAsJsonObject();
+                                    if (errorObj.has("error")) {
+                                        JsonObject innerError = errorObj.getAsJsonObject("error");
+                                        if (innerError.has("message")) {
+                                            errorMsg = "Stripe: " + innerError.get("message").getAsString();
+                                        }
+                                    }
+                                } catch (Exception ignored) {}
                             }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error parsing error body", e);
                         }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error reading error body", e);
+                        
+                        showFinalErrorMessage(errorMsg);
                     }
-                    
-                    Log.e(TAG, "Stripe API Error: " + response.code() + " " + response.message());
-                    Toast.makeText(PaymentActivity.this, errorMsg, Toast.LENGTH_LONG).show();
-                    payNowBtn.setEnabled(true);
-                    updatePayButtonText();
                 }
-            }
 
-            @Override
-            public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
-                Log.e(TAG, "Network Error: " + t.getMessage());
-                String errorMessage = "Network error: " + t.getMessage();
-                
-                // Check for SSL/Certificate specific errors
-                if (t.getMessage() != null) {
-                    if (t.getMessage().contains("SSL") || t.getMessage().contains("certificate") || 
-                        t.getMessage().contains("trust") || t.getMessage().contains("handshake")) {
-                        errorMessage = "SSL Certificate Error. Please check your network connection and try again.";
-                    } else if (t.getMessage().contains("timeout") || t.getMessage().contains("Timeout")) {
-                        errorMessage = "Connection timeout. Please check your internet connection and try again.";
-                    } else if (t.getMessage().contains("UnknownHost") || t.getMessage().contains("Network")) {
-                        errorMessage = "Network connection error. Please check your internet connection.";
-                    }
+                @Override
+                public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
+                    Log.e(TAG, "Retrofit request failed", t);
+                    showFinalErrorMessage("Network Error: " + t.getLocalizedMessage());
                 }
-                
-                Toast.makeText(PaymentActivity.this, errorMessage, Toast.LENGTH_LONG).show();
-                payNowBtn.setEnabled(true);
-                updatePayButtonText();
-            }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Unexpected error in startStripePayment", e);
+            showFinalErrorMessage("App Error: " + e.getLocalizedMessage());
+        }
+    }
+
+    /** Helper to show error, re-enable button, and reset text in one place. */
+    private void showFinalErrorMessage(String msg) {
+        runOnUiThread(() -> {
+            Toast.makeText(PaymentActivity.this, msg, Toast.LENGTH_LONG).show();
+            payNowBtn.setEnabled(true);
+            updatePayButtonText();
+            Log.e(TAG, "Payment initiation failed: " + msg);
         });
     }
 
@@ -623,22 +714,24 @@ public class PaymentActivity extends AppCompatActivity {
 
     /** Persists order, items, and payment records to SQLite; triggers notifications. */
     private void createOrderDatabase(String paymentMethod) {
-        // Create order using direct database method
+        // Create order using repository
         double subtotal = baseSubtotal;
         double deliveryFee = this.deliveryFee;
         String instructions = instructionsEt.getText().toString().trim();
-        long orderId = dbHelper.createOrder(userId, finalAmount, deliveryFee, "PENDING", selectedAddressId, instructions);
+        long orderId = orderRepository.createOrder(userId, finalAmount, deliveryFee, "PENDING", selectedAddressId, instructions);
 
         if (orderId != -1) {
             // Add payment record for tracking
             // For Stripe, we can use the paymentClientSecret (or its ID) as transaction ID if we want, but unique timestamp is fine for local.
             String txnId = "TXN_" + System.currentTimeMillis();
+            String pStatus = "Pending"; // Default for COD
+            
             if (paymentMethod.equals("stripe") && paymentClientSecret != null) {
-                // Shorten client secret to just ID if possible, or leave as is.
                 txnId = "STRIPE_" + System.currentTimeMillis(); 
+                pStatus = "Completed"; // Stripe is already paid
             }
             
-            long paymentId = dbHelper.addPayment((int) orderId, finalAmount, paymentMethod, txnId);
+            long paymentId = dbHelper.addPayment((int) orderId, finalAmount, paymentMethod, txnId, pStatus);
             if (paymentId == -1) {
                 Log.e(TAG, "Failed to add payment record for order: " + orderId);
             }
@@ -648,15 +741,21 @@ public class PaymentActivity extends AppCompatActivity {
                 List<CartItem> cartItems = cartRepo.getCartItems(userId);
                 if (cartItems != null) {
                     for (CartItem item : cartItems) {
-                        dbHelper.addOrderItem((int) orderId, item.getProductId(), item.getQuantity(), item.getPrice());
-                        dbHelper.decrementStock(item.getProductId(), item.getQuantity());
+                        orderRepository.addOrderItem((int) orderId, item.getProductId(), item.getQuantity(), item.getPrice());
+                        orderRepository.decrementStock(item.getProductId(), item.getQuantity());
                     }
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Failed to transfer cart items to order", e);
             }
 
-            // Clear cart after successful order
+            // 1. Deduct Loyalty Points if used
+            if (isUsingPoints && pointsDiscount > 0) {
+                dbHelper.addLoyaltyPoints(userId, -pointsDiscount);
+                dbHelper.logTransaction(userId, pointsDiscount, "debit", "purchase_redemption", "Redeemed for Order #" + orderId);
+            }
+
+            // 2. Clear cart after successful order
             dbHelper.clearCart(userId);
 
             // Send Notifications
@@ -696,7 +795,7 @@ public class PaymentActivity extends AppCompatActivity {
     /** Synchronizes action button text with the selected payment method. */
     private void updatePayButtonText() {
         if (creditCardRadio.isChecked()) {
-            payNowBtn.setText("Pay Rs. " + String.format("%.2f", finalAmount) + " with Stripe");
+            payNowBtn.setText("Pay NPR " + String.format("%.2f", finalAmount) + " with Stripe");
         } else {
             payNowBtn.setText("Place Order (Cash on Delivery)");
         }

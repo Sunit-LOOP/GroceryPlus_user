@@ -61,7 +61,7 @@
                     android:id="@+id/productPriceTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="₹0.00"
+                    android:text="Rs. 0.00"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#4CAF50" />
@@ -139,7 +139,7 @@
                 android:id="@+id/productOriginTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Origin: India"
+                android:text="Origin: Nepal"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="8dp" />

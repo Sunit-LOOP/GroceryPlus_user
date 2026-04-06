@@ -117,8 +117,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="4dp"
                 android:text="REORDER"
+                android:textSize="12sp"
                 android:textColor="#4CAF50"
                 app:strokeColor="#4CAF50"
                 app:cornerRadius="8dp" />
@@ -129,9 +130,25 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginHorizontal="4dp"
                 android:text="CANCEL"
+                android:textSize="12sp"
                 android:textColor="#F44336"
                 app:strokeColor="#F44336"
+                app:cornerRadius="8dp"
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/refundBtn"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:text="REFUND"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                app:strokeColor="#9E9E9E"
                 app:cornerRadius="8dp"
                 android:visibility="gone" />
 

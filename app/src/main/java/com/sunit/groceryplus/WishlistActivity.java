@@ -24,7 +24,7 @@ public class WishlistActivity extends AppCompatActivity {
     // Infrastructure & UI
     private static final String TAG = "WishlistActivity";
     private RecyclerView wishlistRv;
-    private TextView emptyWishlistTv;
+    private View emptyWishlistTv;
 
     // Adapters & Data
     private ProductAdapter productAdapter;
@@ -95,6 +95,15 @@ public class WishlistActivity extends AppCompatActivity {
             Log.e(TAG, "Error loading wishlist", e);
             Toast.makeText(this, "Error loading wishlist", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /** Refreshes the wishlist when the activity resumes. */

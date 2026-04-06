@@ -1,76 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Algorithm demo activity layout -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="#FAFAFA">
+    android:padding="16dp">
 
-    <!-- Content wrapper -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- Toolbar -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:title="Algorithm Demo"
+            android:titleTextColor="@android:color/white" />
+
         <!-- Title -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Search &amp; Sort Algorithm Demo"
-            android:textSize="24sp"
+            android:text="Algorithm Testing Suite"
+            android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="#1A1A1A"
             android:gravity="center"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginBottom="24dp"
+            android:textColor="?attr/colorOnSurface" />
+
+        <!-- Test Buttons -->
+        <Button
+            android:id="@+id/testCollaborativeFilteringBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test Collaborative Filtering"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="?attr/colorPrimary" />
+
+        <Button
+            android:id="@+id/testHybridDatabaseBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test Hybrid Database"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="?attr/colorPrimary" />
+
+        <Button
+            android:id="@+id/testRecommendationsBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test Recommendation System"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="?attr/colorPrimary" />
+
+        <Button
+            android:id="@+id/testPerformanceBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test Performance Metrics"
+            android:layout_marginBottom="24dp"
+            android:backgroundTint="?attr/colorPrimary" />
+
+        <!-- Results Display -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test Results:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:textColor="?attr/colorOnSurface" />
 
         <TextView
             android:id="@+id/resultsTv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Running demonstrations..."
-            android:textSize="14sp"
-            android:textColor="#333333"
-            android:lineSpacingExtra="4dp"
-            android:background="#FFFFFF"
-            android:padding="16dp"
-            android:elevation="2dp"
-            android:radius="8dp" />
+            android:background="@drawable/rounded_gray_background"
+            android:padding="12dp"
+            android:text="No tests run yet. Click buttons above to start testing."
+            android:textColor="?attr/colorOnSurface"
+            android:fontFamily="monospace"
+            android:textSize="12sp"
+            android:minHeight="200dp"
+            android:gravity="top" />
 
+        <!-- Info Section -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Algorithms Implemented:"
-            android:textSize="18sp"
+            android:text="Available Tests:"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="#1A1A1A"
             android:layout_marginTop="24dp"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="8dp"
+            android:textColor="?attr/colorOnSurface" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="• Binary Search - O(log n) time complexity for sorted data\n• Fuzzy Search - Handles typos and partial matches using Levenshtein distance\n• Merge Sort - Stable O(n log n) sorting algorithm for product names\n• Quick Sort - Average O(n log n) sorting algorithm for prices\n• Multi-criteria Sorting - Sort by rating, category, and other combinations"
-            android:textSize="14sp"
-            android:textColor="#555555"
-            android:lineSpacingExtra="4dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Performance Benefits:"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#1A1A1A"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="12dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="• Fast search operations even with large product catalogs\n• Efficient sorting for better user experience\n• Smart fuzzy matching handles user typos\n• Multiple sorting options for different user preferences\n• Stable algorithms that maintain data integrity"
-            android:textSize="14sp"
-            android:textColor="#555555"
-            android:lineSpacingExtra="4dp" />
+            android:text="• Collaborative Filtering: Tests user-based and item-based filtering algorithms\n• Hybrid Database: Tests SQLite-Firestore synchronization\n• Recommendation System: Tests various recommendation algorithms\n• Performance Metrics: Tests system performance and memory usage"
+            android:textSize="12sp"
+            android:textColor="?attr/colorOnSurface"
+            android:layout_marginBottom="16dp" />
 
     </LinearLayout>
 

@@ -223,6 +223,17 @@
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/myWalletButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:text="My Wallet &amp; Points"
+                app:icon="@drawable/card_icon"
+                app:strokeColor="#2196F3"
+                android:textColor="#2196F3" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/manageAddressesButton"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"

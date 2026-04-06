@@ -9,6 +9,8 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.database.sqlite.SQLiteDatabase;
+import com.sunit.groceryplus.models.User;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -38,15 +40,26 @@ public class SplashScreenActivity extends AppCompatActivity {
         // Request notification permission for Android 13+ devices
         requestPostNotificationsIfNeeded();
 
-        // Test database connection to ensure system readiness
-        DatabaseConnectionTest.testDatabaseConnection(this);
-
-        // Insert sample data on first run for demonstration purposes
-        Log.d(TAG, "Inserting sample data");
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-        dbHelper.insertSampleData();
-        dbHelper.ensureAllProductsHaveStock(); // Ensure all products have stock
-        Log.d(TAG, "Sample data insertion completed");
+        // Optimized Initialization Flow
+        new Thread(() -> {
+            try {
+                Log.d(TAG, "Starting Database Initialization...");
+                DatabaseHelper dbHelper = new DatabaseHelper(SplashScreenActivity.this);
+                // getWritableDatabase() triggers onUpgrade/onCreate safely in background
+                SQLiteDatabase db = dbHelper.getWritableDatabase(); 
+                
+                // Test Connection
+                DatabaseConnectionTest.testDatabaseConnection(SplashScreenActivity.this);
+                
+                // Perform additional initialization if needed (onUpgrade already calls some of these)
+                dbHelper.insertSampleData(db);
+                dbHelper.ensureAllProductsHaveStock(db);
+                
+                Log.d(TAG, "Database Initialization Completed Successfully");
+            } catch (Exception e) {
+                Log.e(TAG, "Error during database initialization", e);
+            }
+        }).start();
         
         // Start the delivery guy animation
         animateDeliveryGuy();

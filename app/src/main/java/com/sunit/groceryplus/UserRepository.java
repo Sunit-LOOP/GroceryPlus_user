@@ -76,6 +76,16 @@ public class UserRepository {
         }
     }
 
+    /** Updates a user object in the database. */
+    public boolean updateUser(User user) {
+        try {
+            return dbHelper.updateUser(user.getUserId(), user.getName(), user.getEmail(), user.getPhone(), "");
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating user object", e);
+            return false;
+        }
+    }
+
     /** Checks if a user object has administrative privileges. */
     public boolean isAdmin(User user) {
         return user != null && user.isAdmin();

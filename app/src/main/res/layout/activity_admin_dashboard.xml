@@ -75,7 +75,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:columnCount="2"
-                android:rowCount="4"
+                android:rowCount="6"
                 android:alignmentMode="alignMargins"
                 android:columnOrderPreserved="false"
                 android:layout_marginBottom="16dp">
@@ -468,6 +468,43 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Vendor Management"
+                            android:textSize="14sp"
+                            android:textAlignment="center"
+                            android:textColor="#333333" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Support & Refunds -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/supportRefundsCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    android:layout_margin="8dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@drawable/ic_info"
+                            app:tint="#F44336"
+                            android:layout_marginBottom="8dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Support &amp; Refunds"
                             android:textSize="14sp"
                             android:textAlignment="center"
                             android:textColor="#333333" />

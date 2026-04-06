@@ -51,7 +51,7 @@
                         android:id="@+id/totalPaymentsTv"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Total Payments Received: ₹0.00"
+                        android:text="Total Payments Received: Rs. 0.00"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="#333333"

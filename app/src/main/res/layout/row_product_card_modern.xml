@@ -134,10 +134,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="$2.50"
+                    android:text="Rs. 2.50"
                     android:textSize="18sp"
                     android:fontFamily="sans-serif-black"
-                    android:textColor="#4CAF50" />
+                    android:textColor="@color/accent_vibrant" />
 
                 <!-- Add Button -->
                 <com.google.android.material.button.MaterialButton
@@ -148,7 +148,7 @@
                     android:textSize="13sp"
                     android:textStyle="bold"
                     app:cornerRadius="20dp"
-                    app:backgroundTint="#00C853"
+                    app:backgroundTint="@color/accent_vibrant"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:visibility="visible"

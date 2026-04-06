@@ -66,3 +66,7 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.firestore)
 }
+
+tasks.register("testClasses") {
+    dependsOn("compileDebugUnitTestSources")
+}

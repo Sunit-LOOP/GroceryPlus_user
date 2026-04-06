@@ -40,6 +40,7 @@ public class GroceryNotificationManager {
     public static final String TYPE_REVIEW = "REVIEW";
     public static final String TYPE_CART = "CART";
     public static final String TYPE_SYSTEM = "SYSTEM";
+    public static final String TYPE_REFUND = "REFUND";
 
     // Infrastructure
     private static GroceryNotificationManager instance;
@@ -264,6 +265,20 @@ public class GroceryNotificationManager {
         sendNotification(userId, title, message, TYPE_PROMO, promoCode);
     }
 
+    /** Sends a notification regarding a refund status update. */
+    public void sendRefundNotification(int userId, int orderId, double amount, String status, String method) {
+        String title = "Refund " + status.substring(0, 1).toUpperCase() + status.substring(1);
+        String message;
+        if ("approved".equalsIgnoreCase(status) || "completed".equalsIgnoreCase(status)) {
+            message = "Your refund of Rs. " + String.format("%.2f", amount) + " has been processed via " + method + ".";
+        } else if ("rejected".equalsIgnoreCase(status)) {
+            message = "Your refund request for Order #" + orderId + " was declined. Please contact support for details.";
+        } else {
+            message = "Your refund request for Order #" + orderId + " is now " + status + ".";
+        }
+        sendNotification(userId, title, message, TYPE_REFUND, String.valueOf(orderId));
+    }
+
     // ==================== HELPER METHODS ====================
 
     /** Returns the appropriate icon resource based on the specific notification type. */
@@ -279,6 +294,7 @@ public class GroceryNotificationManager {
             case TYPE_CART: return R.drawable.cart_icon;
             case TYPE_STOCK: return R.drawable.product_icon;
             case TYPE_SYSTEM: return R.drawable.settings_icon;
+            case TYPE_REFUND: return R.drawable.card_icon; // Using card icon for refunds
             default: return R.drawable.ic_notifications;
         }
     }

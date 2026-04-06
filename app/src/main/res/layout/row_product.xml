@@ -134,7 +134,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="$2.50"
+                    android:text="Rs. 2.50"
                     android:textSize="18sp"
                     android:fontFamily="sans-serif-black"
                     android:textColor="#4CAF50" />

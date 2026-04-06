@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class DatabaseTestActivity extends AppCompatActivity {
     // Infrastructure
     private static final String TAG = "DatabaseTestActivity";
+    private DatabaseHelper dbHelper;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,11 +18,12 @@ public class DatabaseTestActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main); // Using existing layout for demo
         
         // Initialize Database and run migration
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        dbHelper = new DatabaseHelper(this);
         dbHelper.checkAndAssignDefaultVendor();
 
         // Run database tests
         testDatabaseOperations();
+        DatabaseHelperTest.testAnalyticsOperations(this);
     }
     
     /** Executes a series of integrated database tests covering users, categories, products, carts, and orders. */
@@ -113,12 +115,23 @@ public class DatabaseTestActivity extends AppCompatActivity {
             boolean orderItemAdded = orderItemRepository.addOrderItem((int) orderId, 1, 5, 1.99);
             if (orderItemAdded) {
                 Log.d(TAG, "Order item added successfully");
-                Toast.makeText(this, "Order item added successfully", Toast.LENGTH_SHORT).show();
-            } else {
-                Log.e(TAG, "Failed to add order item");
-                Toast.makeText(this, "Failed to add order item", Toast.LENGTH_SHORT).show();
             }
-            
+
+            // Test 9: Request Refund (Simulate COD -> Loyalty Points)
+            long refundId = orderRepository.requestRefund(newUser.getUserId(), (int)orderId, 1, "Damaged item", "The item was crushed", null);
+            if (refundId != -1) {
+                Log.d(TAG, "Refund request submitted successfully: #" + refundId);
+                // Test 10: Approve Refund (Simulate Admin Approval)
+                boolean approved = orderRepository.processRefundApproval((int)refundId, "Test Admin Approval");
+                if (approved) {
+                    double points = dbHelper.getUserLoyaltyPoints(newUser.getUserId());
+                    Log.d(TAG, "Refund approved! User now has " + points + " Loyalty Points.");
+                    if (points > 0) {
+                        Toast.makeText(this, "Refund & Loyalty Points Verified!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
             Log.d(TAG, "All database tests completed");
             Toast.makeText(this, "All database tests completed", Toast.LENGTH_LONG).show();
             

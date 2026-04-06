@@ -106,7 +106,7 @@ public class OrderHistoryActivity extends AppCompatActivity {
     /** Configures RecyclerView with its LayoutManager and adapter actions. */
     private void setupRecyclerView() {
         ordersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        orderAdapter = new OrderAdapter(this, orders, new OrderAdapter.OnOrderClickListener() {
+        orderAdapter = new OrderAdapter(this, orders, new OrderAdapter.OnOrderActionExtendedListener() {
             @Override
             public void onOrderClick(Order order) {
                 showOrderDetails(order);
@@ -120,6 +120,11 @@ public class OrderHistoryActivity extends AppCompatActivity {
             @Override
             public void onCancelOrderClick(Order order) {
                 showCancelConfirmation(order);
+            }
+
+            @Override
+            public void onRefundClick(Order order) {
+                showRefundConfirmation(order);
             }
         });
         ordersRecyclerView.setAdapter(orderAdapter);
@@ -183,10 +188,10 @@ public class OrderHistoryActivity extends AppCompatActivity {
 
     /** Navigates to the detailed tracking view for a specific order. */
     private void showOrderDetails(Order order) {
-        // Launch Tracking Activity
-        Intent intent = new Intent(this, OrderTrackingActivity.class);
+        // Launch specialized OrderDetailsActivity for granular management (cancellation, returns, issues)
+        Intent intent = new Intent(this, OrderDetailsActivity.class);
         intent.putExtra("order_id", order.getOrderId());
-        intent.putExtra("order_status", order.getStatus());
+        intent.putExtra("user_id", userId);
         startActivity(intent);
     }
 
@@ -226,20 +231,34 @@ public class OrderHistoryActivity extends AppCompatActivity {
 
     /** Processes order cancellation and sends a system notification. */
     private void cancelOrder(Order order) {
-        boolean success = orderRepository.updateOrderStatus(order.getOrderId(), userId, "Cancelled");
+        // Use the specialized cancelOrder method to handle 15% deduction and chat notifications
+        boolean success = orderRepository.cancelOrder(order.getOrderId(), userId);
         if (success) {
-            Toast.makeText(this, "Order #" + order.getOrderId() + " cancelled", Toast.LENGTH_SHORT).show();
-            
-            // Send Notification
-            GroceryNotificationManager.getInstance(this).sendNotification(userId,
-                    "Order Cancelled",
-                    "Your order #" + order.getOrderId() + " has been cancelled as requested.",
-                    GroceryNotificationManager.TYPE_ORDER,
-                    String.valueOf(order.getOrderId()));
-            
+            Toast.makeText(this, "Order #" + order.getOrderId() + " has been cancelled", Toast.LENGTH_SHORT).show();
             loadOrders();
         } else {
             Toast.makeText(this, "Failed to cancel order", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /** Displays a confirmation dialog before requesting a refund for a delivered order. */
+    private void showRefundConfirmation(Order order) {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Request Refund")
+                .setMessage("Are you sure you want to request a refund for order #" + order.getOrderId() + "?")
+                .setPositiveButton("Confirm Refund", (dialog, which) -> refundOrder(order))
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /** Processes order refund status update. */
+    private void refundOrder(Order order) {
+        boolean success = orderRepository.updateOrderStatus(order.getOrderId(), userId, "Refunded");
+        if (success) {
+            Toast.makeText(this, "Refund requested for order #" + order.getOrderId(), Toast.LENGTH_SHORT).show();
+            loadOrders();
+        } else {
+            Toast.makeText(this, "Failed to process refund request", Toast.LENGTH_SHORT).show();
         }
     }
 

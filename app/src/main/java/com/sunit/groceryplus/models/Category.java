@@ -74,6 +74,15 @@ public class Category {
         this.imageUrl = imageUrl;
     }
 
+    // Alias methods for compatibility
+    public String getImage() {
+        return imageUrl;
+    }
+
+    public void setImage(String image) {
+        this.imageUrl = image;
+    }
+
     @Override
     public String toString() {
         return "Category{" +

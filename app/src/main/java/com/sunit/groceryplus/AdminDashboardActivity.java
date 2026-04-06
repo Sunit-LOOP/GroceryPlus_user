@@ -2,7 +2,7 @@ package com.sunit.groceryplus;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
+
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -59,6 +59,11 @@ public class AdminDashboardActivity extends AppCompatActivity {
             startActivity(new Intent(this, VendorManagementActivity.class));
         });
 
+        // Messages
+        findViewById(R.id.messageCustomersCard).setOnClickListener(v -> {
+            startActivity(new Intent(this, com.sunit.groceryplus.admin.AdminMessagesActivity.class));
+        });
+
         // Analytics Dashboard
         findViewById(R.id.analyticsDashboardCard).setOnClickListener(v -> {
             startActivity(new Intent(this, AnalyticsDashboardActivity.class));
@@ -84,6 +89,11 @@ public class AdminDashboardActivity extends AppCompatActivity {
             startActivity(new Intent(this, DeliveryPersonnelActivity.class));
         });
 
+        // Support & Refunds
+        findViewById(R.id.supportRefundsCard).setOnClickListener(v -> {
+            startActivity(new Intent(this, com.sunit.groceryplus.admin.AdminSupportActivity.class));
+        });
+
         // Logout Button
         findViewById(R.id.logoutButton).setOnClickListener(v -> {
             Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
@@ -91,10 +101,4 @@ public class AdminDashboardActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        // Handle back press - go to login or exit
-        finish();
-    }
 }

@@ -153,18 +153,19 @@ public class PaymentTrackingActivity extends AppCompatActivity {
             do {
                 double amount = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.PaymentEntry.COLUMN_NAME_AMOUNT));
                 String method = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.PaymentEntry.COLUMN_NAME_PAYMENT_METHOD));
-                String dateStr = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.PaymentEntry.COLUMN_NAME_PAYMENT_DATE));
+                String status = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.PaymentEntry.COLUMN_NAME_STATUS));
                 
                 // Apply filter for displayed statistics
                 if (currentFilter.equals("all") || 
                     (currentFilter.equals("cod") && method.equalsIgnoreCase("cod")) ||
                     (currentFilter.equals("stripe") && method.equalsIgnoreCase("stripe"))) {
-                    totalAmount += amount;
-                    totalPayments++;
                     
-                    // Check if payment is from this month (simplified check)
-                    // In a real app, you'd parse the date properly
-                    monthlyAmount += amount;
+                    // Only count completed payments towards revenue (ignore Refunded/Pending)
+                    if ("Completed".equalsIgnoreCase(status)) {
+                        totalAmount += amount;
+                        totalPayments++;
+                        monthlyAmount += amount;
+                    }
                 }
             } while (cursor.moveToNext());
             cursor.close();

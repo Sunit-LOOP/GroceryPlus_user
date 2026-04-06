@@ -11,6 +11,9 @@ public class OrderItem {
     private int quantity;       // Quantity purchased
     private double price;       // Snapshot of Unit Price
     private String image;       // Snapshot of Image reference
+    private String itemStatus;  // active, cancelled, returned, replaced
+    private double refundAmount;
+    private String refundStatus;// pending, processed, rejected
 
     /** Default Constructor. */
     public OrderItem() {
@@ -98,6 +101,15 @@ public class OrderItem {
     public void setImage(String image) {
         this.image = image;
     }
+
+    public String getItemStatus() { return itemStatus; }
+    public void setItemStatus(String itemStatus) { this.itemStatus = itemStatus; }
+
+    public double getRefundAmount() { return refundAmount; }
+    public void setRefundAmount(double refundAmount) { this.refundAmount = refundAmount; }
+
+    public String getRefundStatus() { return refundStatus; }
+    public void setRefundStatus(String refundStatus) { this.refundStatus = refundStatus; }
 
     /**
      * Calculates the total cost for this line item.

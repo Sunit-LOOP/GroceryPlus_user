@@ -7,6 +7,7 @@ public final class DatabaseContract {
     /** Private constructor to prevent instantiation. */
     private DatabaseContract() {}
 
+
     /* Inner class that defines the users table contents */
     public static class UserEntry implements BaseColumns {
         public static final String TABLE_NAME = "users";
@@ -17,6 +18,8 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_USER_PASSWORD = "user_password";
         public static final String COLUMN_NAME_USER_SALT = "user_salt";
         public static final String COLUMN_NAME_USER_TYPE = "user_type";
+        public static final String COLUMN_NAME_WALLET_BALANCE = "wallet_balance";
+        public static final String COLUMN_NAME_LOYALTY_POINTS = "loyalty_points";
         public static final String COLUMN_NAME_CREATED_AT = "created_at";
     }
 
@@ -116,6 +119,8 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_DELIVERY_PERSON_ID = "delivery_person_id";
         public static final String COLUMN_NAME_ADDRESS_ID = "address_id";
         public static final String COLUMN_NAME_DELIVERY_INSTRUCTIONS = "delivery_instructions";
+        public static final String COLUMN_NAME_IS_PACKED = "is_packed";
+        public static final String COLUMN_NAME_MODIFIED_AT = "modified_at";
     }
 
     /* Inner class that defines the order_items table contents */
@@ -126,6 +131,9 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_PRODUCT_ID = "product_id";
         public static final String COLUMN_NAME_QUANTITY = "quantity";
         public static final String COLUMN_NAME_PRICE = "price";
+        public static final String COLUMN_NAME_ITEM_STATUS = "item_status"; // active, cancelled, returned, replaced
+        public static final String COLUMN_NAME_REFUND_AMOUNT = "refund_amount";
+        public static final String COLUMN_NAME_REFUND_STATUS = "refund_status"; // pending, processed, rejected
     }
 
     /* Inner class that defines the cart_items table contents */
@@ -231,6 +239,18 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_CREATED_AT = "created_at";
     }
 
+    /* Inner class that defines the wallet_transactions table contents */
+    public static class WalletTransactionEntry implements BaseColumns {
+        public static final String TABLE_NAME = "wallet_transactions";
+        public static final String COLUMN_NAME_TRANSACTION_ID = "transaction_id";
+        public static final String COLUMN_NAME_USER_ID = "user_id";
+        public static final String COLUMN_NAME_AMOUNT = "amount";
+        public static final String COLUMN_NAME_TYPE = "type";
+        public static final String COLUMN_NAME_SOURCE = "source";
+        public static final String COLUMN_NAME_DESCRIPTION = "description";
+        public static final String COLUMN_NAME_TIMESTAMP = "timestamp";
+    }
+
     // SQL statements to create tables
     public static final String SQL_CREATE_USERS_TABLE =
             "CREATE TABLE " + UserEntry.TABLE_NAME + " (" +
@@ -241,6 +261,8 @@ public final class DatabaseContract {
                     UserEntry.COLUMN_NAME_USER_PASSWORD + " TEXT," +
                     UserEntry.COLUMN_NAME_USER_SALT + " TEXT," +
                     UserEntry.COLUMN_NAME_USER_TYPE + " TEXT," +
+                    UserEntry.COLUMN_NAME_WALLET_BALANCE + " REAL DEFAULT 0.0," +
+                    UserEntry.COLUMN_NAME_LOYALTY_POINTS + " REAL DEFAULT 0.0," +
                     UserEntry.COLUMN_NAME_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP)";
 
     public static final String SQL_CREATE_CATEGORIES_TABLE =
@@ -275,6 +297,8 @@ public final class DatabaseContract {
                     OrderEntry.COLUMN_NAME_DELIVERY_PERSON_ID + " INTEGER," +
                     OrderEntry.COLUMN_NAME_ADDRESS_ID + " INTEGER," +
                     OrderEntry.COLUMN_NAME_DELIVERY_INSTRUCTIONS + " TEXT," +
+                    OrderEntry.COLUMN_NAME_IS_PACKED + " INTEGER DEFAULT 0," +
+                    OrderEntry.COLUMN_NAME_MODIFIED_AT + " TEXT," +
                     "FOREIGN KEY(" + OrderEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + ")," +
                     "FOREIGN KEY(" + OrderEntry.COLUMN_NAME_DELIVERY_PERSON_ID + ") REFERENCES " + DeliveryPersonEntry.TABLE_NAME + "(" + DeliveryPersonEntry.COLUMN_NAME_PERSON_ID + ")," +
                     "FOREIGN KEY(" + OrderEntry.COLUMN_NAME_ADDRESS_ID + ") REFERENCES " + AddressEntry.TABLE_NAME + "(" + AddressEntry.COLUMN_NAME_ADDRESS_ID + "))";
@@ -286,6 +310,9 @@ public final class DatabaseContract {
                     OrderItemEntry.COLUMN_NAME_PRODUCT_ID + " INTEGER," +
                     OrderItemEntry.COLUMN_NAME_QUANTITY + " INTEGER," +
                     OrderItemEntry.COLUMN_NAME_PRICE + " REAL," +
+                    OrderItemEntry.COLUMN_NAME_ITEM_STATUS + " TEXT DEFAULT 'active'," +
+                    OrderItemEntry.COLUMN_NAME_REFUND_AMOUNT + " REAL DEFAULT 0.0," +
+                    OrderItemEntry.COLUMN_NAME_REFUND_STATUS + " TEXT," +
                     "FOREIGN KEY(" + OrderItemEntry.COLUMN_NAME_ORDER_ID + ") REFERENCES " + OrderEntry.TABLE_NAME + "(" + OrderEntry.COLUMN_NAME_ORDER_ID + ")," +
                     "FOREIGN KEY(" + OrderItemEntry.COLUMN_NAME_PRODUCT_ID + ") REFERENCES " + ProductEntry.TABLE_NAME + "(" + ProductEntry.COLUMN_NAME_PRODUCT_ID + "))";
 
@@ -353,7 +380,7 @@ public final class DatabaseContract {
                     AdminSettingsEntry.COLUMN_NAME_DELIVERY_FEE + " REAL DEFAULT 0.0," +
                     AdminSettingsEntry.COLUMN_NAME_FREE_DELIVERY_ABOVE + " INTEGER DEFAULT 0," +
                     AdminSettingsEntry.COLUMN_NAME_FREE_DELIVERY_THRESHOLD + " REAL DEFAULT 0.0," +
-                    AdminSettingsEntry.COLUMN_NAME_CURRENCY_SYMBOL + " TEXT DEFAULT '₹'," +
+                    AdminSettingsEntry.COLUMN_NAME_CURRENCY_SYMBOL + " TEXT DEFAULT 'NPR'," +
                     AdminSettingsEntry.COLUMN_NAME_TIMEZONE + " TEXT DEFAULT 'UTC'," +
                     AdminSettingsEntry.COLUMN_NAME_ENABLE_NOTIFICATIONS + " INTEGER DEFAULT 1," +
                     AdminSettingsEntry.COLUMN_NAME_ENABLE_EMAIL_NOTIFICATIONS + " INTEGER DEFAULT 1," +
@@ -707,4 +734,36 @@ public static class NotificationEntry implements BaseColumns {
 
 public static final String SQL_DELETE_NOTIFICATIONS_TABLE =
         "DROP TABLE IF EXISTS " + NotificationEntry.TABLE_NAME;
+
+    /* Inner class that defines the support_tickets table contents */
+    public static class SupportTicketEntry implements BaseColumns {
+        public static final String TABLE_NAME = "support_tickets";
+        public static final String COLUMN_NAME_TICKET_ID = "ticket_id";
+        public static final String COLUMN_NAME_USER_ID = "user_id";
+        public static final String COLUMN_NAME_ORDER_ID = "order_id";
+        public static final String COLUMN_NAME_SUBJECT = "subject";
+        public static final String COLUMN_NAME_DESCRIPTION = "description";
+        public static final String COLUMN_NAME_ISSUE_TYPE = "issue_type"; // missing, wrong, damaged, expired, other
+        public static final String COLUMN_NAME_STATUS = "status"; // open, in-progress, resolved, closed
+        public static final String COLUMN_NAME_PRIORITY = "priority"; // low, medium, high
+        public static final String COLUMN_NAME_ISSUE_IMAGE = "issue_image"; // Base64 or path
+        public static final String COLUMN_NAME_CREATED_AT = "created_at";
+        public static final String COLUMN_NAME_UPDATED_AT = "updated_at";
+    }
+
+    public static final String SQL_CREATE_SUPPORT_TICKETS_TABLE =
+            "CREATE TABLE " + SupportTicketEntry.TABLE_NAME + " (" +
+                    SupportTicketEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    SupportTicketEntry.COLUMN_NAME_USER_ID + " INTEGER," +
+                    SupportTicketEntry.COLUMN_NAME_ORDER_ID + " INTEGER," +
+                    SupportTicketEntry.COLUMN_NAME_SUBJECT + " TEXT," +
+                    SupportTicketEntry.COLUMN_NAME_DESCRIPTION + " TEXT," +
+                    SupportTicketEntry.COLUMN_NAME_ISSUE_TYPE + " TEXT," +
+                    SupportTicketEntry.COLUMN_NAME_STATUS + " TEXT DEFAULT 'open'," +
+                    SupportTicketEntry.COLUMN_NAME_PRIORITY + " TEXT DEFAULT 'medium'," +
+                    SupportTicketEntry.COLUMN_NAME_ISSUE_IMAGE + " TEXT," +
+                    SupportTicketEntry.COLUMN_NAME_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    SupportTicketEntry.COLUMN_NAME_UPDATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    "FOREIGN KEY(" + SupportTicketEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + ")," +
+                    "FOREIGN KEY(" + SupportTicketEntry.COLUMN_NAME_ORDER_ID + ") REFERENCES " + OrderEntry.TABLE_NAME + "(" + OrderEntry.COLUMN_NAME_ORDER_ID + "))";
 }

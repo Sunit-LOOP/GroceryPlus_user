@@ -233,6 +233,71 @@
                 </com.google.android.material.card.MaterialCardView>
             </RadioGroup>
 
+            <!-- Loyalty Points Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Loyalty Points"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeColor="@color/chip_background_color"
+                app:strokeWidth="1dp"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_loyalty_badge"
+                        app:tint="@color/secondary"
+                        android:layout_marginEnd="16dp"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/availablePointsTv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Available: 0 Points"
+                            android:textColor="@color/text_primary"
+                            android:textStyle="bold"
+                            android:textSize="14sp"/>
+
+                        <TextView
+                            android:id="@+id/pointsValueTv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="(Equivalent to NPR 0.00)"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp"/>
+                    </LinearLayout>
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/usePointsSwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:enabled="false"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Promo Section -->
             <TextView
                 android:layout_width="wrap_content"
@@ -351,7 +416,7 @@
                             android:id="@+id/summarySubtotal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="₹1200.00"
+                            android:text="NPR 0.00"
                             android:textColor="@color/text_primary"
                             android:textStyle="bold"/>
                     </LinearLayout>
@@ -373,7 +438,7 @@
                             android:id="@+id/summaryDeliveryFee"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="₹50.00"
+                            android:text="NPR 0.00"
                             android:textColor="@color/text_primary"
                             android:textStyle="bold"/>
                     </LinearLayout>
@@ -397,11 +462,35 @@
                             android:id="@+id/summaryDiscount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="-₹0.00"
+                            android:text="-NPR 0.00"
                             android:textColor="@color/error"
                             android:textStyle="bold"/>
                     </LinearLayout>
                    
+                    <LinearLayout
+                        android:id="@+id/pointsDiscountRow"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Points Redeemed"
+                            android:textColor="@color/secondary"/>
+
+                        <TextView
+                            android:id="@+id/summaryPointsDiscount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="-NPR 0.00"
+                            android:textColor="@color/secondary"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
@@ -426,7 +515,7 @@
                             android:id="@+id/paymentTotalAmount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="₹1250.00"
+                            android:text="NPR 0.00"
                             android:textSize="18sp"
                             android:textStyle="bold"
                             android:textColor="@color/primary"/>
@@ -450,7 +539,7 @@
             android:id="@+id/paymentPayNowBtn"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Pay ₹1250.00"
+            android:text="Confirm Order"
             android:textSize="16sp"
             android:textStyle="bold"
             app:cornerRadius="28dp"

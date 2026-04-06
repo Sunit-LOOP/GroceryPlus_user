@@ -58,6 +58,19 @@ public class FakePaymentActivity extends AppCompatActivity {
         setupTextWatchers();
 
         processPaymentBtn.setOnClickListener(v -> handlePayment());
+        
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (paymentProcessingOverlay != null && paymentProcessingOverlay.getVisibility() == View.VISIBLE) {
+                    // Prevent back during processing
+                    return;
+                }
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+                setEnabled(true);
+            }
+        });
     }
 
     private void initViews() {
@@ -184,7 +197,7 @@ public class FakePaymentActivity extends AppCompatActivity {
         long orderId = dbHelper.createOrder(userId, amount, resolvedDeliveryFee, "PENDING", addressId, instructions);
         if (orderId != -1) {
             // Add payment record for tracking
-            long paymentId = dbHelper.addPayment((int)orderId, amount, "stripe", "TXN_" + System.currentTimeMillis());
+            long paymentId = dbHelper.addPayment((int)orderId, amount, "stripe", "TXN_" + System.currentTimeMillis(), "Completed");
             if (paymentId == -1) {
                 Log.e("FakePaymentActivity", "Failed to add payment record for order: " + orderId);
             }
@@ -222,12 +235,4 @@ public class FakePaymentActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        if (paymentProcessingOverlay != null && paymentProcessingOverlay.getVisibility() == View.VISIBLE) {
-            // Prevent back during processing
-            return;
-        }
-        super.onBackPressed();
-    }
 }

@@ -111,7 +111,6 @@ public class DeliveryPersonnelActivity extends AppCompatActivity {
         View dialogView = inflater.inflate(R.layout.dialog_add_delivery_person, null);
         builder.setView(dialogView);
 
-        // TODO: Add these fields to dialog_add_delivery_person layout
         TextInputEditText nameEt = dialogView.findViewById(R.id.personNameEt);
         TextInputEditText phoneEt = dialogView.findViewById(R.id.personPhoneEt);
         Button saveBtn = dialogView.findViewById(R.id.saveBtn);

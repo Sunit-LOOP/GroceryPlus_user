@@ -21,17 +21,39 @@ import static com.sunit.groceryplus.DatabaseContract.OrderEntry;
 import static com.sunit.groceryplus.DatabaseContract.OrderItemEntry;
 import static com.sunit.groceryplus.DatabaseContract.ProductEntry;
 import static com.sunit.groceryplus.DatabaseContract.UserEntry;
+import static com.sunit.groceryplus.DatabaseContract.ReviewEntry;
+import static com.sunit.groceryplus.DatabaseContract.WalletTransactionEntry;
 
 /** Core database management class for handling SQLite operations, schema versioning, and unified data access. */
 public class DatabaseHelper extends SQLiteOpenHelper {
     // Infrastructure
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "GroceryPlus.db";
-    private static final int DATABASE_VERSION = 10;
+    private static final int DATABASE_VERSION = 13;
 
     /** Initializes the helper with application context and predefined database settings. */
+    private static final String TABLE_WALLET_TRANSACTIONS_CREATE = 
+        "CREATE TABLE " + WalletTransactionEntry.TABLE_NAME + " (" +
+        WalletTransactionEntry.COLUMN_NAME_TRANSACTION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+        WalletTransactionEntry.COLUMN_NAME_USER_ID + " INTEGER, " +
+        WalletTransactionEntry.COLUMN_NAME_AMOUNT + " REAL, " +
+        WalletTransactionEntry.COLUMN_NAME_TYPE + " TEXT, " +
+        WalletTransactionEntry.COLUMN_NAME_SOURCE + " TEXT, " +
+        WalletTransactionEntry.COLUMN_NAME_DESCRIPTION + " TEXT, " +
+        WalletTransactionEntry.COLUMN_NAME_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+        "FOREIGN KEY (" + WalletTransactionEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + 
+        UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + ")" +
+        ");";
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    /** Enables the enforcement of foreign key constraints within the SQLite environment. */
+    @Override
+    public void onConfigure(SQLiteDatabase db) {
+        super.onConfigure(db);
+        db.setForeignKeyConstraintsEnabled(true);
     }
 
     /** Executes SQL statements to create all database tables and inserts initial seeds. */
@@ -59,6 +81,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(DatabaseContract.SQL_CREATE_SEARCH_HISTORY_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_ADMIN_SETTINGS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_WISHLISTS_TABLE);
+        db.execSQL(DatabaseContract.SQL_CREATE_SUPPORT_TICKETS_TABLE);
 
         insertDefaultAdmin(db);
         insertSampleCategoriesAndProducts(db);
@@ -71,16 +94,79 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         
         // Use MigrationHelper for proper schema migration
         MigrationHelper.migrateDatabase(db, oldVersion, newVersion);
+
+        if (oldVersion < 12) {
+            // Add loyalty points to users
+            addColumnIfNotExists(db, UserEntry.TABLE_NAME, UserEntry.COLUMN_NAME_LOYALTY_POINTS, "REAL DEFAULT 0.0");
+            
+            // Log migration
+            Log.d(TAG, "Migration to version 12 complete: added loyalty_points to users");
+        }
+
+        if (oldVersion < 13) {
+            // Update dummy product images
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'apple' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Fresh Apples'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'banana' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Fresh Bananas'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'orange' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Sweet Oranges'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'grapes' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Fresh Grapes'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'mango' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Ripe Mangoes'");
+            
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'tomato_red' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Fresh Tomatoes'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'carrot' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Fresh Carrots'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'green_vegetable' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Green Spinach'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'potato' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Fresh Potatoes'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'onion' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Fresh Onions'");
+            
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'bottle_milk' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Fresh Milk'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'dahi' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Greek Yogurt'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'cheese_slice' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Cheddar Cheese'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'butter' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Fresh Butter'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'egg' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Farm Eggs'");
+            
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'bread' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Whole Wheat Bread'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'crossant' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Fresh Croissants'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'chocolate_cake' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Chocolate Cake'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'bagel' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'Fresh Bagels'");
+            db.execSQL("UPDATE " + ProductEntry.TABLE_NAME + " SET " + ProductEntry.COLUMN_NAME_IMAGE + " = 'pastery' WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_NAME + " = 'French Pastries'");
+            
+            Log.d(TAG, "Migration to version 13 complete: dynamically refreshed dummy product images.");
+        }
         
         // Validate database after migration
         if (!MigrationHelper.validateDatabase(db)) {
             Log.e(TAG, "Database validation failed after migration");
-            // In production, you might want to handle this more gracefully
-            // For now, we'll log the error and continue
         }
         
-        // Insert sample data if needed
-        insertSampleData();
+        // Insert sample data if needed - PASS THE DATABASE INSTANCE to avoid recursion
+        insertSampleData(db);
+    }
+
+    /**
+     * Helper to add a column only if it doesn't already exist.
+     */
+    private void addColumnIfNotExists(SQLiteDatabase db, String tableName, String columnName, String columnType) {
+        try {
+            // Check if column exists
+            Cursor cursor = db.rawQuery("PRAGMA table_info(" + tableName + ")", null);
+            boolean exists = false;
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    int nameIndex = cursor.getColumnIndex("name");
+                    if (nameIndex != -1 && columnName.equalsIgnoreCase(cursor.getString(nameIndex))) {
+                        exists = true;
+                        break;
+                    }
+                }
+                cursor.close();
+            }
+            
+            if (!exists) {
+                db.execSQL("ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + columnType);
+                Log.d(TAG, "Added column " + columnName + " to " + tableName);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error adding column " + columnName + " to " + tableName, e);
+        }
     }
 
     /** Inserts a default administrator account into the users table. */
@@ -92,7 +178,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             ContentValues values = new ContentValues();
             values.put(UserEntry.COLUMN_NAME_USER_NAME, "Admin User");
-            values.put(UserEntry.COLUMN_NAME_USER_EMAIL, "admin@gmail.com");
+            values.put(UserEntry.COLUMN_NAME_USER_EMAIL, "admin@gmail.com".toLowerCase());
             values.put(UserEntry.COLUMN_NAME_USER_PHONE, "9815689963");
             values.put(UserEntry.COLUMN_NAME_USER_PASSWORD, hashedPassword);
             values.put(UserEntry.COLUMN_NAME_USER_SALT, salt);
@@ -140,7 +226,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             
             ContentValues values = new ContentValues();
             values.put(UserEntry.COLUMN_NAME_USER_NAME, name);
-            values.put(UserEntry.COLUMN_NAME_USER_EMAIL, email);
+            values.put(UserEntry.COLUMN_NAME_USER_EMAIL, email != null ? email.toLowerCase() : null);
             values.put(UserEntry.COLUMN_NAME_USER_PHONE, phone);
             values.put(UserEntry.COLUMN_NAME_USER_PASSWORD, hashedPassword);
             values.put(UserEntry.COLUMN_NAME_USER_SALT, salt);
@@ -158,7 +244,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         
         Log.d(TAG, "Authenticating user with email: " + email);
-        String selectQuery = "SELECT * FROM " + UserEntry.TABLE_NAME + " WHERE " + UserEntry.COLUMN_NAME_USER_EMAIL + " = ?";
+        String selectQuery = "SELECT * FROM " + UserEntry.TABLE_NAME + " WHERE LOWER(" + UserEntry.COLUMN_NAME_USER_EMAIL + ") = LOWER(?)";
         
         Cursor cursor = db.rawQuery(selectQuery, new String[]{email});
         
@@ -266,7 +352,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 120.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh and crispy red apples");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "apple");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 50);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -276,7 +362,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 60.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Ripe yellow bananas");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "banana");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 75);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -286,7 +372,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 80.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Juicy and sweet oranges");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "orange");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 60);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -296,7 +382,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 150.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Sweet and fresh grapes");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "grapes");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 40);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -306,7 +392,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 180.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Sweet and juicy mangoes");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "mango");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 35);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -317,7 +403,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 40.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh red tomatoes");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "tomato_red");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 100);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -327,7 +413,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 30.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh orange carrots");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "carrot");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 80);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -337,7 +423,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 25.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh green spinach leaves");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "green_vegetable");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 60);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -347,7 +433,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 35.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh and clean potatoes");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "potato");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 120);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -357,7 +443,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 45.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh red onions");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "onion");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 90);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -368,7 +454,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 55.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh whole milk");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "bottle_milk");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 30);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -378,7 +464,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 85.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Creamy Greek yogurt");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "dahi");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 25);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -388,7 +474,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 220.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Aged cheddar cheese");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "cheese_slice");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 20);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -398,7 +484,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 120.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Pure fresh butter");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "butter");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 35);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -408,7 +494,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 75.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh farm eggs");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "egg");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 50);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -419,7 +505,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 35.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh whole wheat bread");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "bread");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 25);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -429,7 +515,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 45.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Buttery fresh croissants");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "crossant");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 30);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -439,7 +525,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 180.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Delicious chocolate cake");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "chocolate_cake");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 15);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -449,7 +535,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 40.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh baked bagels");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "bagel");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 35);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -459,7 +545,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
         productValues.put(ProductEntry.COLUMN_NAME_PRICE, 95.0);
         productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh French pastries");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "product_icon");
+        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "pastery");
         productValues.put(ProductEntry.COLUMN_NAME_STOCK, 20);
         productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
@@ -470,7 +556,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /** Retrieves a user object by their email address. */
     public User getUserByEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String selectQuery = "SELECT * FROM " + UserEntry.TABLE_NAME + " WHERE " + UserEntry.COLUMN_NAME_USER_EMAIL + " = ?";
+        String selectQuery = "SELECT * FROM " + UserEntry.TABLE_NAME + " WHERE LOWER(" + UserEntry.COLUMN_NAME_USER_EMAIL + ") = LOWER(?)";
         Cursor cursor = db.rawQuery(selectQuery, new String[]{email});
         
         if (cursor != null && cursor.moveToFirst()) {
@@ -544,7 +630,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try {
             ContentValues values = new ContentValues();
             values.put(UserEntry.COLUMN_NAME_USER_NAME, name);
-            values.put(UserEntry.COLUMN_NAME_USER_EMAIL, email);
+            values.put(UserEntry.COLUMN_NAME_USER_EMAIL, email != null ? email.toLowerCase() : null);
             values.put(UserEntry.COLUMN_NAME_USER_PHONE, phone);
             
             int result = db.update(UserEntry.TABLE_NAME, values, 
@@ -562,7 +648,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         
         Log.d(TAG, "Checking if user exists with email: " + email);
-        String selectQuery = "SELECT * FROM " + UserEntry.TABLE_NAME + " WHERE " + UserEntry.COLUMN_NAME_USER_EMAIL + " = ?";
+        String selectQuery = "SELECT * FROM " + UserEntry.TABLE_NAME + " WHERE LOWER(" + UserEntry.COLUMN_NAME_USER_EMAIL + ") = LOWER(?)";
         
         Cursor cursor = db.rawQuery(selectQuery, new String[]{email});
         
@@ -1249,6 +1335,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     order.setDeliveryPersonId(deliveryPersonId);
                     order.setDeliveryPersonName(deliveryPersonName);
                     
+                    // Extract is_packed
+                    int isPackedIndex = cursor.getColumnIndex("is_packed");
+                    if (isPackedIndex != -1) {
+                         order.setPacked(cursor.getInt(isPackedIndex) == 1);
+                    }
+                    
                     orders.add(order);
                 } catch (Exception e) {
                     Log.e(TAG, "Error parsing order", e);
@@ -1305,6 +1397,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     order.setShippedDate(shippedDate);
                     order.setDeliveryPersonId(deliveryPersonId);
                     order.setDeliveryPersonName(deliveryPersonName);
+                    
+                    // Extract is_packed
+                    int isPackedIndex = cursor.getColumnIndex("is_packed");
+                    if (isPackedIndex != -1) {
+                         order.setPacked(cursor.getInt(isPackedIndex) == 1);
+                    }
                     
                     orders.add(order);
                 } catch (Exception e) {
@@ -1450,7 +1548,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             int result = db.update(OrderEntry.TABLE_NAME, values, 
                                   OrderEntry.COLUMN_NAME_ORDER_ID + " = ?", 
                                   new String[]{String.valueOf(orderId)});
-            return result > 0;
+        return result > 0;
         } catch (Exception e) {
             Log.e(TAG, "Error updating order status", e);
             return false;
@@ -1473,8 +1571,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * Insert sample categories and products
      */
     public void insertSampleData() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        
+        insertSampleData(this.getWritableDatabase());
+    }
+
+    /**
+     * Insert sample data using a specific database instance to avoid recursion during onUpgrade.
+     */
+    public void insertSampleData(SQLiteDatabase db) {
         try {
             Log.d(TAG, "Starting independent sample data check and insertion");
             
@@ -1504,9 +1607,127 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             
             // 4. Promotions
             insertSamplePromotions();
+            
+            // 5. Sample Reviews
+            insertSampleReviews(db);
+            
+            // 6. Sample Orders (for Analytics)
+            insertSampleOrders(db);
         } catch (Exception e) {
             Log.e(TAG, "Error inserting sample data", e);
         }
+    }
+
+    private void insertSampleReviews(SQLiteDatabase db) {
+        try {
+            // Check if reviews already exist
+            Cursor checkCursor = db.rawQuery("SELECT COUNT(*) FROM " + ReviewEntry.TABLE_NAME, null);
+            if (checkCursor != null && checkCursor.moveToFirst()) {
+                if (checkCursor.getInt(0) > 0) {
+                    checkCursor.close();
+                    return;
+                }
+                checkCursor.close();
+            }
+
+            Log.d(TAG, "Inserting sample reviews for all products...");
+
+            // Create sample users if they don't exist
+            String[] names = {"John Doe", "Jane Smith", "Alice Johnson"};
+            String[] emails = {"john@example.com", "jane@example.com", "alice@example.com"};
+            int[] userIds = new int[3];
+
+            for (int i = 0; i < 3; i++) {
+                if (!isUserExists(emails[i])) {
+                    userIds[i] = (int) addUser(names[i], emails[i], "980000000" + i, "password123", "customer");
+                } else {
+                    User u = getUserByEmail(emails[i]);
+                    userIds[i] = u != null ? u.getUserId() : 1;
+                }
+            }
+
+            // Get all products
+            Cursor productCursor = db.query(ProductEntry.TABLE_NAME, new String[]{ProductEntry.COLUMN_NAME_PRODUCT_ID}, null, null, null, null, null);
+            if (productCursor != null && productCursor.moveToFirst()) {
+                String[][] sampleReviews = {
+                    {"5", "Amazing quality, very fresh!"},
+                    {"4", "Good product, but the delivery was a bit late."},
+                    {"5", "Highly recommended for daily use."},
+                    {"3", "It's okay, nothing special."},
+                    {"4", "Value for money. Will buy again."},
+                    {"5", "Best in the market!"}
+                };
+
+                java.util.Random random = new java.util.Random();
+                do {
+                    int productId = productCursor.getInt(0);
+                    
+                    // Add 3 reviews per product
+                    for (int i = 0; i < 3; i++) {
+                        int userIdx = i % 3;
+                        int reviewIdx = random.nextInt(sampleReviews.length);
+                        
+                        ContentValues values = new ContentValues();
+                        values.put(ReviewEntry.COLUMN_NAME_USER_ID, userIds[userIdx]);
+                        values.put(ReviewEntry.COLUMN_NAME_PRODUCT_ID, productId);
+                        values.put(ReviewEntry.COLUMN_NAME_RATING, Integer.parseInt(sampleReviews[reviewIdx][0]));
+                        values.put(ReviewEntry.COLUMN_NAME_COMMENT, sampleReviews[reviewIdx][1]);
+                        db.insert(ReviewEntry.TABLE_NAME, null, values);
+                    }
+                } while (productCursor.moveToNext());
+                productCursor.close();
+            }
+            Log.d(TAG, "Sample reviews inserted successfully.");
+        } catch (Exception e) {
+            Log.e(TAG, "Error inserting sample reviews", e);
+        }
+    }
+
+    private void insertSampleOrders(SQLiteDatabase db) {
+        // Check if orders already exist
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + OrderEntry.TABLE_NAME, null);
+        int count = 0;
+        if (cursor != null && cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+            cursor.close();
+        }
+        
+        if (count > 0) return; // Skip if orders exist
+
+        Log.d(TAG, "Inserting sample orders...");
+        
+        // Use default admin ID or find a customer ID
+        int userId = 1; 
+        
+        // Add orders with different statuses and dates
+        // 1. Delivered today
+        createSampleOrder(db, userId, 150.0, "Delivered", "2025-05-20"); // Replace with dynamic date if needed
+        
+        // 2. Pending
+        createSampleOrder(db, userId, 200.0, "Pending", "2025-05-21");
+        
+        // 3. Shipped
+        createSampleOrder(db, userId, 450.0, "Shipped", "2025-05-19");
+        
+        // 4. Delivered last month
+        createSampleOrder(db, userId, 300.0, "Delivered", "2025-04-15");
+        
+        // 5. Dynamic Today Order (Real-time analytics)
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault());
+        String today = sdf.format(new java.util.Date());
+        createSampleOrder(db, userId, 120.0, "Delivered", today);
+        createSampleOrder(db, userId, 500.0, "Delivered", today);
+    }
+
+    private void createSampleOrder(SQLiteDatabase db, int userId, double amount, String status, String date) {
+        ContentValues values = new ContentValues();
+        values.put(OrderEntry.COLUMN_NAME_USER_ID, userId);
+        values.put(OrderEntry.COLUMN_NAME_TOTAL_AMOUNT, amount);
+        values.put(OrderEntry.COLUMN_NAME_DELIVERY_FEE, 50.0);
+        values.put(OrderEntry.COLUMN_NAME_STATUS, status);
+        values.put(OrderEntry.COLUMN_NAME_ADDRESS_ID, 1);
+        values.put(OrderEntry.COLUMN_NAME_ORDER_DATE, date);
+        db.insert(OrderEntry.TABLE_NAME, null, values);
     }
 
     /**
@@ -1514,8 +1735,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * Updates products with 0 or null stock to have default stock of 100
      */
     public void ensureAllProductsHaveStock() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        
+        ensureAllProductsHaveStock(this.getWritableDatabase());
+    }
+
+    /**
+     * Ensure all products have stock quantities using a specific database instance.
+     */
+    public void ensureAllProductsHaveStock(SQLiteDatabase db) {
         try {
             // Update products with 0 or null stock to have default stock of 100
             ContentValues values = new ContentValues();
@@ -1591,7 +1817,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public double getTotalRevenue() {
         SQLiteDatabase db = this.getReadableDatabase();
         double totalRevenue = 0;
-        String query = "SELECT SUM(" + OrderEntry.COLUMN_NAME_TOTAL_AMOUNT + ") FROM " + OrderEntry.TABLE_NAME;
+        String query = "SELECT SUM(" + OrderEntry.COLUMN_NAME_TOTAL_AMOUNT + ") FROM " + OrderEntry.TABLE_NAME +
+                       " WHERE " + OrderEntry.COLUMN_NAME_STATUS + " = 'Delivered'";
         Cursor cursor = db.rawQuery(query, null);
         if (cursor.moveToFirst()) {
             totalRevenue = cursor.getDouble(0);
@@ -1649,6 +1876,74 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return count;
+    }
+
+    /**
+     * Calculates revenue for today.
+     */
+    public double getTodayRevenue() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double revenue = 0;
+        String query = "SELECT SUM(" + OrderEntry.COLUMN_NAME_TOTAL_AMOUNT + ") FROM " + OrderEntry.TABLE_NAME +
+                       " WHERE " + OrderEntry.COLUMN_NAME_STATUS + " = 'Delivered'" +
+                       " AND date(" + OrderEntry.COLUMN_NAME_ORDER_DATE + ") = date('now', 'localtime')";
+        
+        Cursor cursor = db.rawQuery(query, null);
+        if (cursor.moveToFirst()) {
+            revenue = cursor.getDouble(0);
+        }
+        cursor.close();
+        return revenue;
+    }
+
+    /**
+     * Calculates revenue for a specific month and year.
+     * @param month 1-12
+     * @param year e.g. 2023
+     */
+    public double getMonthRevenue(int month, int year) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double revenue = 0;
+        String monthStr = String.format("%02d", month);
+        String yearStr = String.format("%04d", year);
+        
+        String query = "SELECT SUM(" + OrderEntry.COLUMN_NAME_TOTAL_AMOUNT + ") FROM " + OrderEntry.TABLE_NAME +
+                       " WHERE " + OrderEntry.COLUMN_NAME_STATUS + " = 'Delivered'" +
+                       " AND strftime('%m', " + OrderEntry.COLUMN_NAME_ORDER_DATE + ") = ?" +
+                       " AND strftime('%Y', " + OrderEntry.COLUMN_NAME_ORDER_DATE + ") = ?";
+                       
+        Cursor cursor = db.rawQuery(query, new String[]{monthStr, yearStr});
+        if (cursor.moveToFirst()) {
+            revenue = cursor.getDouble(0);
+        }
+        cursor.close();
+        return revenue;
+    }
+
+    /**
+     * Calculates revenue for a specific day.
+     * @param day 1-31
+     * @param month 1-12
+     * @param year e.g., 2023
+     */
+    public double getDailyRevenue(int day, int month, int year) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double revenue = 0;
+        String dayStr = String.format("%02d", day);
+        String monthStr = String.format("%02d", month);
+        String yearStr = String.format("%04d", year);
+        String dateStr = yearStr + "-" + monthStr + "-" + dayStr;
+
+        String query = "SELECT SUM(" + OrderEntry.COLUMN_NAME_TOTAL_AMOUNT + ") FROM " + OrderEntry.TABLE_NAME +
+                       " WHERE " + OrderEntry.COLUMN_NAME_STATUS + " = 'Delivered'" +
+                       " AND date(" + OrderEntry.COLUMN_NAME_ORDER_DATE + ") = ?";
+                       
+        Cursor cursor = db.rawQuery(query, new String[]{dateStr});
+        if (cursor.moveToFirst()) {
+            revenue = cursor.getDouble(0);
+        }
+        cursor.close();
+        return revenue;
     }
 
     // ==================== PROMOTION METHODS ====================
@@ -1761,7 +2056,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // ==================== PAYMENT METHODS ====================
     
     /** Records a new payment transaction associated with an order. */
-    public long addPayment(int orderId, double amount, String paymentMethod, String transactionId) {
+    public long addPayment(int orderId, double amount, String paymentMethod, String transactionId, String status) {
         SQLiteDatabase db = this.getWritableDatabase();
         
         try {
@@ -1770,6 +2065,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             values.put(DatabaseContract.PaymentEntry.COLUMN_NAME_AMOUNT, amount);
             values.put(DatabaseContract.PaymentEntry.COLUMN_NAME_PAYMENT_METHOD, paymentMethod);
             values.put(DatabaseContract.PaymentEntry.COLUMN_NAME_TRANSACTION_ID, transactionId);
+            values.put(DatabaseContract.PaymentEntry.COLUMN_NAME_STATUS, status);
             
             return db.insert(DatabaseContract.PaymentEntry.TABLE_NAME, null, values);
         } catch (Exception e) {
@@ -1782,6 +2078,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Cursor getAllPayments() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(DatabaseContract.PaymentEntry.TABLE_NAME, null, null, null, null, null, DatabaseContract.PaymentEntry.COLUMN_NAME_PAYMENT_DATE + " DESC");
+    }
+    
+    /** Retrieves payment details for a specific order. */
+    public Cursor getPaymentByOrderId(int orderId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(DatabaseContract.PaymentEntry.TABLE_NAME, null,
+                DatabaseContract.PaymentEntry.COLUMN_NAME_ORDER_ID + " = ?",
+                new String[]{String.valueOf(orderId)}, null, null, null);
     }
     
     /** Updates the status (e.g., 'completed', 'pending') of a specific payment. */
@@ -1880,11 +2184,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                           "THEN m." + DatabaseContract.MessageEntry.COLUMN_NAME_RECEIVER_ID + " " +
                           "ELSE m." + DatabaseContract.MessageEntry.COLUMN_NAME_SENDER_ID + " END) as conversation_partner_id " +
                           "FROM " + DatabaseContract.MessageEntry.TABLE_NAME + " m " +
-                          "JOIN " + DatabaseContract.UserEntry.TABLE_NAME + " u ON u." + DatabaseContract.UserEntry.COLUMN_NAME_USER_ID + " = conversation_partner_id " +
+                          "JOIN " + DatabaseContract.UserEntry.TABLE_NAME + " u ON u." + DatabaseContract.UserEntry.COLUMN_NAME_USER_ID + " = " +
+                          "(CASE WHEN m." + DatabaseContract.MessageEntry.COLUMN_NAME_SENDER_ID + " = ? " +
+                          "THEN m." + DatabaseContract.MessageEntry.COLUMN_NAME_RECEIVER_ID + " " +
+                          "ELSE m." + DatabaseContract.MessageEntry.COLUMN_NAME_SENDER_ID + " END) " +
                           "WHERE m." + DatabaseContract.MessageEntry.COLUMN_NAME_MESSAGE_ID + " IN (" + subQuery + ") " +
                           "ORDER BY m." + DatabaseContract.MessageEntry.COLUMN_NAME_CREATED_AT + " DESC";
 
-        return db.rawQuery(mainQuery, new String[]{sAdminId});
+        return db.rawQuery(mainQuery, new String[]{sAdminId, sAdminId});
     }
 
     /** Marks all unread messages from a specific sender as read. */
@@ -1919,8 +2226,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     /** Retrieves all reviews for a specific product, ordered by date. */
-    public java.util.List<com.sunit.groceryplus.models.Review> getReviewsForProduct(int productId) {
-        java.util.List<com.sunit.groceryplus.models.Review> reviews = new java.util.ArrayList<>();
+    public List<com.sunit.groceryplus.models.Review> getReviewsForProduct(int productId) {
+        List<com.sunit.groceryplus.models.Review> reviews = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         
         String query = "SELECT r.*, u." + DatabaseContract.UserEntry.COLUMN_NAME_USER_NAME + 
@@ -2072,9 +2379,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String date = cursor.getString(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_ORDER_DATE));
             String shippedDate = cursor.getString(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_SHIPPED_DATE));
             int addressId = cursor.getInt(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_ADDRESS_ID));
+            int isPackedIndex = cursor.getColumnIndex(OrderEntry.COLUMN_NAME_IS_PACKED);
+            boolean isPacked = (isPackedIndex != -1 && !cursor.isNull(isPackedIndex)) && cursor.getInt(isPackedIndex) == 1;
             cursor.close();
             com.sunit.groceryplus.models.Order order = new com.sunit.groceryplus.models.Order(orderId, userId, userName, amount, deliveryFee, status, date, addressId);
             order.setShippedDate(shippedDate);
+            order.setPacked(isPacked);
             return order;
         }
         return null;
@@ -2113,6 +2423,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                        " WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_ID + " = ? AND " + ProductEntry.COLUMN_NAME_STOCK + " >= ?";
         
         db.execSQL(query, new Object[]{productId, quantity});
+        return true;
+    }
+
+    /** Increments the available stock for a product when an order is cancelled or refunded. */
+    public boolean incrementStock(int productId, int quantity) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "UPDATE " + ProductEntry.TABLE_NAME + 
+                       " SET " + ProductEntry.COLUMN_NAME_STOCK + " = " + ProductEntry.COLUMN_NAME_STOCK + " + " + quantity +
+                       " WHERE " + ProductEntry.COLUMN_NAME_PRODUCT_ID + " = ?";
+        
+        db.execSQL(query, new Object[]{productId});
         return true;
     }
 
@@ -2524,51 +2845,252 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         
         return orders;
     }
-    
-    /** Get today's revenue. */
-    public double getTodayRevenue() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
-        
-        Cursor cursor = db.rawQuery("SELECT SUM(total_amount) FROM orders WHERE DATE(created_at) = ?", new String[]{today});
-        
-        if (cursor != null && cursor.moveToFirst()) {
-            double revenue = cursor.getDouble(0);
-            cursor.close();
-            return revenue;
-        }
-        return 0.0;
+    // ==================== SUPPORT TICKET METHODS ====================
+
+    public long createSupportTicket(int userId, int orderId, String subject, String description, String issueType, String imageBase64) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.SupportTicketEntry.COLUMN_NAME_USER_ID, userId);
+        values.put(DatabaseContract.SupportTicketEntry.COLUMN_NAME_ORDER_ID, orderId);
+        values.put(DatabaseContract.SupportTicketEntry.COLUMN_NAME_SUBJECT, subject);
+        values.put(DatabaseContract.SupportTicketEntry.COLUMN_NAME_DESCRIPTION, description);
+        values.put(DatabaseContract.SupportTicketEntry.COLUMN_NAME_ISSUE_TYPE, issueType);
+        values.put(DatabaseContract.SupportTicketEntry.COLUMN_NAME_ISSUE_IMAGE, imageBase64);
+        return db.insert(DatabaseContract.SupportTicketEntry.TABLE_NAME, null, values);
     }
-    
-    /** Get monthly revenue. */
-    public double getMonthRevenue(int month, int year) {
+
+    public Cursor getUserTickets(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
-        
-        Cursor cursor = db.rawQuery(
-                "SELECT SUM(total_amount) FROM orders WHERE strftime('%m', created_at) = ? AND strftime('%Y', created_at) = ?",
-                new String[]{String.format("%02d", month), String.valueOf(year)});
-        
-        if (cursor != null && cursor.moveToFirst()) {
-            double revenue = cursor.getDouble(0);
-            cursor.close();
-            return revenue;
-        }
-        return 0.0;
+        return db.query(DatabaseContract.SupportTicketEntry.TABLE_NAME, null,
+                DatabaseContract.SupportTicketEntry.COLUMN_NAME_USER_ID + " = ?",
+                new String[]{String.valueOf(userId)}, null, null, DatabaseContract.SupportTicketEntry.COLUMN_NAME_CREATED_AT + " DESC");
     }
-    
-    /** Get daily revenue. */
-    public double getDailyRevenue(int day, int month, int year) {
+
+    public boolean updateTicketStatus(int ticketId, String status) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.SupportTicketEntry.COLUMN_NAME_STATUS, status);
+        values.put(DatabaseContract.SupportTicketEntry.COLUMN_NAME_UPDATED_AT, "DATETIME('now')"); // Simple hack, ideally use proper date
+        return db.update(DatabaseContract.SupportTicketEntry.TABLE_NAME, values,
+                DatabaseContract.SupportTicketEntry._ID + " = ?",
+                new String[]{String.valueOf(ticketId)}) > 0;
+    }
+
+    public Cursor getAllTickets() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(DatabaseContract.SupportTicketEntry.TABLE_NAME, null, null, null, null, null, 
+                DatabaseContract.SupportTicketEntry.COLUMN_NAME_CREATED_AT + " DESC");
+    }
+
+    // ==================== WALLET METHODS ====================
+
+    public double getWalletBalance(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(UserEntry.TABLE_NAME, new String[]{DatabaseContract.UserEntry.COLUMN_NAME_WALLET_BALANCE},
+                UserEntry.COLUMN_NAME_USER_ID + " = ?", new String[]{String.valueOf(userId)}, null, null, null);
+        double balance = 0.0;
+        if (cursor != null && cursor.moveToFirst()) {
+            balance = cursor.getDouble(0);
+            cursor.close();
+        }
+        return balance;
+    }
+
+    public boolean addWalletBalance(int userId, double amount) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("UPDATE " + UserEntry.TABLE_NAME + " SET wallet_balance = wallet_balance + ? WHERE user_id = ?",
+                new Object[]{amount, userId});
+        return true;
+    }
+
+    // ==================== ITEM-WISE STATUS METHODS ====================
+
+    public boolean updateOrderItemStatus(int orderItemId, String status, double refundAmount, String refundStatus) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(OrderItemEntry.COLUMN_NAME_ITEM_STATUS, status);
+        values.put(OrderItemEntry.COLUMN_NAME_REFUND_AMOUNT, refundAmount);
+        values.put(OrderItemEntry.COLUMN_NAME_REFUND_STATUS, refundStatus);
+        return db.update(OrderItemEntry.TABLE_NAME, values,
+                OrderItemEntry.COLUMN_NAME_ORDER_ITEM_ID + " = ?",
+                new String[]{String.valueOf(orderItemId)}) > 0;
+    }
+
+    /** Increments a user's loyalty points balance. */
+    public void addLoyaltyPoints(int userId, double amount) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "UPDATE " + UserEntry.TABLE_NAME + 
+                       " SET " + UserEntry.COLUMN_NAME_LOYALTY_POINTS + " = " + UserEntry.COLUMN_NAME_LOYALTY_POINTS + " + " + amount +
+                       " WHERE " + UserEntry.COLUMN_NAME_USER_ID + " = ?";
+        db.execSQL(query, new Object[]{userId});
+        Log.d(TAG, "Added " + amount + " loyalty points to user " + userId);
+    }
+
+    /** Retrieves the current loyalty points balance for a specific user. */
+    public double getUserLoyaltyPoints(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT " + UserEntry.COLUMN_NAME_LOYALTY_POINTS + " FROM " + UserEntry.TABLE_NAME +
+                       " WHERE " + UserEntry.COLUMN_NAME_USER_ID + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
+        double points = 0.0;
+        if (cursor != null && cursor.moveToFirst()) {
+            points = cursor.getDouble(0);
+            cursor.close();
+        }
+        return points;
+    }
+
+
+    /** Submits a formal refund request for an order item. */
+    public long submitRefundRequest(int userId, int orderId, int productId, double amount, String reason, String details, String refundMethod) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.RefundEntry.COLUMN_NAME_CUSTOMER_ID, userId);
+        values.put(DatabaseContract.RefundEntry.COLUMN_NAME_ORDER_ID, orderId);
+        values.put(DatabaseContract.RefundEntry.COLUMN_NAME_REFUND_AMOUNT, amount);
+        values.put(DatabaseContract.RefundEntry.COLUMN_NAME_REFUND_REASON, reason);
+        values.put(DatabaseContract.RefundEntry.COLUMN_NAME_ADMIN_NOTES, details);
+        values.put(DatabaseContract.RefundEntry.COLUMN_NAME_REFUND_METHOD, refundMethod);
+        values.put(DatabaseContract.RefundEntry.COLUMN_NAME_STATUS, "pending");
+        values.put(DatabaseContract.RefundEntry.COLUMN_NAME_REQUESTED_DATE, new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date()));
+        
+        long refundId = db.insert(DatabaseContract.RefundEntry.TABLE_NAME, null, values);
+        
+        if (refundId != -1) {
+            // Update order item status too
+            ContentValues itemValues = new ContentValues();
+            itemValues.put(OrderItemEntry.COLUMN_NAME_REFUND_STATUS, "pending");
+            itemValues.put(OrderItemEntry.COLUMN_NAME_ITEM_STATUS, "refund_requested");
+            db.update(OrderItemEntry.TABLE_NAME, itemValues,
+                    OrderItemEntry.COLUMN_NAME_ORDER_ID + " = ? AND " + OrderItemEntry.COLUMN_NAME_PRODUCT_ID + " = ?",
+                    new String[]{String.valueOf(orderId), String.valueOf(productId)});
+        }
+        
+        return refundId;
+    }
+
+
+    /** Retrieves all refund requests that are currently in 'pending' status for admin review. */
+    public java.util.List<com.sunit.groceryplus.models.Refund> getPendingRefunds() {
+        java.util.List<com.sunit.groceryplus.models.Refund> refunds = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         
-        Cursor cursor = db.rawQuery(
-                "SELECT SUM(total_amount) FROM orders WHERE strftime('%d', created_at) = ? AND strftime('%m', created_at) = ? AND strftime('%Y', created_at) = ?",
-                new String[]{String.format("%02d", day), String.format("%02d", month), String.valueOf(year)});
+        // Joined query to get product and customer names for the UI
+        String query = "SELECT r.*, u." + UserEntry.COLUMN_NAME_USER_NAME + 
+                       " FROM " + DatabaseContract.RefundEntry.TABLE_NAME + " r" +
+                       " JOIN " + UserEntry.TABLE_NAME + " u ON r." + DatabaseContract.RefundEntry.COLUMN_NAME_CUSTOMER_ID + " = u." + UserEntry.COLUMN_NAME_USER_ID +
+                       " WHERE r." + DatabaseContract.RefundEntry.COLUMN_NAME_STATUS + " = 'pending'" +
+                       " ORDER BY r." + DatabaseContract.RefundEntry.COLUMN_NAME_REQUESTED_DATE + " DESC";
+        
+        Cursor cursor = db.rawQuery(query, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                try {
+                    com.sunit.groceryplus.models.Refund refund = new com.sunit.groceryplus.models.Refund();
+                    refund.setRefundId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.RefundEntry.COLUMN_NAME_REFUND_ID)));
+                    refund.setOrderId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.RefundEntry.COLUMN_NAME_ORDER_ID)));
+                    refund.setCustomerId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.RefundEntry.COLUMN_NAME_CUSTOMER_ID)));
+                    refund.setCustomerName(cursor.getString(cursor.getColumnIndexOrThrow(UserEntry.COLUMN_NAME_USER_NAME)));
+                    refund.setRefundAmount(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.RefundEntry.COLUMN_NAME_REFUND_AMOUNT)));
+                    refund.setRefundReason(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.RefundEntry.COLUMN_NAME_REFUND_REASON)));
+                    refund.setRequestedDate(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.RefundEntry.COLUMN_NAME_REQUESTED_DATE)));
+                    refund.setRefundMethod(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.RefundEntry.COLUMN_NAME_REFUND_METHOD)));
+                    refund.setStatus("pending");
+                    refunds.add(refund);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing pending refund", e);
+                }
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        return refunds;
+    }
+
+    /** Updates the status and admin notes for a specific refund request. */
+    public boolean updateRefundStatus(int refundId, String status, String notes) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.RefundEntry.COLUMN_NAME_STATUS, status);
+        values.put(DatabaseContract.RefundEntry.COLUMN_NAME_ADMIN_NOTES, notes);
+        
+        String now = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date());
+        if (status.equalsIgnoreCase("approved") || status.equalsIgnoreCase("completed")) {
+            values.put(DatabaseContract.RefundEntry.COLUMN_NAME_COMPLETED_DATE, now);
+        } else {
+            values.put(DatabaseContract.RefundEntry.COLUMN_NAME_PROCESSED_DATE, now);
+        }
+        
+        return db.update(DatabaseContract.RefundEntry.TABLE_NAME, values, 
+                DatabaseContract.RefundEntry.COLUMN_NAME_REFUND_ID + " = ?", 
+                new String[]{String.valueOf(refundId)}) > 0;
+    }
+
+
+    /** Retrieves the current loyalty points for a user. */
+    public double getLoyaltyPoints(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT " + UserEntry.COLUMN_NAME_LOYALTY_POINTS + " FROM " + UserEntry.TABLE_NAME + " WHERE " + UserEntry.COLUMN_NAME_USER_ID + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
+        double points = 0;
+        if (cursor != null && cursor.moveToFirst()) {
+            points = cursor.getDouble(0);
+            cursor.close();
+        }
+        return points;
+    }
+
+
+    /** Logs a new wallet or loyalty points transaction for audit history. */
+    public long logTransaction(int userId, double amount, String type, String source, String description) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(WalletTransactionEntry.COLUMN_NAME_USER_ID, userId);
+        values.put(WalletTransactionEntry.COLUMN_NAME_AMOUNT, amount);
+        values.put(WalletTransactionEntry.COLUMN_NAME_TYPE, type);
+        values.put(WalletTransactionEntry.COLUMN_NAME_SOURCE, source);
+        values.put(WalletTransactionEntry.COLUMN_NAME_DESCRIPTION, description);
+        values.put(WalletTransactionEntry.COLUMN_NAME_TIMESTAMP, new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date()));
+        return db.insert(WalletTransactionEntry.TABLE_NAME, null, values);
+    }
+
+    /** Retrieves the complete transaction history for a specific user. */
+    public java.util.List<com.sunit.groceryplus.models.WalletTransaction> getWalletTransactions(int userId) {
+        java.util.List<com.sunit.groceryplus.models.WalletTransaction> transactions = new java.util.ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        
+        Cursor cursor = db.query(WalletTransactionEntry.TABLE_NAME, null, 
+                WalletTransactionEntry.COLUMN_NAME_USER_ID + " = ?", 
+                new String[]{String.valueOf(userId)}, null, null, 
+                WalletTransactionEntry.COLUMN_NAME_TIMESTAMP + " DESC");
         
         if (cursor != null && cursor.moveToFirst()) {
-            double revenue = cursor.getDouble(0);
+            do {
+                try {
+                    com.sunit.groceryplus.models.WalletTransaction tx = new com.sunit.groceryplus.models.WalletTransaction();
+                    tx.setTransactionId(cursor.getInt(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_TRANSACTION_ID)));
+                    tx.setUserId(userId);
+                    tx.setAmount(cursor.getDouble(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_AMOUNT)));
+                    tx.setType(cursor.getString(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_TYPE)));
+                    tx.setSource(cursor.getString(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_SOURCE)));
+                    tx.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_DESCRIPTION)));
+                    tx.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_TIMESTAMP)));
+                    transactions.add(tx);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing wallet transaction", e);
+                }
+            } while (cursor.moveToNext());
             cursor.close();
-            return revenue;
         }
-        return 0.0;
+        return transactions;
+    }
+
+    /** Updates the user's wallet balance directly. */
+    public boolean updateWalletBalance(int userId, double newBalance) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(UserEntry.COLUMN_NAME_WALLET_BALANCE, newBalance);
+        return db.update(UserEntry.TABLE_NAME, values, UserEntry.COLUMN_NAME_USER_ID + " = ?", new String[]{String.valueOf(userId)}) > 0;
     }
 }
+
+

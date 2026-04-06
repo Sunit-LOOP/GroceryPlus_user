@@ -32,6 +32,11 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         void onCancelOrderClick(Order order); // Cancel pending order
     }
 
+    /** Extended interface to include Refund capability. */
+    public interface OnOrderActionExtendedListener extends OnOrderClickListener {
+        void onRefundClick(Order order);    // Request refund
+    }
+
     /** Constructor. */
     public OrderAdapter(Context context, List<Order> orders, OnOrderClickListener listener) {
         this.context = context;
@@ -76,6 +81,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         
         View reorderBtn;
         View cancelBtn;
+        View refundBtn;
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -88,6 +94,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             orderTimerTv = itemView.findViewById(R.id.orderTimerTv);
             reorderBtn = itemView.findViewById(R.id.reorderBtn);
             cancelBtn = itemView.findViewById(R.id.cancelBtn);
+            refundBtn = itemView.findViewById(R.id.refundBtn);
 
             reorderBtn.setOnClickListener(v -> {
                 int position = getAdapterPosition();
@@ -101,6 +108,17 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION && listener != null) {
                         listener.onCancelOrderClick(orders.get(position));
+                    }
+                });
+            }
+
+            if (refundBtn != null) {
+                refundBtn.setOnClickListener(v -> {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION && listener != null) {
+                        if (listener instanceof OnOrderActionExtendedListener) {
+                            ((OnOrderActionExtendedListener) listener).onRefundClick(orders.get(position));
+                        }
                     }
                 });
             }
@@ -131,12 +149,24 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             int statusColor = getStatusColor(order.getStatus());
             orderStatusTv.setTextColor(statusColor);
 
-            // Cancel button visibility - Only for PENDING orders
+            // Reorder button always visible
+            reorderBtn.setVisibility(View.VISIBLE);
+
+            // Cancel button visibility - Available for Pending or Processing
             if (cancelBtn != null) {
-                if ("pending".equalsIgnoreCase(order.getStatus())) {
+                if ("pending".equalsIgnoreCase(order.getStatus()) || "processing".equalsIgnoreCase(order.getStatus())) {
                     cancelBtn.setVisibility(View.VISIBLE);
                 } else {
                     cancelBtn.setVisibility(View.GONE);
+                }
+            }
+
+            // Refund button visibility - Available for Delivered
+            if (refundBtn != null) {
+                if ("delivered".equalsIgnoreCase(order.getStatus())) {
+                    refundBtn.setVisibility(View.VISIBLE);
+                } else {
+                    refundBtn.setVisibility(View.GONE);
                 }
             }
 
@@ -188,6 +218,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
         /** Resolves color resource based on current status string. */
         private int getStatusColor(String status) {
+            if (status == null) return context.getResources().getColor(android.R.color.black);
             switch (status.toLowerCase()) {
                 case "pending":
                     return context.getResources().getColor(android.R.color.holo_orange_dark);
@@ -199,6 +230,8 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     return context.getResources().getColor(android.R.color.holo_green_dark);
                 case "cancelled":
                     return context.getResources().getColor(android.R.color.holo_red_dark);
+                case "refunded":
+                    return context.getResources().getColor(android.R.color.darker_gray);
                 default:
                     return context.getResources().getColor(android.R.color.black);
             }

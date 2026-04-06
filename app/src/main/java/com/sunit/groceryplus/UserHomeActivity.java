@@ -62,9 +62,9 @@ public class UserHomeActivity extends AppCompatActivity {
     private static final long BANNER_DELAY = 30000;
 
     // UI Components - Feedback & Delivery
-    private TextView deliveryTimeTv, freeDeliveryTv;
+    private TextView deliveryTimeTv, freeDeliveryTv, walletBalanceTv, currentLocationTv;
     private com.google.android.material.progressindicator.LinearProgressIndicator freeDeliveryProgress;
-    private View freeDeliveryGoalCard;
+    private View freeDeliveryGoalCard, homeHeader;
     private ImageView sortIcon;
 
     // Adapters
@@ -133,7 +133,7 @@ public class UserHomeActivity extends AppCompatActivity {
         initViews();
         setupRecyclerViews();
         setupBanner();
-        setupToolbar();
+        // setupToolbar(); - homeToolbar ID not in layout
         setupSortFunctionality();
         setupAnimations();
 
@@ -165,6 +165,7 @@ public class UserHomeActivity extends AppCompatActivity {
         freeDeliveryGoalCard = findViewById(R.id.freeDeliveryGoalCard);
         buyAgainSection = findViewById(R.id.buyAgainSection);
         sortIcon = findViewById(R.id.sortIcon);
+        walletBalanceTv = findViewById(R.id.walletBalanceTv);
 
         categoriesRv = findViewById(R.id.categoriesRv);
         featuredRecyclerView = findViewById(R.id.featuredRecyclerView);
@@ -177,9 +178,34 @@ public class UserHomeActivity extends AppCompatActivity {
         recentlyViewedRecyclerView = findViewById(R.id.recentlyViewedRecyclerView);
         recentlyViewedSection = findViewById(R.id.recentlyViewedSection);
 
+        homeHeader = findViewById(R.id.homeHeader);
+        currentLocationTv = findViewById(R.id.currentLocationTv);
+        
         bannerViewPager = findViewById(R.id.bannerViewPager);
         bannerIndicator = findViewById(R.id.bannerIndicator);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+
+        // Header Location Click
+        findViewById(R.id.locationPicker).setOnClickListener(v -> {
+            Toast.makeText(this, "Location selection coming soon!", Toast.LENGTH_SHORT).show();
+        });
+
+        // Dashboard Click Listeners
+        findViewById(R.id.walletCard).setOnClickListener(v -> {
+            // Future: WalletActivity
+            Toast.makeText(this, "Wallet feature coming soon!", Toast.LENGTH_SHORT).show();
+        });
+
+        findViewById(R.id.offersBtn).setOnClickListener(v -> {
+            // Future: OffersActivity
+            Toast.makeText(this, "Check back for exclusive offers!", Toast.LENGTH_SHORT).show();
+        });
+
+        findViewById(R.id.supportBtn).setOnClickListener(v -> {
+            Intent intent = new Intent(this, SupportCenterActivity.class);
+            intent.putExtra("user_id", userId);
+            startActivity(intent);
+        });
 
         findViewById(R.id.btnViewAllOrders).setOnClickListener(v -> {
             Intent intent = new Intent(this, OrderHistoryActivity.class);
@@ -299,11 +325,6 @@ public class UserHomeActivity extends AppCompatActivity {
         };
     }
 
-    /** Configures the top action bar. */
-    private void setupToolbar() {
-        com.google.android.material.appbar.MaterialToolbar toolbar = findViewById(R.id.homeToolbar);
-        if (toolbar != null) setSupportActionBar(toolbar);
-    }
 
     /** Initializes the product sorting popup trigger. */
     private void setupSortFunctionality() {
@@ -326,6 +347,7 @@ public class UserHomeActivity extends AppCompatActivity {
         loadRecentOrders();
         updateFreeDeliveryGoal();
         updateDeliveryTime();
+        updateWalletDisplay();
     }
 
     /** Forces a reload of all data, typically triggered by SwipeRefresh. */
@@ -650,6 +672,9 @@ public class UserHomeActivity extends AppCompatActivity {
 
     /** Applies entry animations to sections and RecyclerView items. */
     private void setupAnimations() {
+        // Animate Header
+        AnimationUtils.fadeIn(homeHeader, 400);
+
         // Animate sections on load
         AnimationUtils.fadeIn(freeDeliveryGoalCard, 500);
         AnimationUtils.fadeIn(buyAgainSection, 600);
@@ -665,16 +690,6 @@ public class UserHomeActivity extends AppCompatActivity {
         AnimationUtils.setRecyclerViewAnimation(recommendedRecyclerView);
         AnimationUtils.setRecyclerViewAnimation(recentOrdersRecyclerView);
         AnimationUtils.setRecyclerViewAnimation(recentlyViewedRecyclerView);
-        
-        // Apply modern UI components (commented out for missing view IDs)
-        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.freeDeliveryCard), 4);
-        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.categoriesCard), 4);
-        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.featuredProductsCard), 4);
-        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.allProductsCard), 4);
-        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.buyAgainCard), 4);
-        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.recommendationsCard), 4);
-        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.recentOrdersCard), 4);
-        // UIComponents.createModernCard((MaterialCardView) findViewById(R.id.recentlyViewedCard), 4);
     }
 
     @Override
@@ -682,6 +697,13 @@ public class UserHomeActivity extends AppCompatActivity {
         super.onPause();
         if (bannerHandler != null && bannerRunnable != null) {
             bannerHandler.removeCallbacks(bannerRunnable);
+        }
+    }
+
+    private void updateWalletDisplay() {
+        double balance = orderRepository.getWalletBalance(userId);
+        if (walletBalanceTv != null) {
+            walletBalanceTv.setText("Balance: Rs. " + String.format("%.2f", balance));
         }
     }
 }

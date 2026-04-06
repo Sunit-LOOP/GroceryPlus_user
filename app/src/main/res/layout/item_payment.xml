@@ -79,7 +79,7 @@
                 android:id="@+id/paymentItemAmount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="₹24.99"
+                android:text="Rs. 24.99"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#333333" />

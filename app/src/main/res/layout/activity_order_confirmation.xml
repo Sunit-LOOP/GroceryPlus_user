@@ -78,7 +78,7 @@
                     android:id="@+id/orderConfirmationTotal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Total: ₹24.99"
+                    android:text="Total: Rs. 24.99"
                     android:textSize="16sp"
                     android:textColor="#666666" />
 

@@ -9,6 +9,8 @@ import com.sunit.groceryplus.models.User;
 import com.sunit.groceryplus.models.Order;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 
 /** Manages coordinated data flow between local SQLite (Primary) and Firestore cloud (Secondary) storage. */
@@ -28,11 +30,22 @@ public class HybridDatabaseManager {
     private boolean cloudEnabled = true;
     
     /** Initializes the manager with database helpers and cloud configuration. */
-    private HybridDatabaseManager(Context context) {
+    public HybridDatabaseManager(Context context) {
         this.context = context;
         this.primaryDb = new DatabaseHelper(context);
-        this.cloudDb = FirebaseFirestore.getInstance();
-        this.syncHelper = FirestoreSyncHelper.getInstance();
+        
+        FirebaseFirestore firestore = null;
+        FirestoreSyncHelper sync = null;
+        try {
+            firestore = FirebaseFirestore.getInstance();
+            sync = FirestoreSyncHelper.getInstance();
+            Log.d(TAG, "Firebase Firestore initialized successfully");
+        } catch (Exception e) {
+            Log.e(TAG, "Firebase Firestore initialization failed. Cloud sync will be disabled.", e);
+            this.cloudEnabled = false;
+        }
+        this.cloudDb = firestore;
+        this.syncHelper = sync;
     }
     
     /** Returns the singleton instance of the HybridDatabaseManager. */
@@ -41,6 +54,34 @@ public class HybridDatabaseManager {
             instance = new HybridDatabaseManager(context.getApplicationContext());
         }
         return instance;
+    }
+    
+    /** Tests the database connection and sync functionality. */
+    public void testConnection() {
+        Log.d(TAG, "Testing Hybrid Database connections...");
+        
+        // Test primary database connection
+        try {
+            primaryDb.getReadableDatabase();
+            Log.d(TAG, "✓ Primary SQLite database connection successful");
+        } catch (Exception e) {
+            Log.e(TAG, "✗ Primary SQLite database connection failed", e);
+        }
+        
+        // Test cloud database connection
+        if (cloudDb != null && cloudEnabled) {
+            try {
+                cloudDb.collection("test").limit(1).get()
+                    .addOnSuccessListener(snapshot -> Log.d(TAG, "✓ Cloud Firestore connection successful"))
+                    .addOnFailureListener(e -> Log.e(TAG, "✗ Cloud Firestore connection failed", e));
+            } catch (Exception e) {
+                Log.e(TAG, "✗ Cloud Firestore connection failed during test", e);
+            }
+        } else {
+            Log.w(TAG, "Cloud sync is disabled or Firebase not initialized. Skipping cloud test.");
+        }
+        
+        Log.d(TAG, "Hybrid Database connection test completed");
     }
     
     // ==== SYNC CONFIGURATION ====

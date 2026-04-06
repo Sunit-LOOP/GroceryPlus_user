@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sunit.groceryplus.R;
 import com.sunit.groceryplus.models.Category;
+import com.sunit.groceryplus.utils.RealDeviceImageSystem;
 
 import java.util.List;
 
@@ -91,7 +92,9 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
         public void bind(Category category) {
             categoryNameTv.setText(category.getCategoryName());
             categoryDescriptionTv.setText(category.getCategoryDescription());
-            com.sunit.groceryplus.utils.ProductImageLoader.load(context, categoryImageIv, category.getImageUrl(), R.drawable.product_icon);
+            
+            // Load category image using RealDeviceImageSystem
+            RealDeviceImageSystem.loadCategoryImage(context, categoryImageIv, category.getImage(), category.getCategoryName());
         }
     }
 }

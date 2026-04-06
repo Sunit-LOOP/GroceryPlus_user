@@ -129,31 +129,14 @@ public class OrderManagementActivity extends AppCompatActivity {
                     
                     // Run database operations in background thread (AsyncTask)
                     new android.os.AsyncTask<Void, Void, Boolean>() {
-                        private boolean paymentUpdateSuccess = false;
-                        
                         @Override
                         protected Boolean doInBackground(Void... voids) {
                             // Update order status in Order table
-                            // This also triggers the Chat Notification logic in OrderRepository for "Refunded" status
-                            boolean success = orderRepository.updateOrderStatus(order.getOrderId(), order.getUserId(), newStatus);
-                            
-                            if (success) {
-                                DatabaseHelper dbHelper = new DatabaseHelper(OrderManagementActivity.this);
-                                
-                                // Logic for auto-updating Payment Status based on Order Status
-                                if ("Delivered".equalsIgnoreCase(newStatus)) {
-                                    // If order is Delivered, mark Payment as Completed (assuming COD or confirming pre-paid)
-                                    paymentUpdateSuccess = dbHelper.updatePaymentStatusByOrderId(order.getOrderId(), "Completed");
-                                    android.util.Log.d("OrderManagement", "Payment status updated to Completed for order #" + order.getOrderId());
-                                } else if ("Refunded".equalsIgnoreCase(newStatus)) {
-                                    // If order is Refunded, mark Payment as Refunded
-                                    // This keeps the financial records consistent
-                                    paymentUpdateSuccess = dbHelper.updatePaymentStatusByOrderId(order.getOrderId(), "Refunded");
-                                    android.util.Log.d("OrderManagement", "Payment status updated to Refunded for order #" + order.getOrderId());
-                                }
-                            }
-                            
-                            return success;
+                            // Centralized logic in OrderRepository handles:
+                            // 1. Payment status syncing
+                            // 2. Stock replenishment for cancellations/refunds
+                            // 3. User notifications & chat messages
+                            return orderRepository.updateOrderStatus(order.getOrderId(), order.getUserId(), newStatus);
                         }
                         
                         @Override
@@ -164,31 +147,6 @@ public class OrderManagementActivity extends AppCompatActivity {
                             if (success) {
                                 Toast.makeText(OrderManagementActivity.this, "Order updated to " + newStatus, Toast.LENGTH_SHORT).show();
                                 loadOrders();
-
-                                // Send notification to user
-                                String title = "Order Update";
-                                String message = "Your order #" + order.getOrderId() + " is now " + newStatus;
-                                
-                                if ("Processing".equalsIgnoreCase(newStatus)) {
-                                    title = "Order Accepted";
-                                    message = "The store has accepted your order #" + order.getOrderId();
-                                } else if ("Shipped".equalsIgnoreCase(newStatus)) {
-                                    title = "Out for Delivery";
-                                    message = "Your order #" + order.getOrderId() + " is out for delivery!";
-                                } else if ("Delivered".equalsIgnoreCase(newStatus)) {
-                                    title = "Order Delivered";
-                                    message = "Your order #" + order.getOrderId() + " has been delivered successfully. Enjoy!";
-                                } else if ("Cancelled".equalsIgnoreCase(newStatus)) {
-                                    title = "Order Cancelled";
-                                    message = "Your order #" + order.getOrderId() + " has been cancelled.";
-                                } else if ("Refunded".equalsIgnoreCase(newStatus)) {
-                                    // Specific notification for Refunds
-                                    title = "Order Refunded";
-                                    message = "Your order #" + order.getOrderId() + " has been fully refunded by store.";
-                                }
-                                
-                                notificationManager.sendNotification(order.getUserId(), title, message, GroceryNotificationManager.TYPE_ORDER, String.valueOf(order.getOrderId()));
-
                             } else {
                                 Toast.makeText(OrderManagementActivity.this, "Failed to update status", Toast.LENGTH_SHORT).show();
                             }
@@ -227,7 +185,8 @@ public class OrderManagementActivity extends AppCompatActivity {
             DeliveryPerson p = personnel.get(i);
             displayNames[i] = p.getName();
             if (suggested != null && p.getPersonId() == suggested.getPersonId()) {
-                displayNames[i] += " [AI Suggested]";
+                // Removed AI Suggested label as requested
+                // displayNames[i] += " [AI Suggested]";
                 suggestedIndex = i;
             }
         }
@@ -283,9 +242,26 @@ public class OrderManagementActivity extends AppCompatActivity {
      * Handles toolbar navigation actions.
      */
     @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_order_management, menu);
+        return true;
+    }
+
+    /**
+     * Handles toolbar navigation and menu actions.
+     */
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
+            return true;
+        } else if (item.getItemId() == R.id.action_refund_requests) {
+            // - [x] Admin UI Components
+            // - [x] Create `RefundAdapter.java`
+            // - [x] Create `AdminRefundManagementActivity.java`
+            // - [x] Link `AdminRefundManagementActivity` from `OrderManagementActivity`
+            android.content.Intent intent = new android.content.Intent(this, AdminRefundManagementActivity.class);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);

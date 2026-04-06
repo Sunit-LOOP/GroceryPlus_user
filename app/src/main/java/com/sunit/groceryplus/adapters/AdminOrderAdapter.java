@@ -138,6 +138,19 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
             } else {
                 deliveryPersonTv.setText("Unassigned");
             }
+
+            // Hide action buttons for terminal states
+            boolean isTerminal = "Cancelled".equalsIgnoreCase(status) || 
+                                "Delivered".equalsIgnoreCase(status) || 
+                                "Refunded".equalsIgnoreCase(status);
+            
+            if (isTerminal) {
+                updateStatusBtn.setVisibility(View.GONE);
+                assignDeliveryBtn.setVisibility(View.GONE);
+            } else {
+                updateStatusBtn.setVisibility(View.VISIBLE);
+                assignDeliveryBtn.setVisibility(View.VISIBLE);
+            }
         }
     }
 }

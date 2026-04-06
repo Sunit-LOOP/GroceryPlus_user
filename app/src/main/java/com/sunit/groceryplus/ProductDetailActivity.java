@@ -98,7 +98,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         increaseBtn = findViewById(R.id.productDetailIncreaseBtn);
         backBtn = findViewById(R.id.productDetailBackBtn);
         addToCartBtn = findViewById(R.id.productDetailAddToCartBtn);
-        // saveForLaterBtn = findViewById(R.id.productDetailSaveForLaterBtn); // TODO: Add to layout
+        saveForLaterBtn = findViewById(R.id.productDetailSaveForLaterBtn);
         
         writeReviewBtn = findViewById(R.id.writeReviewBtn);
         productAvgRatingTv = findViewById(R.id.productAvgRatingTv);
@@ -252,11 +252,10 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     /** Updates the wishlist button icon based on current state. */
     private void updateSaveForLaterIcon() {
-        // TODO: Uncomment when saveForLaterBtn is added to layout
         if (wishlistRepository.isInWishlist(userId, productId)) {
-            // saveForLaterBtn.setImageResource(R.drawable.ic_save_for_later_filled);
+            saveForLaterBtn.setImageResource(R.drawable.ic_save_for_later_filled);
         } else {
-            // saveForLaterBtn.setImageResource(R.drawable.ic_save_for_later);
+            saveForLaterBtn.setImageResource(R.drawable.ic_save_for_later);
         }
     }
 }

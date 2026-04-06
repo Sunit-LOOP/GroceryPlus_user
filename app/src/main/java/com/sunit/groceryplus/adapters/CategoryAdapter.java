@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sunit.groceryplus.R;
 import com.sunit.groceryplus.models.Category;
+import com.sunit.groceryplus.utils.RealDeviceImageSystem;
 
 import java.util.List;
 
@@ -79,46 +80,20 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             });
         }
 
-        /** Binds name and applies guaranteed icons based on category names for all devices. */
+        /** Binds name and loads category image with fallback to guaranteed icons. */
         public void bind(Category category) {
             categoryNameTv.setText(category.getCategoryName());
             
-            // Debug logging for categories
-            String name = category.getCategoryName();
+            // Try to load category image using RealDeviceImageSystem
+            String imagePath = category.getImage();
+            String categoryName = category.getCategoryName();
+            
             Log.d("CATEGORY_DEBUG", "=== CATEGORY DEBUG ===");
-            Log.d("CATEGORY_DEBUG", "Category Name: " + name);
-            Log.d("CATEGORY_DEBUG", "Image URL: " + category.getImageUrl());
+            Log.d("CATEGORY_DEBUG", "Category Name: " + categoryName);
+            Log.d("CATEGORY_DEBUG", "Image Path: " + imagePath);
             
-            if (name == null) {
-                categoryIcon.setImageResource(R.drawable.category_icon);
-                return;
-            }
-            
-            String lowerName = name.toLowerCase();
-            
-            // Guaranteed Category Mapping - Works on ALL devices
-            if (lowerName.contains("dairy") || lowerName.contains("milk")) {
-                categoryIcon.setImageResource(R.drawable.bottle_milk);
-                Log.d("CATEGORY_DEBUG", "✓ Used dairy image: bottle_milk");
-            } else if (lowerName.contains("fruit")) {
-                categoryIcon.setImageResource(R.drawable.apple);
-                Log.d("CATEGORY_DEBUG", "✓ Used fruit image: apple");
-            } else if (lowerName.contains("vegetable")) {
-                categoryIcon.setImageResource(R.drawable.green_vegetable);
-                Log.d("CATEGORY_DEBUG", "✓ Used vegetable image: green_vegetable");
-            } else if (lowerName.contains("beverage") || lowerName.contains("drink")) {
-                categoryIcon.setImageResource(R.drawable.juice_bottle);
-                Log.d("CATEGORY_DEBUG", "✓ Used beverage image: juice_bottle");
-            } else if (lowerName.contains("bakery") || lowerName.contains("bread")) {
-                categoryIcon.setImageResource(R.drawable.bread);
-                Log.d("CATEGORY_DEBUG", "✓ Used bakery image: bread");
-            } else if (lowerName.contains("staple") || lowerName.contains("rice") || lowerName.contains("oil")) {
-                categoryIcon.setImageResource(R.drawable.rice_sack);
-                Log.d("CATEGORY_DEBUG", "✓ Used staple image: rice_sack");
-            } else {
-                categoryIcon.setImageResource(R.drawable.category_icon);
-                Log.d("CATEGORY_DEBUG", "✗ Used default icon: category_icon");
-            }
+            // Load image using RealDeviceImageSystem with fallback
+            RealDeviceImageSystem.loadCategoryImage(context, categoryIcon, imagePath, categoryName);
         }
     }
 }

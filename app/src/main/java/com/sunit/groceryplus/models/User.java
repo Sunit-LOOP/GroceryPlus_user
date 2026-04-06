@@ -8,6 +8,9 @@ public class User {
     private String email;       // Email (Login Credential)
     private String phone;       // Phone Number (Login Credential)
     private String userType;    // Account Type ('admin', 'customer') 
+    private String password;    // Password (Login Credential) 
+    private double walletBalance;
+    private double loyaltyPoints;
 
     /** Default Constructor. */
     public User() {}
@@ -45,6 +48,10 @@ public class User {
         return userType;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
     // ================= ALIAS METHODS =================
     // For consistency with other parts of the app
 
@@ -74,6 +81,16 @@ public class User {
     public void setUserType(String userType) {
         this.userType = userType;
     }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public double getWalletBalance() { return walletBalance; }
+    public void setWalletBalance(double walletBalance) { this.walletBalance = walletBalance; }
+
+    public double getLoyaltyPoints() { return loyaltyPoints; }
+    public void setLoyaltyPoints(double loyaltyPoints) { this.loyaltyPoints = loyaltyPoints; }
 
     /**
      * Check if user is an admin

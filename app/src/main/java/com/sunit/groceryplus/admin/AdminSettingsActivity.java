@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -25,32 +24,32 @@ public class AdminSettingsActivity extends AppCompatActivity {
     private AdminSettings currentSettings;
 
     // Store Info UI
-    private EditText storeNameEt, storeEmailEt, storePhoneEt, storeAddressEt;
-    private EditText storeCityEt, storeStateEt, storePostalCodeEt, storeCountryEt;
+    private TextInputEditText storeNameEt, storeEmailEt, storePhoneEt, storeAddressEt;
+    private TextInputEditText storeCityEt, storeStateEt, storePostalCodeEt, storeCountryEt;
 
     // Pricing UI
-    private EditText taxRateEt, deliveryFeeEt, freeDeliveryThresholdEt;
+    private TextInputEditText taxRateEt, deliveryFeeEt, freeDeliveryThresholdEt;
     private Switch freeDeliveryAboveSw;
 
     // Notifications UI
     private Switch enableNotificationsSw, enableEmailNotificationsSw;
 
-    // Email Settings (Placeholder for future implementation)
-    // private EditText smtpHostEt, smtpPortEt, smtpUsernameEt, smtpPasswordEt;
+    // Email Settings
+    private TextInputEditText smtpHostEt, smtpPortEt, smtpUsernameEt, smtpPasswordEt;
 
     // Payment Settings UI
     private Switch stripeEnabledSw, codEnabledSw;
-    private EditText stripePublishableKeyEt, stripeSecretKeyEt;
+    private TextInputEditText stripePublishableKeyEt, stripeSecretKeyEt;
 
     // Support UI
-    private EditText businessHoursEt, supportEmailEt, supportPhoneEt;
+    private TextInputEditText businessHoursEt, supportEmailEt, supportPhoneEt;
 
-    // Appearance (Placeholder for future implementation)
-    // private EditText primaryColorEt, accentColorEt;
+    // Appearance
+    private TextInputEditText primaryColorEt, accentColorEt;
 
     // Maintenance Mode UI
     private Switch maintenanceModeSw;
-    private EditText maintenanceMessageEt;
+    private TextInputEditText maintenanceMessageEt;
 
     // Action Buttons
     private Button saveBtn, resetBtn;
@@ -102,11 +101,11 @@ public class AdminSettingsActivity extends AppCompatActivity {
         enableNotificationsSw = findViewById(R.id.enableNotificationsSw);
         enableEmailNotificationsSw = findViewById(R.id.enableEmailNotificationsSw);
 
-        // Email Settings - TODO: Add these fields to layout
-        // smtpHostEt = findViewById(R.id.smtpHostEt);
-        // smtpPortEt = findViewById(R.id.smtpPortEt);
-        // smtpUsernameEt = findViewById(R.id.smtpUsernameEt);
-        // smtpPasswordEt = findViewById(R.id.smtpPasswordEt);
+        // Email Settings
+        smtpHostEt = findViewById(R.id.smtpHostEt);
+        smtpPortEt = findViewById(R.id.smtpPortEt);
+        smtpUsernameEt = findViewById(R.id.smtpUsernameEt);
+        smtpPasswordEt = findViewById(R.id.smtpPasswordEt);
 
         // Payment Settings
         stripeEnabledSw = findViewById(R.id.stripeEnabledSw);
@@ -119,9 +118,9 @@ public class AdminSettingsActivity extends AppCompatActivity {
         supportEmailEt = findViewById(R.id.supportEmailEt);
         supportPhoneEt = findViewById(R.id.supportPhoneEt);
 
-        // Appearance - TODO: Add these fields to layout
-        // primaryColorEt = findViewById(R.id.primaryColorEt);
-        // accentColorEt = findViewById(R.id.accentColorEt);
+        // Appearance
+        primaryColorEt = findViewById(R.id.primaryColorEt);
+        accentColorEt = findViewById(R.id.accentColorEt);
 
         // Maintenance
         maintenanceModeSw = findViewById(R.id.maintenanceModeSw);
@@ -156,11 +155,11 @@ public class AdminSettingsActivity extends AppCompatActivity {
         enableNotificationsSw.setChecked(currentSettings.isEnableNotifications());
         enableEmailNotificationsSw.setChecked(currentSettings.isEnableEmailNotifications());
 
-        // Email Settings - TODO: Uncomment when fields are added to layout
-        // smtpHostEt.setText(currentSettings.getSmtpHost());
-        // smtpPortEt.setText(currentSettings.getSmtpPort());
-        // smtpUsernameEt.setText(currentSettings.getSmtpUsername());
-        // smtpPasswordEt.setText(currentSettings.getSmtpPassword());
+        // Email Settings
+        smtpHostEt.setText(currentSettings.getSmtpHost());
+        smtpPortEt.setText(currentSettings.getSmtpPort());
+        smtpUsernameEt.setText(currentSettings.getSmtpUsername());
+        smtpPasswordEt.setText(currentSettings.getSmtpPassword());
 
         // Payment Settings
         stripeEnabledSw.setChecked(currentSettings.isStripeEnabled());
@@ -173,9 +172,9 @@ public class AdminSettingsActivity extends AppCompatActivity {
         supportEmailEt.setText(currentSettings.getSupportEmail());
         supportPhoneEt.setText(currentSettings.getSupportPhone());
 
-        // Appearance - TODO: Uncomment when fields are added to layout
-        // primaryColorEt.setText(currentSettings.getPrimaryColor());
-        // accentColorEt.setText(currentSettings.getAccentColor());
+        // Appearance
+        primaryColorEt.setText(currentSettings.getPrimaryColor());
+        accentColorEt.setText(currentSettings.getAccentColor());
 
         // Maintenance
         maintenanceModeSw.setChecked(currentSettings.isMaintenanceMode());
@@ -223,11 +222,11 @@ public class AdminSettingsActivity extends AppCompatActivity {
         currentSettings.setEnableNotifications(enableNotificationsSw.isChecked());
         currentSettings.setEnableEmailNotifications(enableEmailNotificationsSw.isChecked());
 
-        // Email Settings - TODO: Uncomment when fields are added to layout
-        // currentSettings.setSmtpHost(smtpHostEt.getText().toString().trim());
-        // currentSettings.setSmtpPort(smtpPortEt.getText().toString().trim());
-        // currentSettings.setSmtpUsername(smtpUsernameEt.getText().toString().trim());
-        // currentSettings.setSmtpPassword(smtpPasswordEt.getText().toString().trim());
+        // Email Settings
+        currentSettings.setSmtpHost(smtpHostEt.getText().toString().trim());
+        currentSettings.setSmtpPort(smtpPortEt.getText().toString().trim());
+        currentSettings.setSmtpUsername(smtpUsernameEt.getText().toString().trim());
+        currentSettings.setSmtpPassword(smtpPasswordEt.getText().toString().trim());
 
         currentSettings.setStripeEnabled(stripeEnabledSw.isChecked());
         currentSettings.setCodEnabled(codEnabledSw.isChecked());
@@ -238,9 +237,9 @@ public class AdminSettingsActivity extends AppCompatActivity {
         currentSettings.setSupportEmail(supportEmailEt.getText().toString().trim());
         currentSettings.setSupportPhone(supportPhoneEt.getText().toString().trim());
 
-        // Appearance - TODO: Uncomment when fields are added to layout
-        // currentSettings.setPrimaryColor(primaryColorEt.getText().toString().trim());
-        // currentSettings.setAccentColor(accentColorEt.getText().toString().trim());
+        // Appearance
+        currentSettings.setPrimaryColor(primaryColorEt.getText().toString().trim());
+        currentSettings.setAccentColor(accentColorEt.getText().toString().trim());
 
         currentSettings.setMaintenanceMode(maintenanceModeSw.isChecked());
         currentSettings.setMaintenanceMessage(maintenanceMessageEt.getText().toString().trim());

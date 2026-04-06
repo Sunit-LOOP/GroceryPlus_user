@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/ticketSubjectTv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Issue: Damaged Product"
+                android:textStyle="bold"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/ticketStatusTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OPEN"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#2196F3"
+                android:background="#E3F2FD"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/ticketDescTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="The milk packet was leaking when I received it..."
+            android:textSize="13sp"
+            android:textColor="#666666"
+            android:layout_marginTop="4dp"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/ticketIdTv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Ticket #452"
+                android:textSize="11sp"
+                android:textColor="#999999" />
+
+            <TextView
+                android:id="@+id/ticketDateTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Jan 26, 2026"
+                android:textSize="11sp"
+                android:textColor="#999999" />
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

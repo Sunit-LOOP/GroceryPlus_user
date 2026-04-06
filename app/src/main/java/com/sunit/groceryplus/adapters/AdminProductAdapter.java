@@ -23,7 +23,9 @@ import com.sunit.groceryplus.admin.ProductManagementActivity;
 import com.sunit.groceryplus.models.Category;
 import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.ProductRepository;
+import com.sunit.groceryplus.utils.PermanentImageManager;
 import com.sunit.groceryplus.utils.ProductImageLoader;
+import com.sunit.groceryplus.utils.RealDeviceImageSystem;
 
 import java.util.List;
 
@@ -79,47 +81,11 @@ public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapte
             holder.productVendorTv.setText("Vendor: Not Assigned");
         }
 
-        // Set product image based on image name with better fallbacks
-        // Uses ProductImageLoader utility for consistent image handling
-        String imageName = product.getImage();
-        int fallback = getSpecificImageForProduct(product.getProductName());
-        ProductImageLoader.load(context, holder.productImageIv, imageName, fallback);
+        // Simplified Image Loading using Central System
+        RealDeviceImageSystem.loadProductImage(context, holder.productImageIv, product.getImage(), product.getProductName());
     }
 
-    /** Maps product names to specific drawable placeholders for a richer UI. */
-    private int getSpecificImageForProduct(String productName) {
-        if (productName == null) {
-            return R.drawable.product_icon;
-        }
-        
-        String lowerName = productName.toLowerCase();
-        
-        // Match specific products to images based on keywords
-        if (lowerName.contains("milk") || lowerName.contains("dairy")) {
-            return R.drawable.bottle_milk;
-        } else if (lowerName.contains("cheese")) {
-            return R.drawable.cheese_slice;
-        } else if (lowerName.contains("curd") || lowerName.contains("yogurt") || lowerName.contains("dahi")) {
-            return R.drawable.curd;
-        } else if (lowerName.contains("tomato")) {
-            return R.drawable.tomato_red;
-        } else if (lowerName.contains("cabbage")) {
-            return R.drawable.cabbage;
-        } else if (lowerName.contains("cauliflower")) {
-            return R.drawable.cauliflower;
-        } else if (lowerName.contains("lettuce") || lowerName.contains("leaf")) {
-            return R.drawable.lettuce_leaf;
-        } else if (lowerName.contains("paneer")) {
-            return R.drawable.paneer_cubes;
-        } else if (lowerName.contains("bottle")) {
-            return R.drawable.bottle_gourd;
-        } else if (lowerName.contains("green") && (lowerName.contains("vegetable") || lowerName.contains("leaf"))) {
-            return R.drawable.green_vegetable;
-        } else {
-            // Default product image if no keyword match
-            return R.drawable.product_icon;
-        }
-    }
+
 
     @Override
     public int getItemCount() {

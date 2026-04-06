@@ -23,7 +23,7 @@ public class AdminSettings {
     private double deliveryFee;     // Base delivery fee
     private boolean freeDeliveryAbove; // Toggle for free delivery threshold
     private double freeDeliveryThreshold; // Amount above which delivery is free
-    private String currencySymbol;  // e.g., "₹", "$"
+    private String currencySymbol;  // e.g., "Rs.", "$"
     
     // -- System Settings --
     private String timezone;

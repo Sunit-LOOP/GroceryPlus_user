@@ -18,6 +18,11 @@ public class CollaborativeFilteringEngine {
     // Collaborative filtering parameters
     private static final int DEFAULT_K_NEIGHBORS = 10;
     private static final double MIN_SIMILARITY_THRESHOLD = 0.1;
+    
+    public CollaborativeFilteringEngine(Context context) {
+        this.context = context;
+        this.dbHelper = new DatabaseHelper(context);
+    }
     private static final int MIN_RATINGS_FOR_SIMILARITY = 3;
     private static final double COLD_START_PENALTY = 0.7;
     private static final int MAX_CACHE_SIZE = 1000;
@@ -28,12 +33,6 @@ public class CollaborativeFilteringEngine {
     private Map<Integer, List<Integer>> userNeighborhoodCache = new HashMap<>();
     private long lastCacheUpdate = 0;
     private static final long CACHE_DURATION_MS = 10 * 60 * 1000; // 10 minutes
-
-    /** Constructor initializing the database helper for recommendation data access. */
-    public CollaborativeFilteringEngine(Context context) {
-        this.context = context;
-        this.dbHelper = new DatabaseHelper(context);
-    }
 
     /** Generates personalized recommendations using a hybrid approach (User-Based, Item-Based, and Matrix Factorization). */
     public List<Product> getRecommendations(int userId, int limit) {

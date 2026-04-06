@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/search_icon"
+        android:title="@string/search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="ifRoom|collapseActionView" />
+        
+    <item
+        android:id="@+id/action_add_product"
+        android:icon="@drawable/ic_add"
+        android:title="Add Product"
+        app:showAsAction="ifRoom" />
+        
+    <item
+        android:id="@+id/action_add_category"
+        android:icon="@drawable/ic_add"
+        android:title="Add Category"
+        app:showAsAction="ifRoom" />
+        
+    <item
+        android:id="@+id/action_reports"
+        android:icon="@drawable/reports_icon"
+        android:title="@string/view_reports"
+        app:showAsAction="ifRoom" />
+        
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/settings_icon"
+        android:title="@string/system_settings"
+        app:showAsAction="ifRoom" />
+        
+    <item
+        android:id="@+id/action_logout"
+        android:icon="@drawable/log_out_icon"
+        android:title="@string/logout"
+        app:showAsAction="never" />
+        
+</menu>

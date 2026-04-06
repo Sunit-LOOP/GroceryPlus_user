@@ -326,17 +326,35 @@
                     android:textColor="#00C853" />
             </LinearLayout>
             
-            <Button
-                android:id="@+id/productDetailAddToCartBtn"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add to Cart"
-                android:textSize="16sp"
-                android:paddingHorizontal="32dp"
-                android:paddingVertical="12dp"
-                app:cornerRadius="24dp"
-                android:backgroundTint="#00C853"
-                android:textColor="@android:color/white"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                
+                <ImageButton
+                    android:id="@+id/productDetailSaveForLaterBtn"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_save_for_later_filled"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="12dp"
+                    android:contentDescription="Save for Later"
+                    app:tint="#757575"/>
+                
+                <Button
+                    android:id="@+id/productDetailAddToCartBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Add to Cart"
+                    android:textSize="16sp"
+                    android:paddingHorizontal="32dp"
+                    android:paddingVertical="12dp"
+                    app:cornerRadius="24dp"
+                    android:backgroundTint="#00C853"
+                    android:textColor="@android:color/white"/>
+                    
+            </LinearLayout>
             
         </LinearLayout>
         

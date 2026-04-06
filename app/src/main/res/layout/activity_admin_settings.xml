@@ -330,7 +330,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical"
                         android:layout_marginBottom="8dp">
 
                         <com.google.android.material.switchmaterial.SwitchMaterial
@@ -351,7 +350,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
 
                         <com.google.android.material.switchmaterial.SwitchMaterial
                             android:id="@+id/enableEmailNotificationsSw"
@@ -364,6 +364,130 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Enable email notifications" />
+
+                    </LinearLayout>
+
+                    <!-- Email Settings -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Email Settings"
+                            android:textSize="16sp"
+                            android:textColor="#757575"
+                            android:layout_marginBottom="8dp" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/smtpHostEt"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="SMTP Host"
+                                android:inputType="text" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/smtpPortEt"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="SMTP Port"
+                                android:inputType="number" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/smtpUsernameEt"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="SMTP Username"
+                                android:inputType="text" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/smtpPasswordEt"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="SMTP Password"
+                                android:inputType="textPassword" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+
+                    <!-- Appearance Settings -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Appearance"
+                            android:textSize="16sp"
+                            android:textColor="#757575"
+                            android:layout_marginBottom="8dp" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/primaryColorEt"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Primary Color"
+                                android:inputType="text" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/accentColorEt"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Accent Color"
+                                android:inputType="text" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
 
                     </LinearLayout>
 

@@ -8,26 +8,90 @@
     android:orientation="vertical"
     android:background="#F8F9FA">
 
-    <!-- Toolbar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/homeToolbar"
+    <!-- Modern Location Header -->
+    <LinearLayout
+        android:id="@+id/homeHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#00C853"
-        app:title="Grocery Plus"
-        app:titleTextColor="@android:color/white"
-        app:titleCentered="true">
+        android:orientation="vertical"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp"
+        android:background="@android:color/white">
 
-        <ImageView
-            android:id="@+id/notification_bell"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginEnd="16dp"
-            android:src="@drawable/ic_notifications"
-            app:tint="@android:color/white"/>
+            android:paddingHorizontal="16dp">
 
-    </com.google.android.material.appbar.MaterialToolbar>
+            <LinearLayout
+                android:id="@+id/locationPicker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_centerVertical="true">
+                <TextView 
+                    android:layout_width="wrap_content" 
+                    android:layout_height="wrap_content" 
+                    android:text="DELIVERING TO" 
+                    android:textSize="10sp" 
+                    android:textStyle="bold" 
+                    android:textColor="#757575"
+                    android:letterSpacing="0.05" />
+                <LinearLayout 
+                    android:layout_width="wrap_content" 
+                    android:layout_height="wrap_content" 
+                    android:gravity="center_vertical">
+                    <TextView 
+                        android:id="@+id/currentLocationTv"
+                        android:layout_width="wrap_content" 
+                        android:layout_height="wrap_content" 
+                        android:text="Home - Kathmandu, Nepal" 
+                        android:textStyle="bold" 
+                        android:textColor="#212121" 
+                        android:textSize="14sp" />
+                    <ImageView 
+                        android:layout_width="16dp" 
+                        android:layout_height="16dp" 
+                        android:src="@drawable/ic_chevron_right" 
+                        app:tint="#757575" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/notification_bell"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/circle_background"
+                android:backgroundTint="#F5F5F5"
+                android:padding="6dp"
+                android:src="@drawable/ic_notifications"
+                app:tint="#424242"/>
+        </RelativeLayout>
+
+        <!-- Integrated Modern Search Bar -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btnSearchField"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="4dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#F1F3F4">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp">
+                <ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/search_icon" app:tint="#5F6368"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Search for 'organics'..." android:layout_marginStart="12dp" android:textColor="#5F6368" android:textSize="14sp"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
@@ -45,26 +109,7 @@
                 android:orientation="vertical"
                 android:paddingBottom="24dp">
 
-                <!-- Search Bar -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/btnSearchField"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:layout_margin="16dp"
-                    app:cardCornerRadius="25dp"
-                    app:cardElevation="2dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#EEEEEE">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center_vertical"
-                        android:paddingLeft="16dp"
-                        android:paddingRight="16dp">
-                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/search_icon" app:tint="#757575"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Search for fresh items..." android:layout_marginStart="12dp" android:textColor="#9E9E9E"/>
-                    </LinearLayout>
-                 </com.google.android.material.card.MaterialCardView>
+
 
                  <!-- Banner Carousel -->
                  <androidx.viewpager2.widget.ViewPager2
@@ -83,54 +128,140 @@
                      app:tabGravity="center"
                      app:tabIndicatorHeight="0dp" />
 
-                 <!-- Explore Vendors Map Link -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/exploreVendorsCard"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="16dp"
-                    android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#E0E0E0">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="12dp"
-                        android:gravity="center_vertical">
-                        <ImageView 
-                            android:layout_width="40dp" 
-                            android:layout_height="40dp" 
-                            android:src="@drawable/map_icon" 
-                            app:tint="#00C853"/>
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="12dp">
-                            <TextView 
-                                android:layout_width="wrap_content" 
-                                android:layout_height="wrap_content" 
-                                android:text="Discover Local Vendors" 
-                                android:textStyle="bold" 
-                                android:textColor="#333333"/>
-                            <TextView 
-                                android:layout_width="wrap_content" 
-                                android:layout_height="wrap_content" 
-                                android:text="See stores around you on the map" 
-                                android:textSize="12sp" 
-                                android:textColor="#757575"/>
-                        </LinearLayout>
-                        <ImageView 
-                            android:layout_width="20dp" 
-                            android:layout_height="20dp" 
-                            android:src="@drawable/ic_chevron_right" 
-                            app:tint="#BDBDBD"/>
-                    </LinearLayout>
-                 </com.google.android.material.card.MaterialCardView>
+                 <!-- Quick Access Dashboard -->
+                 <LinearLayout
+                     android:layout_width="match_parent"
+                     android:layout_height="wrap_content"
+                     android:orientation="horizontal"
+                     android:layout_marginHorizontal="16dp"
+                     android:layout_marginBottom="24dp"
+                     android:gravity="center"
+                     android:weightSum="4">
+
+                     <!-- Wallet Item -->
+                     <LinearLayout
+                         android:id="@+id/walletCard"
+                         android:layout_width="0dp"
+                         android:layout_height="wrap_content"
+                         android:layout_weight="1"
+                         android:orientation="vertical"
+                         android:gravity="center"
+                         android:background="?attr/selectableItemBackground"
+                         android:clickable="true">
+                         <com.google.android.material.card.MaterialCardView
+                             android:layout_width="52dp"
+                             android:layout_height="52dp"
+                             app:cardCornerRadius="26dp"
+                             app:cardElevation="0dp"
+                             app:cardBackgroundColor="#E3F2FD">
+                             <ImageView
+                                 android:layout_width="26dp"
+                                 android:layout_height="26dp"
+                                 android:layout_gravity="center"
+                                 android:src="@drawable/wallet" />
+                         </com.google.android.material.card.MaterialCardView>
+                         <TextView
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:text="Wallet"
+                             android:textSize="11sp"
+                             android:textColor="#424242"
+                             android:layout_marginTop="6dp"/>
+                     </LinearLayout>
+
+                     <!-- Vendor Map Item -->
+                     <LinearLayout
+                         android:id="@+id/exploreVendorsCard"
+                         android:layout_width="0dp"
+                         android:layout_height="wrap_content"
+                         android:layout_weight="1"
+                         android:orientation="vertical"
+                         android:gravity="center"
+                         android:background="?attr/selectableItemBackground"
+                         android:clickable="true">
+                         <com.google.android.material.card.MaterialCardView
+                             android:layout_width="52dp"
+                             android:layout_height="52dp"
+                             app:cardCornerRadius="26dp"
+                             app:cardElevation="0dp"
+                             app:cardBackgroundColor="#E8F5E9">
+                             <ImageView
+                                 android:layout_width="26dp"
+                                 android:layout_height="26dp"
+                                 android:layout_gravity="center"
+                                 android:src="@drawable/store" />
+                         </com.google.android.material.card.MaterialCardView>
+                         <TextView
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:text="Stores"
+                             android:textSize="11sp"
+                             android:textColor="#424242"
+                             android:layout_marginTop="6dp"/>
+                     </LinearLayout>
+
+                     <!-- Offers Item -->
+                     <LinearLayout
+                         android:id="@+id/offersBtn"
+                         android:layout_width="0dp"
+                         android:layout_height="wrap_content"
+                         android:layout_weight="1"
+                         android:orientation="vertical"
+                         android:gravity="center"
+                         android:background="?attr/selectableItemBackground"
+                         android:clickable="true">
+                         <com.google.android.material.card.MaterialCardView
+                             android:layout_width="52dp"
+                             android:layout_height="52dp"
+                             app:cardCornerRadius="26dp"
+                             app:cardElevation="0dp"
+                             app:cardBackgroundColor="#FFF3E0">
+                             <ImageView
+                                 android:layout_width="26dp"
+                                 android:layout_height="26dp"
+                                 android:layout_gravity="center"
+                                 android:src="@drawable/offer" />
+                         </com.google.android.material.card.MaterialCardView>
+                         <TextView
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:text="Offers"
+                             android:textSize="11sp"
+                             android:textColor="#424242"
+                             android:layout_marginTop="6dp"/>
+                     </LinearLayout>
+
+                     <!-- Support Item -->
+                     <LinearLayout
+                         android:id="@+id/supportBtn"
+                         android:layout_width="0dp"
+                         android:layout_height="wrap_content"
+                         android:layout_weight="1"
+                         android:orientation="vertical"
+                         android:gravity="center"
+                         android:background="?attr/selectableItemBackground"
+                         android:clickable="true">
+                         <com.google.android.material.card.MaterialCardView
+                             android:layout_width="52dp"
+                             android:layout_height="52dp"
+                             app:cardCornerRadius="26dp"
+                             app:cardElevation="0dp"
+                             app:cardBackgroundColor="#F3E5F5">
+                             <ImageView
+                                 android:layout_width="26dp"
+                                 android:layout_height="26dp"
+                                 android:layout_gravity="center"
+                                 android:src="@drawable/support" />
+                         </com.google.android.material.card.MaterialCardView>
+                         <TextView
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:text="Support"
+                             android:textSize="11sp"
+                             android:textColor="#424242"
+                             android:layout_marginTop="6dp"/>
+                     </LinearLayout>
+                 </LinearLayout>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/freeDeliveryGoalCard"
@@ -153,7 +284,7 @@
                             android:id="@+id/freeDeliveryTv"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Add ₹200 more for FREE delivery"
+                            android:text="Add Rs. 200 more for FREE delivery"
                             android:textColor="#2E7D32"
                             android:textStyle="bold"
                             android:textSize="13sp"/>
@@ -220,13 +351,14 @@
                             android:layout_height="wrap_content" 
                             android:text="Recent Orders" 
                             android:textSize="18sp" 
-                            android:textStyle="bold" 
+                            android:fontFamily="sans-serif-black"
                             android:textColor="#212121"/>
                         <TextView
                             android:id="@+id/btnViewAllOrders"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
                             android:text="View All"
                             android:textColor="#00C853"
                             android:textStyle="bold"
@@ -248,15 +380,19 @@
                     android:orientation="vertical"
                     android:visibility="gone"
                     android:layout_marginBottom="24dp">
-                    <TextView 
-                        android:layout_width="wrap_content" 
-                        android:layout_height="wrap_content" 
-                        android:text="Recently Viewed" 
-                        android:textSize="18sp" 
-                        android:textStyle="bold" 
-                        android:layout_marginStart="16dp" 
-                        android:layout_marginBottom="12dp" 
-                        android:textColor="#212121"/>
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="16dp"
+                        android:layout_marginBottom="12dp">
+                        <TextView 
+                            android:layout_width="wrap_content" 
+                            android:layout_height="wrap_content" 
+                            android:text="Recently Viewed" 
+                            android:textSize="18sp" 
+                            android:fontFamily="sans-serif-black"
+                            android:textColor="#212121"/>
+                    </RelativeLayout>
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recentlyViewedRecyclerView"
                         android:layout_width="match_parent"
@@ -265,8 +401,20 @@
                         android:clipToPadding="false"/>
                 </LinearLayout>
 
-                <!-- Shop by Category -->
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Shop by Category" android:textSize="18sp" android:textStyle="bold" android:layout_marginStart="16dp" android:layout_marginBottom="12dp" android:textColor="#212121"/>
+                 <!-- Shop by Category -->
+                 <RelativeLayout
+                     android:layout_width="match_parent"
+                     android:layout_height="wrap_content"
+                     android:layout_marginHorizontal="16dp"
+                     android:layout_marginBottom="12dp">
+                     <TextView 
+                         android:layout_width="wrap_content" 
+                         android:layout_height="wrap_content" 
+                         android:text="Shop by Category" 
+                         android:textSize="18sp" 
+                         android:fontFamily="sans-serif-black"
+                         android:textColor="#212121"/>
+                 </RelativeLayout>
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/categoriesRv"
                     android:layout_width="match_parent"
@@ -283,7 +431,19 @@
                     android:orientation="vertical"
                     android:visibility="gone"
                     android:layout_marginBottom="24dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Buy Again" android:textSize="18sp" android:textStyle="bold" android:layout_marginStart="16dp" android:layout_marginBottom="12dp" android:textColor="#212121"/>
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="16dp"
+                        android:layout_marginBottom="12dp">
+                        <TextView 
+                            android:layout_width="wrap_content" 
+                            android:layout_height="wrap_content" 
+                            android:text="Buy Again" 
+                            android:textSize="18sp" 
+                            android:fontFamily="sans-serif-black"
+                            android:textColor="#212121"/>
+                    </RelativeLayout>
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/buyAgainRecyclerView"
                         android:layout_width="match_parent"
@@ -299,15 +459,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:layout_marginBottom="24dp">
-                    <TextView 
-                        android:layout_width="wrap_content" 
-                        android:layout_height="wrap_content" 
-                        android:text="Recommended for You" 
-                        android:textSize="18sp" 
-                        android:textStyle="bold" 
-                        android:layout_marginStart="16dp" 
-                        android:layout_marginBottom="12dp" 
-                        android:textColor="#212121"/>
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="16dp"
+                        android:layout_marginBottom="12dp">
+                        <TextView 
+                            android:layout_width="wrap_content" 
+                            android:layout_height="wrap_content" 
+                            android:text="Recommended for You" 
+                            android:textSize="18sp" 
+                            android:fontFamily="sans-serif-black"
+                            android:textColor="#212121"/>
+                    </RelativeLayout>
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recommendedRecyclerView"
                         android:layout_width="match_parent"
@@ -317,7 +481,19 @@
                 </LinearLayout>
 
                 <!-- Featured Products -->
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Handpicked for You" android:textSize="18sp" android:textStyle="bold" android:layout_marginStart="16dp" android:layout_marginBottom="12dp" android:textColor="#212121"/>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginBottom="12dp">
+                    <TextView 
+                        android:layout_width="wrap_content" 
+                        android:layout_height="wrap_content" 
+                        android:text="Handpicked for You" 
+                        android:textSize="18sp" 
+                        android:fontFamily="sans-serif-black"
+                        android:textColor="#212121"/>
+                </RelativeLayout>
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/featuredRecyclerView"
                     android:layout_width="match_parent"
@@ -333,7 +509,13 @@
                     android:paddingLeft="16dp"
                     android:paddingRight="16dp"
                     android:layout_marginBottom="12dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="All Products" android:textSize="18sp" android:textStyle="bold" android:textColor="#212121"/>
+                    <TextView 
+                        android:layout_width="wrap_content" 
+                        android:layout_height="wrap_content" 
+                        android:text="All Products" 
+                        android:textSize="18sp" 
+                        android:fontFamily="sans-serif-black"
+                        android:textColor="#212121"/>
                     <ImageView
                         android:id="@+id/sortIcon"
                         android:layout_width="24dp"

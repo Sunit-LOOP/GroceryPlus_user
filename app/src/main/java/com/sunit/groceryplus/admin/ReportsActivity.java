@@ -168,12 +168,13 @@ public class ReportsActivity extends AppCompatActivity {
 
     /** Orchestrates the CSV writing process for sales summary data. */
     private void exportSales(FileWriter writer) throws IOException {
-        // Header
-        writer.append("Order ID,Order Date,Total Amount,Delivery Fee,Net Amount,Status\n");
+        // Header with clarification
+        writer.append("Order ID,Order Date,Total Amount (Incl. Fee),Delivery Fee,Product Amount (Net),Status\n");
 
         List<com.sunit.groceryplus.models.Order> orders = dbHelper.getUserOrders(-1);
         for (com.sunit.groceryplus.models.Order order : orders) {
-            double netAmount = order.getTotalAmount() + order.getDeliveryFee();
+            // Net Amount = Total - Delivery Fee (to show actual product revenue)
+            double netAmount = order.getTotalAmount() - order.getDeliveryFee();
             writer.append(String.format(Locale.getDefault(),
                     "%d,%s,%.2f,%.2f,%.2f,%s\n",
                     order.getOrderId(),

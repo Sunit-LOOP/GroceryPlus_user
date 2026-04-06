@@ -3,8 +3,8 @@ package com.sunit.groceryplus.admin;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.TextView;
 import android.widget.Toast;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -13,10 +13,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sunit.groceryplus.DatabaseHelper;
 import com.sunit.groceryplus.R;
-import com.sunit.groceryplus.ProductRepository;
-import com.sunit.groceryplus.adapters.AdminProductAdapter;
+import com.sunit.groceryplus.repositories.ProductRepository;
+import com.sunit.groceryplus.repositories.CategoryRepository;
 import com.sunit.groceryplus.models.Product;
 import com.sunit.groceryplus.models.Category;
+import com.sunit.groceryplus.adapters.AdminProductAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public class InventoryAlertsActivity extends AppCompatActivity {
 
     // UI Components
     private RecyclerView alertsRv;
-    private TextView emptyAlertsTv;
+    private View emptyAlertsTv;
     
     // Data & Adapters
     private AdminProductAdapter adapter;
@@ -72,9 +73,9 @@ public class InventoryAlertsActivity extends AppCompatActivity {
         emptyAlertsTv = findViewById(R.id.emptyAlertsTv);
 
         alertsRv.setLayoutManager(new LinearLayoutManager(this));
-        // TODO: Get proper repository and category list
-        ProductRepository productRepository = new ProductRepository(this);
-        List<Category> categories = new ArrayList<>(); // Empty for now
+        com.sunit.groceryplus.ProductRepository productRepository = new com.sunit.groceryplus.ProductRepository(this);
+        com.sunit.groceryplus.CategoryRepository categoryRepository = new com.sunit.groceryplus.CategoryRepository(this);
+        List<Category> categories = categoryRepository.getAllCategories();
         adapter = new AdminProductAdapter(this, new ArrayList<>(), productRepository, categories, null);
         alertsRv.setAdapter(adapter);
     }
@@ -95,7 +96,6 @@ public class InventoryAlertsActivity extends AppCompatActivity {
             if (allAlertProducts.isEmpty()) {
                 alertsRv.setVisibility(android.view.View.GONE);
                 emptyAlertsTv.setVisibility(android.view.View.VISIBLE);
-                emptyAlertsTv.setText("No inventory alerts. All products are well stocked.");
             } else {
                 alertsRv.setVisibility(android.view.View.VISIBLE);
                 emptyAlertsTv.setVisibility(android.view.View.GONE);

@@ -159,8 +159,7 @@ public class UserDetailViewActivity extends AppCompatActivity {
         changePasswordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Implement change password functionality
-                Toast.makeText(UserDetailViewActivity.this, "Change Password clicked", Toast.LENGTH_SHORT).show();
+                showChangePasswordDialog();
             }
         });
 
@@ -175,5 +174,70 @@ public class UserDetailViewActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+    
+    /**
+     * Shows a dialog for changing user password
+     */
+    private void showChangePasswordDialog() {
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        builder.setTitle("Change Password");
+        
+        // Create dialog layout
+        android.view.View dialogView = getLayoutInflater().inflate(R.layout.dialog_change_password, null);
+        builder.setView(dialogView);
+        
+        com.google.android.material.textfield.TextInputEditText currentPasswordEt = dialogView.findViewById(R.id.currentPasswordEt);
+        com.google.android.material.textfield.TextInputEditText newPasswordEt = dialogView.findViewById(R.id.newPasswordEt);
+        com.google.android.material.textfield.TextInputEditText confirmPasswordEt = dialogView.findViewById(R.id.confirmPasswordEt);
+        MaterialButton changeBtn = dialogView.findViewById(R.id.changeBtn);
+        MaterialButton cancelBtn = dialogView.findViewById(R.id.cancelBtn);
+        
+        androidx.appcompat.app.AlertDialog dialog = builder.create();
+        
+        changeBtn.setOnClickListener(v -> {
+            String currentPassword = currentPasswordEt.getText().toString().trim();
+            String newPassword = newPasswordEt.getText().toString().trim();
+            String confirmPassword = confirmPasswordEt.getText().toString().trim();
+            
+            if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+                Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            if (!newPassword.equals(confirmPassword)) {
+                Toast.makeText(this, "New passwords do not match", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            if (newPassword.length() < 6) {
+                Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            // Update password in database
+            try {
+                User user = userRepository.getUserById(userId);
+                if (user != null && user.getPassword().equals(currentPassword)) {
+                    user.setPassword(newPassword);
+                    boolean success = userRepository.updateUser(user);
+                    if (success) {
+                        Toast.makeText(this, "Password changed successfully", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    } else {
+                        Toast.makeText(this, "Failed to change password", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(this, "Current password is incorrect", Toast.LENGTH_SHORT).show();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error changing password", e);
+                Toast.makeText(this, "Error changing password", Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        cancelBtn.setOnClickListener(v -> dialog.dismiss());
+        
+        dialog.show();
     }
 }

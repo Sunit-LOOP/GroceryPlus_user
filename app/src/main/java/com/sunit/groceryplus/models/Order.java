@@ -34,6 +34,8 @@ public class Order {
     // Delivery Info
     private int addressId;              // Delivery Address ID
     private String deliveryInstructions;// Special notes
+    private boolean isPacked;           // Flag for modification restriction
+    private String modifiedAt;          // Timestamp of last modification
 
     // -- Order Status Constants --
     public static final String STATUS_PENDING = "pending";
@@ -215,6 +217,12 @@ public class Order {
     public void setDeliveryInstructions(String deliveryInstructions) {
         this.deliveryInstructions = deliveryInstructions;
     }
+
+    public boolean isPacked() { return isPacked; }
+    public void setPacked(boolean packed) { isPacked = packed; }
+
+    public String getModifiedAt() { return modifiedAt; }
+    public void setModifiedAt(String modifiedAt) { this.modifiedAt = modifiedAt; }
 
     // Delivery Person
     // Delivery Personnel Assignment

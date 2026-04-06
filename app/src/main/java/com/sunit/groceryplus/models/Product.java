@@ -96,6 +96,10 @@ public class Product {
     public String getCategoryName() { return categoryName; }
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
 
+    // Alias methods for compatibility
+    public String getCategory() { return categoryName; }
+    public void setCategory(String category) { this.categoryName = category; }
+
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
 

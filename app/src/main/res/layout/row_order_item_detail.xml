@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/productIv"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/product_icon" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/productNameTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Product Name"
+                    android:textStyle="bold"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/quantityPriceTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2 x Rs. 50.00"
+                    android:textSize="12sp"
+                    android:textColor="#666666" />
+
+                <TextView
+                    android:id="@+id/itemStatusTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Status: Active"
+                    android:textSize="11sp"
+                    android:layout_marginTop="2dp"
+                    android:textColor="#4CAF50" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/subtotalTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rs. 100.00"
+                android:textStyle="bold"
+                android:textColor="#4CAF50" />
+        </LinearLayout>
+
+        <!-- Item Level Actions -->
+        <LinearLayout
+            android:id="@+id/itemActionsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="end">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cancelItemBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancel Item"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:textColor="#F44336"
+                android:textSize="11sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/reportIssueBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Report Issue"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:textColor="#2196F3"
+                android:textSize="11sp"
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/requestRefundBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Request Refund"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:textColor="#FF9800"
+                android:textSize="11sp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <!-- Refund Info -->
+        <TextView
+            android:id="@+id/refundInfoTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Refund: Pending (Rs. 100.00)"
+            android:textSize="11sp"
+            android:textStyle="italic"
+            android:textColor="#FF9800"
+            android:layout_marginTop="4dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

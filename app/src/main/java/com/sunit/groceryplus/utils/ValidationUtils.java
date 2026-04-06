@@ -283,9 +283,9 @@ public class ValidationUtils {
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
     
-    /** Formats a numeric amount into a localized currency string (e.g., "Rs. 100.00"). */
+    /** Formats a numeric amount into a localized currency string (e.g., "NPR 100.00"). */
     public static String formatCurrency(double amount) {
-        return String.format("Rs. %.2f", amount);
+        return String.format("NPR %.2f", amount);
     }
     
     /** Formats a numeric amount into a currency string with a custom specified symbol. */

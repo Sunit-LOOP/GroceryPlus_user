@@ -151,16 +151,16 @@ public class AdminSettingsRepository {
         settings.setStoreName("GroceryPlus");
         settings.setStoreEmail("admin@groceryplus.com");
         settings.setStorePhone("+1234567890");
-        settings.setStoreAddress("123 Main Street");
-        settings.setStoreCity("New York");
-        settings.setStoreState("NY");
-        settings.setStorePostalCode("10001");
-        settings.setStoreCountry("USA");
-        settings.setTaxRate(0.08);
-        settings.setDeliveryFee(2.99);
+        settings.setStoreAddress("Kathmandu, Nepal");
+        settings.setStoreCity("Kathmandu");
+        settings.setStoreState("Bagmati");
+        settings.setStorePostalCode("44600");
+        settings.setStoreCountry("Nepal");
+        settings.setTaxRate(0.13); // Nepal VAT 13%
+        settings.setDeliveryFee(100.0);
         settings.setFreeDeliveryAbove(true);
-        settings.setFreeDeliveryThreshold(50.0);
-        settings.setCurrencySymbol("₹");
+        settings.setFreeDeliveryThreshold(500.0);
+        settings.setCurrencySymbol("Rs.");
         settings.setTimezone("UTC");
         settings.setEnableNotifications(true);
         settings.setEnableEmailNotifications(true);

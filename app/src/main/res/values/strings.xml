@@ -48,6 +48,18 @@
     <string name="success_category_added">Category added successfully</string>
     <string name="success_category_updated">Category updated successfully</string>
     <string name="success_category_deleted">Category deleted successfully</string>
+    
+    <!-- Menu Items -->
+    <string name="search">Search</string>
+    <string name="cart">Cart</string>
+    <string name="favorites">Favorites</string>
+    <string name="profile">Profile</string>
+    <string name="settings">Settings</string>
+    <string name="view_reports">View Reports</string>
+    <string name="system_settings">System Settings</string>
+    
+    <!-- Launcher Icons -->
+    <string name="ic_launcher_foreground">Launcher Foreground</string>
     <string name="success_order_placed">Order placed successfully</string>
     <string name="success_order_updated">Order updated successfully</string>
     <string name="success_payment_processed">Payment processed successfully</string>

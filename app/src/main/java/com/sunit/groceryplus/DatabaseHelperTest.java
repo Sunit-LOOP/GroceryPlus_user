@@ -13,6 +13,8 @@ public class DatabaseHelperTest {
     public static void testDatabaseOperations(Context context) {
         DatabaseHelper dbHelper = new DatabaseHelper(context);
         
+        // ... (existing tests) ...
+        
         // Test adding a new user
         long userId = dbHelper.addUser("Ram", "ram@gmail.com", "1234567890", "password123", "customer");
         if (userId != -1) {
@@ -40,5 +42,36 @@ public class DatabaseHelperTest {
         } else {
             Log.e(TAG, "Failed to retrieve user");
         }
+    }
+
+    /** Executes analytics-related tests. */
+    public static void testAnalyticsOperations(Context context) {
+        DatabaseHelper dbHelper = new DatabaseHelper(context);
+        Log.d(TAG, "Starting Analytics Tests...");
+
+        // 1. Total Revenue
+        double revenue = dbHelper.getTotalRevenue();
+        Log.d(TAG, "Total Revenue: " + revenue);
+
+        // 2. Total Orders
+        int totalOrders = dbHelper.getTotalOrdersCount();
+        Log.d(TAG, "Total Orders: " + totalOrders);
+
+        // 3. Order Status Counts
+        int deliveredInfo = dbHelper.getOrderCountByStatus("Delivered");
+        Log.d(TAG, "Delivered Orders: " + deliveredInfo);
+        int pendingInfo = dbHelper.getOrderCountByStatus("Pending");
+        Log.d(TAG, "Pending Orders: " + pendingInfo);
+
+        // 4. Time-based Revenue (Smoke Test)
+        double todayRevenue = dbHelper.getTodayRevenue();
+        Log.d(TAG, "Today's Revenue: " + todayRevenue);
+        
+        // Use current month/year for testing
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        double monthRevenue = dbHelper.getMonthRevenue(cal.get(java.util.Calendar.MONTH) + 1, cal.get(java.util.Calendar.YEAR));
+        Log.d(TAG, "This Month's Revenue: " + monthRevenue);
+
+        Log.d(TAG, "Analytics Tests Completed");
     }
 }
