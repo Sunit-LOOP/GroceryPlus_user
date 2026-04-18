@@ -29,7 +29,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Infrastructure
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "GroceryPlus.db";
-    private static final int DATABASE_VERSION = 13;
+    private static final int DATABASE_VERSION = 15;
 
     /** Initializes the helper with application context and predefined database settings. */
     private static final String TABLE_WALLET_TRANSACTIONS_CREATE = 
@@ -41,6 +41,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         WalletTransactionEntry.COLUMN_NAME_SOURCE + " TEXT, " +
         WalletTransactionEntry.COLUMN_NAME_DESCRIPTION + " TEXT, " +
         WalletTransactionEntry.COLUMN_NAME_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+        WalletTransactionEntry.COLUMN_NAME_STATUS + " TEXT DEFAULT 'completed', " +
+        WalletTransactionEntry.COLUMN_NAME_AVAILABLE_AT + " DATETIME, " +
         "FOREIGN KEY (" + WalletTransactionEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + 
         UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + ")" +
         ");";
@@ -75,16 +77,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(DatabaseContract.SQL_CREATE_SHIPPING_OPTIONS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_INVOICES_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_PAYMENTS_TABLE);
-        db.execSQL(DatabaseContract.SQL_CREATE_NOTIFICATIONS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_ADDRESSES_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_VENDORS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_SEARCH_HISTORY_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_ADMIN_SETTINGS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_WISHLISTS_TABLE);
+        db.execSQL(DatabaseContract.SQL_CREATE_WALLET_TRANSACTIONS_TABLE);
         db.execSQL(DatabaseContract.SQL_CREATE_SUPPORT_TICKETS_TABLE);
-
+        
         insertDefaultAdmin(db);
+        
+        // IMPORTANT: Vendors MUST be inserted before categories/products 
+        // because of the foreign key constraints in the products table.
+        insertSampleVendors(db);
         insertSampleCategoriesAndProducts(db);
+        insertSamplePromotions(db);
     }
 
     /** Manages database upgrades and schema migrations based on version changes. */
@@ -131,14 +138,47 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             
             Log.d(TAG, "Migration to version 13 complete: dynamically refreshed dummy product images.");
         }
+
+        if (oldVersion < 14) {
+            // First, aggressively ensure the table is instantiated because some existing installations bypassed onCreate when this table was introduced
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + DatabaseContract.WalletTransactionEntry.TABLE_NAME + " (" +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_TRANSACTION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_USER_ID + " INTEGER," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_AMOUNT + " REAL," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_TYPE + " TEXT," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_SOURCE + " TEXT," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_DESCRIPTION + " TEXT," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_STATUS + " TEXT DEFAULT 'completed'," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_AVAILABLE_AT + " DATETIME," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP)");
+
+            // Add status and available_at if the table was created previously without them
+            addColumnIfNotExists(db, WalletTransactionEntry.TABLE_NAME, WalletTransactionEntry.COLUMN_NAME_STATUS, "TEXT DEFAULT 'completed'");
+            addColumnIfNotExists(db, WalletTransactionEntry.TABLE_NAME, WalletTransactionEntry.COLUMN_NAME_AVAILABLE_AT, "DATETIME");
+            
+            Log.d(TAG, "Migration to version 14 complete: added status and available_at to wallet_transactions");
+        }
+
+        if (oldVersion < 15) {
+            // Hotfix: Aggressively recreate wallet_transactions. Devices that jumped from 13 to 14 silently bypassed its creation.
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + DatabaseContract.WalletTransactionEntry.TABLE_NAME + " (" +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_TRANSACTION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_USER_ID + " INTEGER," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_AMOUNT + " REAL," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_TYPE + " TEXT," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_SOURCE + " TEXT," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_DESCRIPTION + " TEXT," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_STATUS + " TEXT DEFAULT 'completed'," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_AVAILABLE_AT + " DATETIME," +
+                    DatabaseContract.WalletTransactionEntry.COLUMN_NAME_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP)");
+                    
+            Log.d(TAG, "Migration to version 15 complete: strictly enforced wallet_transactions instantiation");
+        }
         
         // Validate database after migration
         if (!MigrationHelper.validateDatabase(db)) {
             Log.e(TAG, "Database validation failed after migration");
         }
-        
-        // Insert sample data if needed - PASS THE DATABASE INSTANCE to avoid recursion
-        insertSampleData(db);
     }
 
     /**
@@ -310,9 +350,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.delete(DatabaseContract.PromotionEntry.TABLE_NAME, null, null);
             
             // Insert fresh sample data
+            insertSampleVendors(db);
             insertSampleCategoriesAndProducts(db);
-            insertSampleVendors();
-            insertSamplePromotions();
+            insertSamplePromotions(db);
             
             Log.d(TAG, "All sample data refreshed successfully");
         } catch (Exception e) {
@@ -321,236 +361,117 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private void insertSampleCategoriesAndProducts(SQLiteDatabase db) {
-        // Insert sample categories
+        // Insert sample categories and capture their generated IDs
         ContentValues categoryValues = new ContentValues();
+        
         categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_NAME, "Fruits");
         categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION, "Fresh and delicious fruits");
-        db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
+        long fruitsId = db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
         
         categoryValues.clear();
         categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_NAME, "Vegetables");
         categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION, "Fresh and organic vegetables");
-        db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
+        long vegId = db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
         
         categoryValues.clear();
         categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_NAME, "Dairy Products");
         categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION, "Milk, cheese, and other dairy items");
-        db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
+        long dairyId = db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
         
         categoryValues.clear();
         categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_NAME, "Bakery");
         categoryValues.put(CategoryEntry.COLUMN_NAME_CATEGORY_DESCRIPTION, "Fresh bread and bakery items");
-        db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
+        long bakeryId = db.insert(CategoryEntry.TABLE_NAME, null, categoryValues);
         
-        // Removed redundant single vendor insertion - handled by insertSampleVendors()
-        
+        // Ensure at least one vendor ID is available
+        long defaultVendorId = 1; // Fallback
+        Cursor vendorCursor = db.query(DatabaseContract.VendorEntry.TABLE_NAME, 
+                new String[]{DatabaseContract.VendorEntry.COLUMN_NAME_VENDOR_ID}, 
+                null, null, null, null, null, "1");
+        if (vendorCursor != null && vendorCursor.moveToFirst()) {
+            defaultVendorId = vendorCursor.getLong(0);
+            vendorCursor.close();
+        }
+
         // Insert sample products - 5 products per category
-        
-        // FRUITS CATEGORY (5 products)
         ContentValues productValues = new ContentValues();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Apples");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 120.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh and crispy red apples");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "apple");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 50);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        
+        // FRUITS CATEGORY
+        addProductToContentValues(productValues, "Fresh Apples", (int)fruitsId, 120.0, "Fresh and crispy red apples", "apple", 50, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Bananas");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 60.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Ripe yellow bananas");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "banana");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 75);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Fresh Bananas", (int)fruitsId, 60.0, "Ripe yellow bananas", "banana", 75, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Sweet Oranges");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 80.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Juicy and sweet oranges");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "orange");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 60);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Sweet Oranges", (int)fruitsId, 80.0, "Juicy and sweet oranges", "orange", 60, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Grapes");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 150.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Sweet and fresh grapes");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "grapes");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 40);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Fresh Grapes", (int)fruitsId, 150.0, "Sweet and fresh grapes", "grapes", 40, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Ripe Mangoes");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 1); // Fruits
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 180.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Sweet and juicy mangoes");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "mango");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 35);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Ripe Mangoes", (int)fruitsId, 180.0, "Sweet and juicy mangoes", "mango", 35, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        // VEGETABLES CATEGORY (5 products)
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Tomatoes");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 40.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh red tomatoes");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "tomato_red");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 100);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        // VEGETABLES CATEGORY
+        addProductToContentValues(productValues, "Fresh Tomatoes", (int)vegId, 40.0, "Fresh red tomatoes", "tomato_red", 100, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Carrots");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 30.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh orange carrots");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "carrot");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 80);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Fresh Carrots", (int)vegId, 30.0, "Fresh orange carrots", "carrot", 80, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Green Spinach");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 25.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh green spinach leaves");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "green_vegetable");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 60);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Green Spinach", (int)vegId, 25.0, "Fresh green spinach leaves", "green_vegetable", 60, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Potatoes");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 35.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh and clean potatoes");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "potato");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 120);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Fresh Potatoes", (int)vegId, 35.0, "Fresh and clean potatoes", "potato", 120, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Onions");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 2); // Vegetables
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 45.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh red onions");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "onion");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 90);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Fresh Onions", (int)vegId, 45.0, "Fresh red onions", "onion", 90, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        // DAIRY PRODUCTS CATEGORY (5 products)
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Milk");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 55.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh whole milk");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "bottle_milk");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 30);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        // DAIRY CATEGORY
+        addProductToContentValues(productValues, "Fresh Milk", (int)dairyId, 55.0, "Fresh whole milk", "bottle_milk", 30, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Greek Yogurt");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 85.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Creamy Greek yogurt");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "dahi");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 25);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Greek Yogurt", (int)dairyId, 85.0, "Creamy Greek yogurt", "dahi", 25, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Cheddar Cheese");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 220.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Aged cheddar cheese");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "cheese_slice");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 20);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Cheddar Cheese", (int)dairyId, 220.0, "Aged cheddar cheese", "cheese_slice", 20, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Butter");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 120.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Pure fresh butter");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "butter");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 35);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Fresh Butter", (int)dairyId, 120.0, "Pure fresh butter", "butter", 35, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Farm Eggs");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 3); // Dairy
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 75.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh farm eggs");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "egg");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 50);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Farm Eggs", (int)dairyId, 75.0, "Fresh farm eggs", "egg", 50, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        // BAKERY CATEGORY (5 products)
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Whole Wheat Bread");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 35.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh whole wheat bread");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "bread");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 25);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        // BAKERY CATEGORY
+        addProductToContentValues(productValues, "Whole Wheat Bread", (int)bakeryId, 35.0, "Fresh whole wheat bread", "bread", 25, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Croissants");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 45.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Buttery fresh croissants");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "crossant");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 30);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Fresh Croissants", (int)bakeryId, 45.0, "Buttery fresh croissants", "crossant", 30, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Chocolate Cake");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 180.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Delicious chocolate cake");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "chocolate_cake");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 15);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Chocolate Cake", (int)bakeryId, 180.0, "Delicious chocolate cake", "chocolate_cake", 15, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "Fresh Bagels");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 40.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh baked bagels");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "bagel");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 35);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "Fresh Bagels", (int)bakeryId, 40.0, "Fresh baked bagels", "bagel", 35, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
-        productValues.clear();
-        productValues.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, "French Pastries");
-        productValues.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, 4); // Bakery
-        productValues.put(ProductEntry.COLUMN_NAME_PRICE, 95.0);
-        productValues.put(ProductEntry.COLUMN_NAME_DESCRIPTION, "Fresh French pastries");
-        productValues.put(ProductEntry.COLUMN_NAME_IMAGE, "pastery");
-        productValues.put(ProductEntry.COLUMN_NAME_STOCK, 20);
-        productValues.put(ProductEntry.COLUMN_NAME_VENDOR_ID, 1);
+        addProductToContentValues(productValues, "French Pastries", (int)bakeryId, 95.0, "Fresh French pastries", "pastery", 20, (int)defaultVendorId);
         db.insert(ProductEntry.TABLE_NAME, null, productValues);
         
         Log.d(TAG, "Sample categories and products inserted successfully");
+    }
+
+    private void addProductToContentValues(ContentValues values, String name, int catId, double price, String desc, String img, int stock, int vendorId) {
+        values.clear();
+        values.put(ProductEntry.COLUMN_NAME_PRODUCT_NAME, name);
+        values.put(ProductEntry.COLUMN_NAME_CATEGORY_ID, catId);
+        values.put(ProductEntry.COLUMN_NAME_PRICE, price);
+        values.put(ProductEntry.COLUMN_NAME_DESCRIPTION, desc);
+        values.put(ProductEntry.COLUMN_NAME_IMAGE, img);
+        values.put(ProductEntry.COLUMN_NAME_STOCK, stock);
+        values.put(ProductEntry.COLUMN_NAME_VENDOR_ID, vendorId);
     }
 
     /** Retrieves a user object by their email address. */
@@ -1088,6 +1009,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
     
+    /** Specifically updates only the image path for a product. */
+    public boolean updateProductImagePath(int productId, String imagePath) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(ProductEntry.COLUMN_NAME_IMAGE, imagePath);
+        return db.update(ProductEntry.TABLE_NAME, values, 
+                ProductEntry.COLUMN_NAME_PRODUCT_ID + " = ?", 
+                new String[]{String.valueOf(productId)}) > 0;
+    }
+
     /** Permanently removes a product from the database. */
     public boolean deleteProduct(int productId) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -1548,8 +1479,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             int result = db.update(OrderEntry.TABLE_NAME, values, 
                                   OrderEntry.COLUMN_NAME_ORDER_ID + " = ?", 
                                   new String[]{String.valueOf(orderId)});
-        return result > 0;
+            if (result == 0) {
+                com.sunit.groceryplus.OrderRepository.lastError = "db.update matched 0 rows for Order #" + orderId;
+                return false;
+            }
+            return true;
         } catch (Exception e) {
+            com.sunit.groceryplus.OrderRepository.lastError = "DatabaseHelper.updateOrderStatus Exception: " + e.toString();
             Log.e(TAG, "Error updating order status", e);
             return false;
         }
@@ -1603,10 +1539,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
             
             // 3. Vendors
-            insertSampleVendors();
+            insertSampleVendors(db);
             
             // 4. Promotions
-            insertSamplePromotions();
+            insertSamplePromotions(db);
             
             // 5. Sample Reviews
             insertSampleReviews(db);
@@ -1761,22 +1697,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    private void insertSampleVendors() {
+    private void insertSampleVendors(SQLiteDatabase db) {
         // Only insert if we have fewer than 3 vendors (ensures restoration if only a placeholder was present)
-        if (getAllVendors().size() < 3) {
+        if (getAllVendors(db).size() < 3) {
             Log.d(TAG, "Restoring/Expanding sample vendors...");
             // Only add if doesn't exist by name to prevent duplicates
-            addVendorIfNotExists("Fresh Market", "123 Main Street", 27.7172, 85.3240, "vendor_icon", 4.5);
-            addVendorIfNotExists("Fresh Mart KTM", "Durbar Marg, Kathmandu", 27.7120, 85.3210, "vendor_icon", 4.5);
-            addVendorIfNotExists("KTM Food Store", "Lazimpat, Kathmandu", 27.7250, 85.3200, "vendor_icon", 4.3);
-            addVendorIfNotExists("Green Valley Grocers", "Baneshwor, Kathmandu", 27.6915, 85.3420, "vendor_icon", 4.7);
-            addVendorIfNotExists("Organic Oasis", "Patan, Lalitpur", 27.6710, 85.3120, "vendor_icon", 4.8);
+            addVendorIfNotExists(db, "Fresh Market", "123 Main Street", 27.7172, 85.3240, "vendor_icon", 4.5);
+            addVendorIfNotExists(db, "Fresh Mart KTM", "Durbar Marg, Kathmandu", 27.7120, 85.3210, "vendor_icon", 4.5);
+            addVendorIfNotExists(db, "KTM Food Store", "Lazimpat, Kathmandu", 27.7250, 85.3200, "vendor_icon", 4.3);
+            addVendorIfNotExists(db, "Green Valley Grocers", "Baneshwor, Kathmandu", 27.6915, 85.3420, "vendor_icon", 4.7);
+            addVendorIfNotExists(db, "Organic Oasis", "Patan, Lalitpur", 27.6710, 85.3120, "vendor_icon", 4.8);
             Log.d(TAG, "Vendors restoration process completed");
         }
     }
 
-    private void addVendorIfNotExists(String name, String address, double lat, double lng, String icon, double rating) {
-        SQLiteDatabase db = this.getReadableDatabase();
+    private void addVendorIfNotExists(SQLiteDatabase db, String name, String address, double lat, double lng, String icon, double rating) {
         Cursor cursor = db.query(DatabaseContract.VendorEntry.TABLE_NAME, 
                 new String[]{DatabaseContract.VendorEntry.COLUMN_NAME_VENDOR_ID}, 
                 DatabaseContract.VendorEntry.COLUMN_NAME_VENDOR_NAME + " = ?", 
@@ -1786,28 +1721,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor != null) cursor.close();
         
         if (!exists) {
-            addVendor(name, address, lat, lng, icon, rating);
+            addVendor(db, name, address, lat, lng, icon, rating);
         }
     }
 
-    private void insertSamplePromotions() {
-        if (getTotalPromotionsCount() == 0) {
-            addPromotion("FRESH20", 20.0, "2025-12-31", "banner_1");
-            addPromotion("GROCERY10", 10.0, "2025-12-31", "banner_2");
-            addPromotion("SAVE50", 50.0, "2025-12-31", "banner_3");
-            addPromotion("FREE_DEL", 0.0, "2025-12-31", "banner_4");
-            addPromotion("NEWUSER", 15.0, "2025-12-31", "banner_5");
+    private void insertSamplePromotions(SQLiteDatabase db) {
+        if (getTotalPromotionsCount(db) == 0) {
+            addPromotion(db, "FRESH20", 20.0, "2025-12-31", "banner_1");
+            addPromotion(db, "GROCERY10", 10.0, "2025-12-31", "banner_2");
+            addPromotion(db, "SAVE50", 50.0, "2025-12-31", "banner_3");
+            addPromotion(db, "FREE_DEL", 0.0, "2025-12-31", "banner_4");
+            addPromotion(db, "NEWUSER", 15.0, "2025-12-31", "banner_5");
         }
     }
 
     public int getTotalPromotionsCount() {
-        SQLiteDatabase db = this.getReadableDatabase();
+        return getTotalPromotionsCount(this.getReadableDatabase());
+    }
+
+    public int getTotalPromotionsCount(SQLiteDatabase db) {
         Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + DatabaseContract.PromotionEntry.TABLE_NAME, null);
         int count = 0;
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             count = cursor.getInt(0);
+            cursor.close();
         }
-        cursor.close();
         return count;
     }
     
@@ -1948,9 +1886,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ==================== PROMOTION METHODS ====================
 
-    /** Adds a new promotional code with associated discount and validity period. */
+    /** Registers a new promotional offer in the database. */
     public long addPromotion(String code, double discount, String validUntil, String imageUrl) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        return addPromotion(this.getWritableDatabase(), code, discount, validUntil, imageUrl);
+    }
+
+    public long addPromotion(SQLiteDatabase db, String code, double discount, String validUntil, String imageUrl) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.PromotionEntry.COLUMN_NAME_CODE, code);
         values.put(DatabaseContract.PromotionEntry.COLUMN_NAME_DISCOUNT_PERCENTAGE, discount);
@@ -2370,24 +2311,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                       " WHERE o." + OrderEntry.COLUMN_NAME_ORDER_ID + " = ?";
         
         Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(orderId)});
-        if (cursor != null && cursor.moveToFirst()) {
-            int userId = cursor.getInt(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_USER_ID));
-            String userName = cursor.getString(cursor.getColumnIndexOrThrow(UserEntry.COLUMN_NAME_USER_NAME));
-            double amount = cursor.getDouble(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_TOTAL_AMOUNT));
-            double deliveryFee = cursor.getDouble(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_DELIVERY_FEE));
-            String status = cursor.getString(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_STATUS));
-            String date = cursor.getString(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_ORDER_DATE));
-            String shippedDate = cursor.getString(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_SHIPPED_DATE));
-            int addressId = cursor.getInt(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_ADDRESS_ID));
-            int isPackedIndex = cursor.getColumnIndex(OrderEntry.COLUMN_NAME_IS_PACKED);
-            boolean isPacked = (isPackedIndex != -1 && !cursor.isNull(isPackedIndex)) && cursor.getInt(isPackedIndex) == 1;
+        com.sunit.groceryplus.models.Order order = null;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                int userId = cursor.getInt(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_USER_ID));
+                String userName = cursor.getString(cursor.getColumnIndexOrThrow(UserEntry.COLUMN_NAME_USER_NAME));
+                double amount = cursor.getDouble(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_TOTAL_AMOUNT));
+                double deliveryFee = cursor.getDouble(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_DELIVERY_FEE));
+                String status = cursor.getString(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_STATUS));
+                String date = cursor.getString(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_ORDER_DATE));
+                String shippedDate = cursor.getString(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_SHIPPED_DATE));
+                int addressId = cursor.getInt(cursor.getColumnIndexOrThrow(OrderEntry.COLUMN_NAME_ADDRESS_ID));
+                int isPackedIndex = cursor.getColumnIndex(OrderEntry.COLUMN_NAME_IS_PACKED);
+                boolean isPacked = (isPackedIndex != -1 && !cursor.isNull(isPackedIndex)) && cursor.getInt(isPackedIndex) == 1;
+                int dpIdx = cursor.getColumnIndex(OrderEntry.COLUMN_NAME_DELIVERY_PERSON_ID);
+                int deliveryPersonId = (dpIdx != -1 && !cursor.isNull(dpIdx)) ? cursor.getInt(dpIdx) : 0;
+                
+                order = new com.sunit.groceryplus.models.Order(orderId, userId, userName, amount, deliveryFee, status, date, addressId);
+                order.setShippedDate(shippedDate);
+                order.setPacked(isPacked);
+                order.setDeliveryPersonId(deliveryPersonId);
+            }
             cursor.close();
-            com.sunit.groceryplus.models.Order order = new com.sunit.groceryplus.models.Order(orderId, userId, userName, amount, deliveryFee, status, date, addressId);
-            order.setShippedDate(shippedDate);
-            order.setPacked(isPacked);
-            return order;
         }
-        return null;
+        return order;
     }
 
     /** Retrieves a specific saved address by its numeric ID. */
@@ -2397,18 +2344,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 DatabaseContract.AddressEntry.COLUMN_NAME_ADDRESS_ID + " = ?", 
                 new String[]{String.valueOf(addressId)}, null, null, null);
         
-        if (cursor != null && cursor.moveToFirst()) {
-            int userId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_USER_ID));
-            String type = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_TYPE));
-            String full = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_FULL_ADDRESS));
-            String landmark = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_LANDMARK));
-            String city = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_CITY));
-            String area = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_AREA));
-            double latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_LATITUDE));
-            double longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_LONGITUDE));
-            boolean isDefault = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_IS_DEFAULT)) == 1;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                int userId = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_USER_ID));
+                String type = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_TYPE));
+                String full = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_FULL_ADDRESS));
+                String landmark = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_LANDMARK));
+                String city = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_CITY));
+                String area = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_AREA));
+                double latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_LATITUDE));
+                double longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_LONGITUDE));
+                boolean isDefault = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.AddressEntry.COLUMN_NAME_IS_DEFAULT)) == 1;
+                cursor.close();
+                return new com.sunit.groceryplus.models.Address(addressId, userId, type, full, landmark, city, area, latitude, longitude, isDefault);
+            }
             cursor.close();
-            return new com.sunit.groceryplus.models.Address(addressId, userId, type, full, landmark, city, area, latitude, longitude, isDefault);
         }
         return null;
     }
@@ -2533,7 +2483,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     
     /** Registers a new vendor or store in the system. */
     public long addVendor(String name, String address, double lat, double lng, String icon, double rating) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        return addVendor(this.getWritableDatabase(), name, address, lat, lng, icon, rating);
+    }
+
+    public long addVendor(SQLiteDatabase db, String name, String address, double lat, double lng, String icon, double rating) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.VendorEntry.COLUMN_NAME_VENDOR_NAME, name);
         values.put(DatabaseContract.VendorEntry.COLUMN_NAME_ADDRESS, address);
@@ -2546,8 +2499,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /** Retrieves a list of all vendors stored in the database. */
     public java.util.List<com.sunit.groceryplus.models.Vendor> getAllVendors() {
+        return getAllVendors(this.getReadableDatabase());
+    }
+
+    public java.util.List<com.sunit.groceryplus.models.Vendor> getAllVendors(SQLiteDatabase db) {
         java.util.List<com.sunit.groceryplus.models.Vendor> vendors = new java.util.ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(DatabaseContract.VendorEntry.TABLE_NAME, null, null, null, null, null, null);
 
         if (cursor != null && cursor.moveToFirst()) {
@@ -2886,20 +2842,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public double getWalletBalance(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(UserEntry.TABLE_NAME, new String[]{DatabaseContract.UserEntry.COLUMN_NAME_WALLET_BALANCE},
-                UserEntry.COLUMN_NAME_USER_ID + " = ?", new String[]{String.valueOf(userId)}, null, null, null);
+        Cursor cursor = null;
         double balance = 0.0;
-        if (cursor != null && cursor.moveToFirst()) {
-            balance = cursor.getDouble(0);
-            cursor.close();
+        try {
+            String query = "SELECT " + 
+                    "SUM(CASE WHEN " + WalletTransactionEntry.COLUMN_NAME_TYPE + " = 'credit' THEN " + WalletTransactionEntry.COLUMN_NAME_AMOUNT + " ELSE 0 END) - " +
+                    "SUM(CASE WHEN " + WalletTransactionEntry.COLUMN_NAME_TYPE + " = 'debit' THEN " + WalletTransactionEntry.COLUMN_NAME_AMOUNT + " ELSE 0 END) " +
+                    " FROM " + WalletTransactionEntry.TABLE_NAME + 
+                    " WHERE " + WalletTransactionEntry.COLUMN_NAME_USER_ID + " = ? AND (" +
+                    WalletTransactionEntry.COLUMN_NAME_STATUS + " = 'completed' OR (" +
+                    WalletTransactionEntry.COLUMN_NAME_STATUS + " = 'pending' AND " + 
+                    WalletTransactionEntry.COLUMN_NAME_AVAILABLE_AT + " <= DATETIME('now', 'localtime')))";
+            
+            cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
+            if (cursor != null && cursor.moveToFirst()) {
+                balance = cursor.getDouble(0);
+                cursor.close();
+            }
+            return Math.max(0.0, balance);
+        } catch (Exception e) {
+            Log.e(TAG, "Error calculating wallet balance for user " + userId, e);
+            if (cursor != null) cursor.close();
+            return 0.0;
         }
-        return balance;
     }
 
     public boolean addWalletBalance(int userId, double amount) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("UPDATE " + UserEntry.TABLE_NAME + " SET wallet_balance = wallet_balance + ? WHERE user_id = ?",
-                new Object[]{amount, userId});
+        // This is now legacy since we calculate balance from transactions, 
+        // but keeping it for compatibility if any other modules use it.
+        // It records a generic credit transaction.
+        logTransaction(userId, amount, "credit", "system", "Balance adjustment");
         return true;
     }
 
@@ -2933,8 +2905,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                        " WHERE " + UserEntry.COLUMN_NAME_USER_ID + " = ?";
         Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
         double points = 0.0;
-        if (cursor != null && cursor.moveToFirst()) {
-            points = cursor.getDouble(0);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                points = cursor.getDouble(0);
+            }
             cursor.close();
         }
         return points;
@@ -3039,9 +3013,56 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return points;
     }
 
+    /** Finds how much wallet balance was used for a specific order. */
+    public double getWalletDebitForOrder(int userId, int orderId) {
+        double amount = 0;
+        SQLiteDatabase db = this.getReadableDatabase();
+        String description = "Paid from Wallet for Order #" + orderId;
+        String query = "SELECT " + WalletTransactionEntry.COLUMN_NAME_AMOUNT + " FROM " + WalletTransactionEntry.TABLE_NAME +
+                       " WHERE " + WalletTransactionEntry.COLUMN_NAME_USER_ID + " = ? " +
+                       " AND " + WalletTransactionEntry.COLUMN_NAME_SOURCE + " = 'purchase_redemption' " +
+                       " AND " + WalletTransactionEntry.COLUMN_NAME_TYPE + " = 'debit' " +
+                       " AND " + WalletTransactionEntry.COLUMN_NAME_DESCRIPTION + " LIKE ?";
+        
+        android.database.Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId), description});
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                amount = cursor.getDouble(0);
+            }
+            cursor.close();
+        }
+        return amount;
+    }
+
+    /** Finds how many loyalty points were used for a specific order. */
+    public double getPointsDebitForOrder(int userId, int orderId) {
+        double amount = 0;
+        SQLiteDatabase db = this.getReadableDatabase();
+        String description = "Redeemed for Order #" + orderId;
+        String query = "SELECT " + WalletTransactionEntry.COLUMN_NAME_AMOUNT + " FROM " + WalletTransactionEntry.TABLE_NAME +
+                       " WHERE " + WalletTransactionEntry.COLUMN_NAME_USER_ID + " = ? " +
+                       " AND " + WalletTransactionEntry.COLUMN_NAME_SOURCE + " = 'purchase_redemption' " +
+                       " AND " + WalletTransactionEntry.COLUMN_NAME_TYPE + " = 'debit' " +
+                       " AND " + WalletTransactionEntry.COLUMN_NAME_DESCRIPTION + " = ?";
+        
+        android.database.Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId), description});
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                amount = cursor.getDouble(0);
+            }
+            cursor.close();
+        }
+        return amount;
+    }
+
 
     /** Logs a new wallet or loyalty points transaction for audit history. */
     public long logTransaction(int userId, double amount, String type, String source, String description) {
+        return logTransaction(userId, amount, type, source, description, "completed", null);
+    }
+
+    /** Overloaded logTransaction to support status and availability delay (auto-refund). */
+    public long logTransaction(int userId, double amount, String type, String source, String description, String status, String availableAt) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(WalletTransactionEntry.COLUMN_NAME_USER_ID, userId);
@@ -3049,6 +3070,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(WalletTransactionEntry.COLUMN_NAME_TYPE, type);
         values.put(WalletTransactionEntry.COLUMN_NAME_SOURCE, source);
         values.put(WalletTransactionEntry.COLUMN_NAME_DESCRIPTION, description);
+        values.put(WalletTransactionEntry.COLUMN_NAME_STATUS, status);
+        if (availableAt != null) {
+            values.put(WalletTransactionEntry.COLUMN_NAME_AVAILABLE_AT, availableAt);
+        }
         values.put(WalletTransactionEntry.COLUMN_NAME_TIMESTAMP, new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date()));
         return db.insert(WalletTransactionEntry.TABLE_NAME, null, values);
     }
@@ -3058,28 +3083,40 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         java.util.List<com.sunit.groceryplus.models.WalletTransaction> transactions = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         
-        Cursor cursor = db.query(WalletTransactionEntry.TABLE_NAME, null, 
-                WalletTransactionEntry.COLUMN_NAME_USER_ID + " = ?", 
-                new String[]{String.valueOf(userId)}, null, null, 
-                WalletTransactionEntry.COLUMN_NAME_TIMESTAMP + " DESC");
-        
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                try {
-                    com.sunit.groceryplus.models.WalletTransaction tx = new com.sunit.groceryplus.models.WalletTransaction();
-                    tx.setTransactionId(cursor.getInt(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_TRANSACTION_ID)));
-                    tx.setUserId(userId);
-                    tx.setAmount(cursor.getDouble(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_AMOUNT)));
-                    tx.setType(cursor.getString(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_TYPE)));
-                    tx.setSource(cursor.getString(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_SOURCE)));
-                    tx.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_DESCRIPTION)));
-                    tx.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_TIMESTAMP)));
-                    transactions.add(tx);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error parsing wallet transaction", e);
-                }
-            } while (cursor.moveToNext());
-            cursor.close();
+        try {
+            Cursor cursor = db.query(WalletTransactionEntry.TABLE_NAME, null, 
+                    WalletTransactionEntry.COLUMN_NAME_USER_ID + " = ?", 
+                    new String[]{String.valueOf(userId)}, null, null, 
+                    WalletTransactionEntry.COLUMN_NAME_TIMESTAMP + " DESC");
+            
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    try {
+                        com.sunit.groceryplus.models.WalletTransaction tx = new com.sunit.groceryplus.models.WalletTransaction();
+                        tx.setTransactionId(cursor.getInt(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_TRANSACTION_ID)));
+                        tx.setUserId(userId);
+                        tx.setAmount(cursor.getDouble(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_AMOUNT)));
+                        tx.setType(cursor.getString(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_TYPE)));
+                        tx.setSource(cursor.getString(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_SOURCE)));
+                        tx.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_DESCRIPTION)));
+                        tx.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(WalletTransactionEntry.COLUMN_NAME_TIMESTAMP)));
+                        
+                        // Handle potential missing columns gracefully during migration
+                        int statusIdx = cursor.getColumnIndex(WalletTransactionEntry.COLUMN_NAME_STATUS);
+                        if (statusIdx != -1) tx.setStatus(cursor.getString(statusIdx));
+                        
+                        int availIdx = cursor.getColumnIndex(WalletTransactionEntry.COLUMN_NAME_AVAILABLE_AT);
+                        if (availIdx != -1) tx.setAvailableAt(cursor.getString(availIdx));
+                        
+                        transactions.add(tx);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error parsing individual wallet transaction", e);
+                    }
+                } while (cursor.moveToNext());
+                cursor.close();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error fetching wallet transactions. Schema may be inconsistent.", e);
         }
         return transactions;
     }

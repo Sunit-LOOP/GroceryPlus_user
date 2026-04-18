@@ -29,6 +29,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.sunit.groceryplus.CategoryRepository;
 import com.sunit.groceryplus.DatabaseHelper;
+import com.sunit.groceryplus.DatabaseContract;
 import com.sunit.groceryplus.ProductRepository;
 import com.sunit.groceryplus.R;
 import com.sunit.groceryplus.adapters.AdminProductAdapter;
@@ -202,14 +203,15 @@ public class ProductManagementActivity extends AppCompatActivity {
     private int getLastInsertedProductId() {
         try {
             SQLiteDatabase db = dbHelper.getReadableDatabase();
-            Cursor cursor = db.rawQuery("SELECT last_insert_rowid() FROM products ORDER BY product_id DESC LIMIT 1", null);
+            // Use MAX(product_id) to get the most recently added product
+            Cursor cursor = db.rawQuery("SELECT MAX(product_id) FROM " + DatabaseContract.ProductEntry.TABLE_NAME, null);
             if (cursor != null && cursor.moveToFirst()) {
                 int productId = cursor.getInt(0);
                 cursor.close();
                 return productId;
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error getting last inserted product ID", e);
+            Log.e(TAG, "Critical: Error getting last inserted product ID from database", e);
         }
         return -1;
     }
@@ -494,13 +496,17 @@ public class ProductManagementActivity extends AppCompatActivity {
             boolean success;
             if (product == null) {
                 // Add
+                Log.d(TAG, "Attempting to add product: " + name + " (Cat: " + categoryId + ", Vendor: " + vendorId + ")");
                 success = productRepository.addProduct(name, categoryId, price, description, image, stock, vendorId);
                 
                 // Save image permanently for ALL products (not just milk)
                 if (success) {
                     // Get the newly added product ID using a query
                     int newProductId = getLastInsertedProductId();
+                    Log.d(TAG, "Product added successfully with ID: " + newProductId);
                     PermanentImageManager.saveProductImagePermanently(this, newProductId, image, name);
+                } else {
+                    Log.e(TAG, "Database failure: productRepository.addProduct returned false for product " + name);
                 }
             } else {
                 // Update - cleanup old image if it was changed and is a permanent storage path

@@ -116,22 +116,76 @@ public class OrderRepository {
         }
     }
 
+    public static String lastError = "";
+
+    /** Stripe / card prepayments — refund after cancel is credited to wallet (not COD). */
+    private static boolean isOnlineCardPayment(String paymentMethod) {
+        if (paymentMethod == null) {
+            return false;
+        }
+        String m = paymentMethod.trim();
+        if (m.isEmpty()) {
+            return false;
+        }
+        String lo = m.toLowerCase();
+        if ("cod".equals(lo) || lo.contains("cash on delivery")) {
+            return false;
+        }
+        return "stripe".equals(lo)
+                || "credit card".equals(lo)
+                || "debitcard".equals(lo)
+                || "debit card".equals(lo)
+                || lo.contains("stripe");
+    }
+
     /** Cancels an order, calculates refund with fee, replenishes stock, and notifies the user. */
     public boolean cancelOrder(int orderId, int userId) {
         try {
+            lastError = "";
             // 1. Get Order Details
             Order order = dbHelper.getOrderById(orderId);
-            if (order == null) return false;
-
-            // 2. Identify Payment Method
-            String paymentMethod = "COD";
-            android.database.Cursor paymentCursor = dbHelper.getPaymentByOrderId(orderId);
-            if (paymentCursor != null && paymentCursor.moveToFirst()) {
-                paymentMethod = paymentCursor.getString(paymentCursor.getColumnIndexOrThrow(com.sunit.groceryplus.DatabaseContract.PaymentEntry.COLUMN_NAME_PAYMENT_METHOD));
-                paymentCursor.close();
+            if (order == null) {
+                lastError = "Order not found.";
+                return false;
+            }
+            if (userId <= 0) {
+                lastError = "Invalid user session.";
+                return false;
+            }
+            if (order.getUserId() != userId) {
+                lastError = "You can only cancel your own orders.";
+                return false;
+            }
+            String currentStatus = order.getStatus();
+            if (currentStatus != null) {
+                currentStatus = currentStatus.trim();
+            }
+            if (currentStatus == null || currentStatus.isEmpty()
+                    || (!"pending".equalsIgnoreCase(currentStatus) && !"processing".equalsIgnoreCase(currentStatus))) {
+                lastError = "Only pending or processing orders can be cancelled.";
+                return false;
             }
 
-            boolean isPaidOrder = "Stripe".equalsIgnoreCase(paymentMethod) || "Credit Card".equalsIgnoreCase(paymentMethod);
+            // 2. Identify Payment Method (trimmed; Stripe may be stored as "stripe", " Stripe ", etc.)
+            String paymentMethod = "COD";
+            android.database.Cursor paymentCursor = dbHelper.getPaymentByOrderId(orderId);
+            if (paymentCursor != null) {
+                try {
+                    if (paymentCursor.moveToFirst()) {
+                        int col = paymentCursor.getColumnIndex(com.sunit.groceryplus.DatabaseContract.PaymentEntry.COLUMN_NAME_PAYMENT_METHOD);
+                        if (col != -1 && !paymentCursor.isNull(col)) {
+                            String raw = paymentCursor.getString(col);
+                            if (raw != null) {
+                                paymentMethod = raw.trim();
+                            }
+                        }
+                    }
+                } finally {
+                    paymentCursor.close();
+                }
+            }
+
+            boolean isPaidOrder = isOnlineCardPayment(paymentMethod);
 
             // 3. Update Status
             boolean success = dbHelper.updateOrderStatus(orderId, "Cancelled");
@@ -147,30 +201,69 @@ public class OrderRepository {
                 String notifTitle = "Order Cancelled";
                 String notifMessage = "Your order #" + orderId + " has been cancelled.";
                 String chatMessage = "Your Order #" + orderId + " has been Cancelled.";
+                
+                // Restore Wallet Balance Used (Immediate) FOR ALL ORDERS
+                double walletUsed = dbHelper.getWalletDebitForOrder(userId, orderId);
+                if (walletUsed > 0) {
+                    dbHelper.logTransaction(userId, walletUsed, "credit", "refund", "Restoration of Balance used for Order #" + orderId);
+                    Log.d(TAG, "Restored wallet balance: " + walletUsed);
+                }
+
+                // Restore Loyalty Points Used (Immediate) FOR ALL ORDERS
+                double pointsUsed = dbHelper.getPointsDebitForOrder(userId, orderId);
+                if (pointsUsed > 0) {
+                    dbHelper.addLoyaltyPoints(userId, (float)pointsUsed);
+                    dbHelper.logTransaction(userId, pointsUsed, "credit", "loyalty_refund", "Restoration of Points used for Order #" + orderId);
+                }
+                
+                if (walletUsed > 0 || pointsUsed > 0) {
+                    String partialRefundMsg = String.format("Restored: NPR %.2f.", (walletUsed + pointsUsed));
+                    chatMessage += "\n" + partialRefundMsg;
+                    notifMessage += " " + partialRefundMsg;
+                }
 
                 if (isPaidOrder) {
-                    double totalAmount = order.getTotalAmount();
-                    double refundAmount = totalAmount * 0.85; // 15% fee deduction
-                    String refundMsg = String.format("Refund of Rs. %.2f (after 15%% fee deduction) has been initiated.", refundAmount);
-                    chatMessage += "\n" + refundMsg + "\n" +
-                                   "Amount will reflect in your original payment method within 5-7 business days.";
+                    double stripeAmount = order.getTotalAmount();
+                    double stipeRefund = stripeAmount * 0.85; // 15% cancellation fee deduction
+                    
+                    // CREDIT TO WALLET (Immediate)
+                    dbHelper.logTransaction(userId, stipeRefund, "credit", "refund", "Cancellation Refund for Order #" + orderId);
+                    
+                    String refundMsg = String.format("Stripe Refund: NPR %.2f (Instantly Credited to Wallet).", stipeRefund);
+                    chatMessage += "\n" + refundMsg;
                     notifMessage += " " + refundMsg;
                     
                     // Update Payment Status to Refunded
                     dbHelper.updatePaymentStatusByOrderId(orderId, "Refunded");
+                } else {
+                    dbHelper.updatePaymentStatusByOrderId(orderId, "Cancelled");
                 }
 
-                // 6. Notify
-                int adminId = dbHelper.getAdminId();
-                if (adminId != -1) dbHelper.sendMessage(adminId, userId, chatMessage);
-                GroceryNotificationManager.getInstance(context).sendNotification(userId, notifTitle, notifMessage, GroceryNotificationManager.TYPE_ORDER, String.valueOf(orderId));
-                
-                if (order.getDeliveryPersonId() > 0) {
-                    deliveryPersonRepository.releaseDeliveryPerson(order.getDeliveryPersonId());
+                // 6. Notify (never fail cancellation if messaging/notifications error after DB update)
+                try {
+                    int adminId = dbHelper.getAdminId();
+                    if (adminId != -1) {
+                        dbHelper.sendMessage(adminId, userId, chatMessage);
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, "sendMessage after cancel failed", e);
+                }
+                try {
+                    GroceryNotificationManager.getInstance(context).sendNotification(userId, notifTitle, notifMessage, GroceryNotificationManager.TYPE_ORDER, String.valueOf(orderId));
+                } catch (Exception e) {
+                    Log.w(TAG, "sendNotification after cancel failed", e);
+                }
+                try {
+                    if (order.getDeliveryPersonId() > 0) {
+                        deliveryPersonRepository.releaseDeliveryPerson(order.getDeliveryPersonId());
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, "releaseDeliveryPerson after cancel failed", e);
                 }
             }
             return success;
         } catch (Exception e) {
+            lastError = e.toString();
             Log.e(TAG, "Error cancelling order", e);
             return false;
         }
@@ -223,11 +316,45 @@ public class OrderRepository {
                 }
             }
 
-            // B. Payment Status Sync
+            // B. Payment Status Sync and WALLET CREDIT PUSH
             if ("Delivered".equalsIgnoreCase(status)) {
                 dbHelper.updatePaymentStatusByOrderId(orderId, "Completed");
-            } else if (isNewStatusFinal && isPaidMethod) {
-                dbHelper.updatePaymentStatusByOrderId(orderId, "Refunded");
+            } else if (isNewStatusFinal) {
+                boolean isAdminRefundAction = "Refunded".equalsIgnoreCase(status);
+                dbHelper.updatePaymentStatusByOrderId(orderId, isAdminRefundAction ? "Refunded" : (isPaidMethod ? "Refunded" : "Cancelled"));
+                
+                // RESTORE Wallet/Points used (Immediate) FOR ALL
+                double walletUsed = dbHelper.getWalletDebitForOrder(userId, orderId);
+                if (walletUsed > 0) {
+                    dbHelper.logTransaction(userId, walletUsed, "credit", "refund", "Restoration of Balance used for Order #" + orderId);
+                }
+                double pointsUsed = dbHelper.getPointsDebitForOrder(userId, orderId);
+                if (pointsUsed > 0) {
+                    dbHelper.addLoyaltyPoints(userId, (float)pointsUsed);
+                    dbHelper.logTransaction(userId, pointsUsed, "credit", "loyalty_refund", "Restoration of Points used for Order #" + orderId);
+                }
+
+                if (isPaidMethod) {
+                    // REFUND Stripe amount (Immediate 85% Refund)
+                    double cashAmount = oldOrder.getTotalAmount();
+                    double refundAmount = isAdminRefundAction ? cashAmount : (cashAmount * 0.85); // 15% cancellation fee deduction only if cancelled
+                    
+                    dbHelper.logTransaction(userId, refundAmount, "credit", "refund", 
+                            (isAdminRefundAction ? "Full Refund for Order #" : "Cancellation Refund for Order #") + orderId + " (Admin Action)");
+                    Log.d(TAG, "Admin pushed Instant Stripe refund for Order #" + orderId);
+                } else {
+                    // COD Logic
+                    if (isAdminRefundAction) {
+                        // Immediate for COD/Cash only if the admin explicitly marks as Refunded (implying cash was already paid on delivery)
+                        double cashAmount = oldOrder.getTotalAmount();
+                        dbHelper.logTransaction(userId, cashAmount, "credit", "refund", 
+                                "Full Refund for Order #" + orderId);
+                        Log.d(TAG, "Admin pushed Instant Cash refund for Order #" + orderId);
+                    } else {
+                        // Admin cancelled COD before delivery. User has not paid cash yet, so no cash refund.
+                        Log.d(TAG, "Admin cancelled COD Order #" + orderId + ". No cash to refund.");
+                    }
+                }
             }
 
             // C. Delivery Person Release Logic
@@ -478,9 +605,9 @@ public class OrderRepository {
             // 2. Determine Refund Method
             String refundMethod;
             if ("Stripe".equalsIgnoreCase(paymentMethod) || "Credit Card".equalsIgnoreCase(paymentMethod)) {
-                refundMethod = "Original Method (Stripe)";
+                refundMethod = "Wallet (Stripe Source)";
             } else {
-                refundMethod = "Loyalty Points";
+                refundMethod = "Wallet";
             }
 
             // 3. Get Item Amount
@@ -500,10 +627,10 @@ public class OrderRepository {
                 // 5. Notify User
                 String title = "Refund Request Received";
                 String message = "Your refund request #" + refundId + " for Order #" + orderId + " is pending review. ";
-                if ("Loyalty Points".equals(refundMethod)) {
-                    message += "Approved amount will be added to your Loyalty Points.";
+                if ("Wallet".equals(refundMethod)) {
+                    message += "Approved amount will be added to your Wallet in 3-5 days.";
                 } else {
-                    message += "Approved amount will be credited back to your original payment method.";
+                    message += "Approved amount will be credited back to your Wallet.";
                 }
                 
                 GroceryNotificationManager.getInstance(context).sendNotification(userId, title, message, GroceryNotificationManager.TYPE_ORDER, String.valueOf(orderId));
@@ -557,14 +684,19 @@ public class OrderRepository {
             }
 
             // 2. Perform Credit Logic
-            if (refundMethod.contains("Loyalty Points")) {
-                dbHelper.addLoyaltyPoints(userId, amount);
-                dbHelper.logTransaction(userId, amount, "credit", "refund", "Refund for Order #" + orderId + " (Loyalty Points)");
-            } else if (refundMethod.contains("Stripe")) {
-                // Simulation: In production this would call Stripe SDK/API
-                Log.i(TAG, "Simulating Stripe refund of NPR " + amount + " for refund #" + refundId);
-                // Even for Stripe, we log it in history for user visibility
-                dbHelper.logTransaction(userId, amount, "credit", "refund", "Refund for Order #" + orderId + " (Stripe)");
+            if (refundMethod.contains("Wallet") && !refundMethod.contains("Stripe")) {
+                // For Cash/COD refunds - Apply 3-5 day delay as requested
+                java.util.Calendar cal = java.util.Calendar.getInstance();
+                cal.add(java.util.Calendar.DAY_OF_YEAR, 4); // Median of 3-5 days
+                String availableAt = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(cal.getTime());
+                
+                dbHelper.logTransaction(userId, amount, "credit", "refund", 
+                        "Refund for Order #" + orderId + " (Available in 3-5 days)", "pending", availableAt);
+                
+                Log.d(TAG, "Scheduled auto-refund for User " + userId + " at " + availableAt);
+            } else {
+                // Stripe or immediate wallet refund
+                dbHelper.logTransaction(userId, amount, "credit", "refund", "Refund for Order #" + orderId);
             }
 
             // 3. Update Status to Completed in DB
@@ -642,4 +774,4 @@ public class OrderRepository {
             return false;
         }
     }
-}
+}

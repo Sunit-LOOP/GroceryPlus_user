@@ -27,6 +27,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
     public interface OnOrderActionListener {
         void onUpdateStatusClick(Order order);
         void onAssignDeliveryClick(Order order);
+        void onRefundClick(Order order);
     }
 
     /** Constructor. */
@@ -64,7 +65,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
         // UI Components
         TextView orderIdTv, orderDateTv, orderAmountTv, orderStatusTv;
         TextView paymentStatusTv, deliveryPersonTv, deliveryFeeTv;
-        Button updateStatusBtn, assignDeliveryBtn;
+        Button updateStatusBtn, assignDeliveryBtn, pushRefundBtn;
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -77,6 +78,7 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
             deliveryFeeTv = itemView.findViewById(R.id.deliveryFeeTv);
             updateStatusBtn = itemView.findViewById(R.id.updateStatusBtn);
             assignDeliveryBtn = itemView.findViewById(R.id.assignDeliveryBtn);
+            pushRefundBtn = itemView.findViewById(R.id.pushRefundBtn);
 
             updateStatusBtn.setOnClickListener(v -> {
                 int position = getAdapterPosition();
@@ -89,6 +91,13 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION && listener != null) {
                     listener.onAssignDeliveryClick(orders.get(position));
+                }
+            });
+
+            pushRefundBtn.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && listener != null) {
+                    listener.onRefundClick(orders.get(position));
                 }
             });
         }
@@ -147,9 +156,12 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
             if (isTerminal) {
                 updateStatusBtn.setVisibility(View.GONE);
                 assignDeliveryBtn.setVisibility(View.GONE);
+                pushRefundBtn.setVisibility(View.GONE);
             } else {
                 updateStatusBtn.setVisibility(View.VISIBLE);
                 assignDeliveryBtn.setVisibility(View.VISIBLE);
+                // Also hide Push Refund if status is already Refunded (just in case)
+                pushRefundBtn.setVisibility("Refunded".equalsIgnoreCase(status) ? View.GONE : View.VISIBLE);
             }
         }
     }

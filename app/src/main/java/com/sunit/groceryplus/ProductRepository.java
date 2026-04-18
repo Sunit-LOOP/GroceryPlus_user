@@ -89,4 +89,14 @@ public class ProductRepository {
             return false;
         }
     }
+
+    /** Specifically updates only the image path for a product. */
+    public boolean updateProductImagePath(int productId, String imagePath) {
+        try {
+            return dbHelper.updateProductImagePath(productId, imagePath);
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating product image path", e);
+            return false;
+        }
+    }
 }

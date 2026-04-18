@@ -17,13 +17,17 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /** Application entry point for GroceryPlus, handling initialization and navigation. */
 public class SplashScreenActivity extends AppCompatActivity {
 
     private static final String TAG = "SplashScreenActivity";
     private static final int SPLASH_DURATION = 3000; // 3 seconds
 
-    private ActivityResultLauncher<String> postNotificationsPermissionLauncher;
+    private ActivityResultLauncher<String[]> runtimePermissionsLauncher;
 
     /** Initializes UI, performs system checks, and sets up navigation timer. */
     @Override
@@ -31,49 +35,88 @@ public class SplashScreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        // Register permission launcher for POST_NOTIFICATIONS
-        postNotificationsPermissionLauncher = registerForActivityResult(
-                new ActivityResultContracts.RequestPermission(),
-                isGranted -> Log.d(TAG, "POST_NOTIFICATIONS granted: " + isGranted)
-        );
+        runtimePermissionsLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                (Map<String, Boolean> result) -> {
+                    for (Map.Entry<String, Boolean> e : result.entrySet()) {
+                        Log.d(TAG, "Permission " + e.getKey() + " -> " + e.getValue());
+                    }
+                });
 
-        // Request notification permission for Android 13+ devices
-        requestPostNotificationsIfNeeded();
+        requestEssentialRuntimePermissions();
 
         // Optimized Initialization Flow
         new Thread(() -> {
             try {
                 Log.d(TAG, "Starting Database Initialization...");
                 DatabaseHelper dbHelper = new DatabaseHelper(SplashScreenActivity.this);
-                // getWritableDatabase() triggers onUpgrade/onCreate safely in background
-                SQLiteDatabase db = dbHelper.getWritableDatabase(); 
-                
-                // Test Connection
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+
                 DatabaseConnectionTest.testDatabaseConnection(SplashScreenActivity.this);
-                
-                // Perform additional initialization if needed (onUpgrade already calls some of these)
+
                 dbHelper.insertSampleData(db);
                 dbHelper.ensureAllProductsHaveStock(db);
-                
+
                 Log.d(TAG, "Database Initialization Completed Successfully");
             } catch (Exception e) {
                 Log.e(TAG, "Error during database initialization", e);
             }
         }).start();
-        
-        // Start the delivery guy animation
+
         animateDeliveryGuy();
 
-        // Use Handler to delay transition to LoginActivity
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG, "Redirecting to LoginActivity");
-                Intent intent = new Intent(SplashScreenActivity.this, LoginActivity.class);
-                startActivity(intent);
-                finish(); // Prevent user from returning to splash screen
-            }
+        new Handler().postDelayed(() -> {
+            Log.d(TAG, "Redirecting to LoginActivity");
+            Intent intent = new Intent(SplashScreenActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
         }, SPLASH_DURATION);
+    }
+
+    /** Requests notifications, location (maps), camera (product photos), and media read where applicable. */
+    private void requestEssentialRuntimePermissions() {
+        try {
+            List<String> need = new ArrayList<>();
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    need.add(android.Manifest.permission.POST_NOTIFICATIONS);
+                }
+            }
+
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                need.add(android.Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                need.add(android.Manifest.permission.ACCESS_COARSE_LOCATION);
+            }
+
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+                need.add(android.Manifest.permission.CAMERA);
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_MEDIA_IMAGES)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    need.add(android.Manifest.permission.READ_MEDIA_IMAGES);
+                }
+            } else {
+                if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    need.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);
+                }
+            }
+
+            if (!need.isEmpty()) {
+                runtimePermissionsLauncher.launch(need.toArray(new String[0]));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Permission request setup failed", e);
+        }
     }
 
     private void animateDeliveryGuy() {
@@ -81,23 +124,5 @@ public class SplashScreenActivity extends AppCompatActivity {
         ObjectAnimator animator = ObjectAnimator.ofFloat(deliveryGuy, "translationX", 0f, 1000f);
         animator.setDuration(SPLASH_DURATION);
         animator.start();
-    }
-
-    private void requestPostNotificationsIfNeeded() {
-        try {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                return;
-            }
-
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                return;
-            }
-
-            if (postNotificationsPermissionLauncher != null) {
-                postNotificationsPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to request POST_NOTIFICATIONS", e);
-        }
     }
 }

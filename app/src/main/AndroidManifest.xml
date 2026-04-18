@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
@@ -125,6 +126,18 @@
         <activity
             android:name=".admin.AdminRefundManagementActivity"
             android:label="Refund Management"
+            android:exported="false" />
+        <activity
+            android:name=".admin.AdminSettingsActivity"
+            android:label="Store Settings"
+            android:exported="false" />
+        <activity
+            android:name=".admin.InventoryAlertsActivity"
+            android:label="Inventory Alerts"
+            android:exported="false" />
+        <activity
+            android:name=".admin.ReportsActivity"
+            android:label="Reports &amp; Export"
             android:exported="false" />
         <activity
             android:name=".OrderTrackingActivity"

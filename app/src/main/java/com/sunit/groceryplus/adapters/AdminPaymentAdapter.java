@@ -84,6 +84,9 @@ public class AdminPaymentAdapter extends RecyclerView.Adapter<AdminPaymentAdapte
         } else if ("Failed".equalsIgnoreCase(status)) {
             holder.statusChip.setChipBackgroundColorResource(android.R.color.holo_red_light);
             holder.statusChip.setTextColor(context.getResources().getColor(android.R.color.white));
+        } else if ("Refunded".equalsIgnoreCase(status)) {
+            holder.statusChip.setChipBackgroundColorResource(android.R.color.darker_gray);
+            holder.statusChip.setTextColor(context.getResources().getColor(android.R.color.white));
         }
         
         // Show "Mark as Received" button only for COD payments with "Pending" status

@@ -76,9 +76,6 @@ public class OrderTrackingActivity extends AppCompatActivity {
         }
         
         TextView statusTv = findViewById(R.id.orderStatusTv);
-        if (orderStatus != null) {
-            statusTv.setText("Status: " + orderStatus);
-        }
 
         // Setup Map
         map = findViewById(R.id.map);
@@ -96,6 +93,15 @@ public class OrderTrackingActivity extends AppCompatActivity {
         vendorName = "Warehouse";
         
         com.sunit.groceryplus.models.Order order = dbHelper.getOrderById(orderId);
+        // Prefer live DB status — many entry points (notifications, etc.) omit order_status from the Intent.
+        if (order != null) {
+            String st = order.getStatus();
+            orderStatus = (st != null) ? st.trim() : null;
+        }
+        if (orderStatus != null) {
+            statusTv.setText("Status: " + orderStatus);
+        }
+
         if (order != null) {
             // Get delivery address
             com.sunit.groceryplus.models.Address address = dbHelper.getAddressById(order.getAddressId());
@@ -147,31 +153,25 @@ public class OrderTrackingActivity extends AppCompatActivity {
         // Start real-time location updates
         startRealTimeTracking();
 
-        // Initialize Cancel Button
-        // This button allows users to cancel their order if it is still in PENDING state
+        // Initialize Cancel Button (shown only while order is still Pending or Processing)
         android.widget.Button btnCancel = findViewById(R.id.btnCancelOrder);
 
-        // Check if order status allows cancellation (Only PENDING)
-        if ("PENDING".equalsIgnoreCase(orderStatus)) {
+        // Match OrderHistory / OrderAdapter: cancellable while Pending or Processing
+        if (orderStatus != null
+                && ("pending".equalsIgnoreCase(orderStatus) || "processing".equalsIgnoreCase(orderStatus))) {
             // Make button visible
             btnCancel.setVisibility(android.view.View.VISIBLE);
             
             // Set OnClickListener for cancellation
-            btnCancel.setOnClickListener(v -> {
-                // Show confirmation dialog to user explaining the 15% deduction policy
+            btnCancel.setOnClickListener(v ->
                 new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle("Cancel Order?")
-                    .setMessage("Are you sure you want to cancel this order?\n\nNOTE: A 15% cancellation fee will be deducted from your refund amount.")
-                    .setPositiveButton("Yes, Cancel", (dialog, which) -> {
-                        // User confirmed cancellation
-                        // Proceed with cancellation logic in background
-                        cancelOrder(orderId);
-                    })
-                    .setNegativeButton("No", null) // Dismiss dialog on "No"
-                    .show();
-            });
+                    .setTitle("Cancel order?")
+                    .setMessage("Paid with card: refund (after 15% fee) is added to your wallet right away.")
+                    .setPositiveButton("Cancel order", (dialog, which) -> cancelOrder(orderId))
+                    .setNegativeButton("Keep order", null)
+                    .show());
         } else {
-            // Hide button if status is not PENDING (e.g., Processing, Shipped, Delivered)
+            // Hide button if order is not in a user-cancellable state
             btnCancel.setVisibility(android.view.View.GONE);
         }
 
@@ -189,8 +189,9 @@ public class OrderTrackingActivity extends AppCompatActivity {
 
         // Execute DB operation in background thread to avoid UI freezing
         new Thread(() -> {
-            // Get current User ID from shared preferences
-            int userId = PreferenceManager.getDefaultSharedPreferences(this).getInt("user_id", -1);
+            // Get current User ID from shared preferences using correct file and key
+            android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+            int userId = prefs.getInt("userId", -1);
             
             // Call repository to verify and cancel order
             // This method handles:
@@ -204,13 +205,18 @@ public class OrderTrackingActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 progressDialog.dismiss();
                 if (success) {
-                    // Show success message
-                    android.widget.Toast.makeText(this, "Order Cancelled. Refund initiated.", android.widget.Toast.LENGTH_LONG).show();
-                    // Refresh Activity to update status and hide button
-                    recreate(); 
+                    double bal = dbHelper.getWalletBalance(userId);
+                    android.widget.Toast.makeText(this,
+                            "Order #" + orderId + " cancelled. Wallet: NPR " + String.format(java.util.Locale.getDefault(), "%.2f", bal),
+                            android.widget.Toast.LENGTH_LONG).show();
+                    finish(); // Return to previous screen
                 } else {
-                    // Show error message
-                    android.widget.Toast.makeText(this, "Failed to cancel order. Please try again.", android.widget.Toast.LENGTH_SHORT).show();
+                    // Show error message natively catching last repo trace
+                    String errorMsg = "Failed to cancel order: ";
+                    if (com.sunit.groceryplus.OrderRepository.lastError != null && !com.sunit.groceryplus.OrderRepository.lastError.isEmpty()) {
+                        errorMsg += com.sunit.groceryplus.OrderRepository.lastError;
+                    }
+                    android.widget.Toast.makeText(this, errorMsg, android.widget.Toast.LENGTH_LONG).show();
                 }
             });
         }).start();
@@ -240,6 +246,7 @@ public class OrderTrackingActivity extends AppCompatActivity {
         // Processing time based on status
         int processingTime = 0;
         if ("PENDING".equalsIgnoreCase(status)) processingTime = 15;
+        else if ("PROCESSING".equalsIgnoreCase(status)) processingTime = 10;
         else if ("CONFIRMED".equalsIgnoreCase(status)) processingTime = 10;
         else if ("PREPARING".equalsIgnoreCase(status)) processingTime = 5;
         
@@ -296,23 +303,25 @@ public class OrderTrackingActivity extends AppCompatActivity {
         com.sunit.groceryplus.models.Order order = dbHelper.getOrderById(orderId);
         if (order != null && order.getDeliveryPersonId() > 0) {
             android.database.Cursor cursor = dbHelper.getDeliveryPersonnelById(order.getDeliveryPersonId());
-            if (cursor != null && cursor.moveToFirst()) {
-                com.sunit.groceryplus.models.DeliveryPersonnel deliveryPerson = new com.sunit.groceryplus.models.DeliveryPersonnel();
-                deliveryPerson.setDeliveryPersonId(cursor.getInt(cursor.getColumnIndexOrThrow("person_id")));
-                deliveryPerson.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
-                deliveryPerson.setPhone(cursor.getString(cursor.getColumnIndexOrThrow("phone")));
-                deliveryPerson.setLatitude(cursor.getDouble(cursor.getColumnIndexOrThrow("latitude")));
-                deliveryPerson.setLongitude(cursor.getDouble(cursor.getColumnIndexOrThrow("longitude")));
-                deliveryPerson.setAvailable(cursor.getInt(cursor.getColumnIndexOrThrow("available")) == 1);
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    com.sunit.groceryplus.models.DeliveryPersonnel deliveryPerson = new com.sunit.groceryplus.models.DeliveryPersonnel();
+                    deliveryPerson.setDeliveryPersonId(cursor.getInt(cursor.getColumnIndexOrThrow("person_id")));
+                    deliveryPerson.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
+                    deliveryPerson.setPhone(cursor.getString(cursor.getColumnIndexOrThrow("phone")));
+                    deliveryPerson.setLatitude(cursor.getDouble(cursor.getColumnIndexOrThrow("latitude")));
+                    deliveryPerson.setLongitude(cursor.getDouble(cursor.getColumnIndexOrThrow("longitude")));
+                    deliveryPerson.setAvailable(cursor.getInt(cursor.getColumnIndexOrThrow("available")) == 1);
+                    
+                    deliveryPersonMarker = new Marker(map);
+                    deliveryPersonMarker.setPosition(new GeoPoint(deliveryPerson.getLatitude(), deliveryPerson.getLongitude()));
+                    deliveryPersonMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                    deliveryPersonMarker.setTitle(deliveryPerson.getName() + " (Delivery Partner)");
+                    deliveryPersonMarker.setSnippet("Your delivery partner");
+                    deliveryPersonMarker.setIcon(getResources().getDrawable(R.drawable.ic_delivery_person));
+                    map.getOverlays().add(deliveryPersonMarker);
+                }
                 cursor.close();
-                
-                deliveryPersonMarker = new Marker(map);
-                deliveryPersonMarker.setPosition(new GeoPoint(deliveryPerson.getLatitude(), deliveryPerson.getLongitude()));
-                deliveryPersonMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                deliveryPersonMarker.setTitle(deliveryPerson.getName() + " (Delivery Partner)");
-                deliveryPersonMarker.setSnippet("Your delivery partner");
-                deliveryPersonMarker.setIcon(getResources().getDrawable(R.drawable.ic_delivery_person));
-                map.getOverlays().add(deliveryPersonMarker);
             }
         }
     }
@@ -341,32 +350,34 @@ public class OrderTrackingActivity extends AppCompatActivity {
                 !"CANCELLED".equalsIgnoreCase(order.getStatus())) {
                 
                 android.database.Cursor cursor = dbHelper.getDeliveryPersonnelById(order.getDeliveryPersonId());
-                if (cursor != null && cursor.moveToFirst()) {
-                    com.sunit.groceryplus.models.DeliveryPersonnel deliveryPerson = new com.sunit.groceryplus.models.DeliveryPersonnel();
-                    deliveryPerson.setDeliveryPersonId(cursor.getInt(cursor.getColumnIndexOrThrow("person_id")));
-                    deliveryPerson.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
-                    deliveryPerson.setPhone(cursor.getString(cursor.getColumnIndexOrThrow("phone")));
-                    deliveryPerson.setLatitude(cursor.getDouble(cursor.getColumnIndexOrThrow("latitude")));
-                    deliveryPerson.setLongitude(cursor.getDouble(cursor.getColumnIndexOrThrow("longitude")));
-                    deliveryPerson.setAvailable(cursor.getInt(cursor.getColumnIndexOrThrow("available")) == 1);
-                    cursor.close();
-                    
-                    if (deliveryPersonMarker != null) {
-                        GeoPoint newLocation = new GeoPoint(deliveryPerson.getLatitude(), deliveryPerson.getLongitude());
-                    
-                    uiHandler.post(() -> {
-                        deliveryPersonMarker.setPosition(newLocation);
+                if (cursor != null) {
+                    if (cursor.moveToFirst()) {
+                        com.sunit.groceryplus.models.DeliveryPersonnel deliveryPerson = new com.sunit.groceryplus.models.DeliveryPersonnel();
+                        deliveryPerson.setDeliveryPersonId(cursor.getInt(cursor.getColumnIndexOrThrow("person_id")));
+                        deliveryPerson.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
+                        deliveryPerson.setPhone(cursor.getString(cursor.getColumnIndexOrThrow("phone")));
+                        deliveryPerson.setLatitude(cursor.getDouble(cursor.getColumnIndexOrThrow("latitude")));
+                        deliveryPerson.setLongitude(cursor.getDouble(cursor.getColumnIndexOrThrow("longitude")));
+                        deliveryPerson.setAvailable(cursor.getInt(cursor.getColumnIndexOrThrow("available")) == 1);
                         
-                        // Update route from delivery person to customer with enhanced polylines
-                        updateDeliveryRoute(newLocation, deliveryPoint);
+                        if (deliveryPersonMarker != null) {
+                            GeoPoint newLocation = new GeoPoint(deliveryPerson.getLatitude(), deliveryPerson.getLongitude());
                         
-                        // Update route progress based on delivery status
-                        updateRouteProgress(order.getStatus(), newLocation);
-                        
-                        // Update ETA based on current location
-                        calculateAndDisplayEta(newLocation, deliveryPoint, order.getStatus());
-                    });
+                            uiHandler.post(() -> {
+                                deliveryPersonMarker.setPosition(newLocation);
+                                
+                                // Update route from delivery person to customer with enhanced polylines
+                                updateDeliveryRoute(newLocation, deliveryPoint);
+                                
+                                // Update route progress based on delivery status
+                                updateRouteProgress(order.getStatus(), newLocation);
+                                
+                                // Update ETA based on current location
+                                calculateAndDisplayEta(newLocation, deliveryPoint, order.getStatus());
+                            });
+                        }
                     }
+                    cursor.close();
                 }
                 cursor.close();
             }

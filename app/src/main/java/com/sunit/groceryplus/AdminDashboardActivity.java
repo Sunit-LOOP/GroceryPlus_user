@@ -6,15 +6,20 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
+import com.sunit.groceryplus.admin.AdminRefundManagementActivity;
+import com.sunit.groceryplus.admin.AdminSettingsActivity;
 import com.sunit.groceryplus.admin.AnalyticsDashboardActivity;
 import com.sunit.groceryplus.admin.CategoryManagementActivity;
 import com.sunit.groceryplus.admin.CustomerManagementActivity;
 import com.sunit.groceryplus.admin.DeliveryPersonnelActivity;
+import com.sunit.groceryplus.admin.InventoryAlertsActivity;
 import com.sunit.groceryplus.admin.OrderManagementActivity;
 import com.sunit.groceryplus.admin.PaymentTrackingActivity;
 import com.sunit.groceryplus.admin.ProductManagementActivity;
 import com.sunit.groceryplus.admin.PromotionManagementActivity;
+import com.sunit.groceryplus.admin.ReportsActivity;
 import com.sunit.groceryplus.admin.ReviewsManagementActivity;
 import com.sunit.groceryplus.admin.VendorManagementActivity;
 
@@ -28,7 +33,10 @@ public class AdminDashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_dashboard);
 
-        // Set up click listeners for dashboard cards
+        Toolbar toolbar = findViewById(R.id.adminDashboardToolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
+
         setupClickListeners();
     }
 
@@ -93,6 +101,18 @@ public class AdminDashboardActivity extends AppCompatActivity {
         findViewById(R.id.supportRefundsCard).setOnClickListener(v -> {
             startActivity(new Intent(this, com.sunit.groceryplus.admin.AdminSupportActivity.class));
         });
+
+        findViewById(R.id.adminRefundQueueCard).setOnClickListener(v ->
+                startActivity(new Intent(this, AdminRefundManagementActivity.class)));
+
+        findViewById(R.id.inventoryAlertsCard).setOnClickListener(v ->
+                startActivity(new Intent(this, InventoryAlertsActivity.class)));
+
+        findViewById(R.id.reportsExportCard).setOnClickListener(v ->
+                startActivity(new Intent(this, ReportsActivity.class)));
+
+        findViewById(R.id.storeSettingsCard).setOnClickListener(v ->
+                startActivity(new Intent(this, AdminSettingsActivity.class)));
 
         // Logout Button
         findViewById(R.id.logoutButton).setOnClickListener(v -> {

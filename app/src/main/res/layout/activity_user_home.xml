@@ -161,12 +161,23 @@
                                  android:src="@drawable/wallet" />
                          </com.google.android.material.card.MaterialCardView>
                          <TextView
+                             android:id="@+id/homeWalletLabelTv"
                              android:layout_width="wrap_content"
                              android:layout_height="wrap_content"
                              android:text="Wallet"
                              android:textSize="11sp"
                              android:textColor="#424242"
                              android:layout_marginTop="6dp"/>
+                         <TextView
+                             android:id="@+id/homeRefundedTv"
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:text="NPR 0.00"
+                             android:textSize="9sp"
+                             android:textColor="#00C853"
+                             android:textStyle="bold"
+                             android:layout_marginTop="2dp"
+                             android:visibility="visible"/>
                      </LinearLayout>
 
                      <!-- Vendor Map Item -->

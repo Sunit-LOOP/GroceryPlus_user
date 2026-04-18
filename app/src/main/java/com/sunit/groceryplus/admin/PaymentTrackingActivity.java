@@ -25,7 +25,7 @@ public class PaymentTrackingActivity extends AppCompatActivity {
 
     // UI Components
     private RecyclerView paymentsRv;
-    private TextView totalPaymentsTv, totalAmountTv, monthlyAmountTv;
+    private TextView totalPaymentsTv, totalAmountTv, monthlyAmountTv, totalRefundsTv;
     
     // Filters
     private com.google.android.material.chip.Chip chipAll, chipStripe, chipCod;
@@ -57,6 +57,7 @@ public class PaymentTrackingActivity extends AppCompatActivity {
         totalPaymentsTv = findViewById(R.id.totalPaymentsTv);
         totalAmountTv = findViewById(R.id.totalAmountTv);
         monthlyAmountTv = findViewById(R.id.monthlyAmountTv);
+        totalRefundsTv = findViewById(R.id.totalRefundsTv);
         
         // Initialize filter chips
         chipAll = findViewById(R.id.chipAll);
@@ -148,6 +149,7 @@ public class PaymentTrackingActivity extends AppCompatActivity {
         double totalAmount = 0.0;
         int totalPayments = 0;
         double monthlyAmount = 0.0;
+        double totalRefunds = 0.0;
         
         if (cursor != null && cursor.moveToFirst()) {
             do {
@@ -165,6 +167,8 @@ public class PaymentTrackingActivity extends AppCompatActivity {
                         totalAmount += amount;
                         totalPayments++;
                         monthlyAmount += amount;
+                    } else if ("Refunded".equalsIgnoreCase(status)) {
+                        totalRefunds += amount;
                     }
                 }
             } while (cursor.moveToNext());
@@ -175,6 +179,7 @@ public class PaymentTrackingActivity extends AppCompatActivity {
         if (totalPaymentsTv != null) totalPaymentsTv.setText(String.valueOf(totalPayments));
         if (totalAmountTv != null) totalAmountTv.setText("Rs. " + String.format("%.2f", totalAmount));
         if (monthlyAmountTv != null) monthlyAmountTv.setText("Rs. " + String.format("%.2f", monthlyAmount));
+        if (totalRefundsTv != null) totalRefundsTv.setText("Rs. " + String.format("%.2f", totalRefunds));
     }
     
     /**

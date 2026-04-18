@@ -61,14 +61,16 @@ public class PaymentActivity extends AppCompatActivity {
 
     // Transaction Data
     private double finalAmount = 0.0, baseSubtotal = 0.0, deliveryFee = 0.0, discountAmount = 0.0, pointsDiscount = 0.0;
+    private double walletBalance = 0.0, walletDiscount = 0.0;
     private int userPoints = 0;
     private String appliedPromoCode = null;
-    private boolean isUsingPoints = false;
+    private boolean isUsingPoints = false, isUsingWallet = false;
 
-    // UI Elements - Loyalty Points
+    // UI Elements - Loyalty Points & Wallet
     private TextView availablePointsTv, pointsValueTv, summaryPointsDiscount;
-    private View pointsDiscountRow;
-    private com.google.android.material.switchmaterial.SwitchMaterial usePointsSwitch;
+    private TextView walletBalancePaymentTv, summaryWalletDiscount;
+    private View pointsDiscountRow, walletDiscountRow;
+    private com.google.android.material.switchmaterial.SwitchMaterial usePointsSwitch, useWalletSwitch;
 
     // Domain Data
     private AddressRepository addressRepository;
@@ -107,6 +109,7 @@ public class PaymentActivity extends AppCompatActivity {
         loadCartData();
         loadSelectedAddress();
         setupLoyaltyPoints();
+        setupWallet();
     }
 
     /** Links UI components to functional fields and sets interaction listeners. */
@@ -170,6 +173,19 @@ public class PaymentActivity extends AppCompatActivity {
         if (usePointsSwitch != null) {
             usePointsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 isUsingPoints = isChecked;
+                calculateTotals();
+            });
+        }
+
+        // Initialize Wallet Views
+        walletBalancePaymentTv = findViewById(R.id.walletBalancePaymentTv);
+        useWalletSwitch = findViewById(R.id.useWalletSwitch);
+        walletDiscountRow = findViewById(R.id.walletDiscountRow);
+        summaryWalletDiscount = findViewById(R.id.summaryWalletDiscount);
+
+        if (useWalletSwitch != null) {
+            useWalletSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                isUsingWallet = isChecked;
                 calculateTotals();
             });
         }
@@ -244,6 +260,20 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    /** Fetches the user's wallet balance and updates the discount UI section. */
+    private void setupWallet() {
+        if (userId == -1) return;
+        
+        walletBalance = dbHelper.getWalletBalance(userId);
+        if (walletBalancePaymentTv != null) {
+            walletBalancePaymentTv.setText("Balance: NPR " + String.format("%.2f", walletBalance));
+        }
+        
+        if (useWalletSwitch != null) {
+            useWalletSwitch.setEnabled(walletBalance > 0);
+        }
+    }
+
     /** Calculates the final amount considering subtotal, delivery fee, promo codes, and loyalty points. */
     private void calculateTotals() {
         // 1. Reset from base
@@ -255,7 +285,15 @@ public class PaymentActivity extends AppCompatActivity {
             finalAmount -= discountAmount;
         }
         
-        // 3. Apply Loyalty Points
+        // 3. Apply Wallet Balance
+        if (isUsingWallet && walletBalance > 0) {
+            walletDiscount = Math.min(finalAmount, walletBalance);
+            finalAmount -= walletDiscount;
+        } else {
+            walletDiscount = 0.0;
+        }
+
+        // 4. Apply Loyalty Points
         if (isUsingPoints && userPoints > 0) {
             pointsDiscount = Math.min(finalAmount, (double) userPoints);
             finalAmount -= pointsDiscount;
@@ -263,7 +301,7 @@ public class PaymentActivity extends AppCompatActivity {
             pointsDiscount = 0.0;
         }
         
-        // 4. Ensure total is not negative
+        // 5. Ensure total is not negative
         if (finalAmount < 0) finalAmount = 0;
         
         updateTotalsUi();
@@ -411,6 +449,15 @@ public class PaymentActivity extends AppCompatActivity {
                 summaryPointsDiscount.setText("-NPR " + String.format("%.2f", pointsDiscount));
             } else {
                 pointsDiscountRow.setVisibility(View.GONE);
+            }
+        }
+
+        if (walletDiscountRow != null && summaryWalletDiscount != null) {
+            if (walletDiscount > 0.0) {
+                walletDiscountRow.setVisibility(View.VISIBLE);
+                summaryWalletDiscount.setText("-NPR " + String.format("%.2f", walletDiscount));
+            } else {
+                walletDiscountRow.setVisibility(View.GONE);
             }
         }
 
@@ -749,7 +796,12 @@ public class PaymentActivity extends AppCompatActivity {
                 Log.e(TAG, "Failed to transfer cart items to order", e);
             }
 
-            // 1. Deduct Loyalty Points if used
+            // 1. Deduct Wallet Balance if used
+            if (isUsingWallet && walletDiscount > 0) {
+                dbHelper.logTransaction(userId, walletDiscount, "debit", "purchase_redemption", "Paid from Wallet for Order #" + orderId);
+            }
+
+            // 2. Deduct Loyalty Points if used
             if (isUsingPoints && pointsDiscount > 0) {
                 dbHelper.addLoyaltyPoints(userId, -pointsDiscount);
                 dbHelper.logTransaction(userId, pointsDiscount, "debit", "purchase_redemption", "Redeemed for Order #" + orderId);

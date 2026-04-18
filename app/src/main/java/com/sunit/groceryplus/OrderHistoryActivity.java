@@ -237,7 +237,11 @@ public class OrderHistoryActivity extends AppCompatActivity {
             Toast.makeText(this, "Order #" + order.getOrderId() + " has been cancelled", Toast.LENGTH_SHORT).show();
             loadOrders();
         } else {
-            Toast.makeText(this, "Failed to cancel order", Toast.LENGTH_SHORT).show();
+            String msg = "Failed to cancel order";
+            if (OrderRepository.lastError != null && !OrderRepository.lastError.isEmpty()) {
+                msg += ": " + OrderRepository.lastError;
+            }
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
         }
     }
 

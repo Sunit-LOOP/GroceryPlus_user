@@ -38,6 +38,9 @@ import com.sunit.groceryplus.network.ApiService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+
+import androidx.appcompat.app.AlertDialog;
 
 /** UserHomeActivity - Primary customer dashboard featuring product browsing, personalized recommendations, and order tracking. */
 public class UserHomeActivity extends AppCompatActivity {
@@ -62,7 +65,7 @@ public class UserHomeActivity extends AppCompatActivity {
     private static final long BANNER_DELAY = 30000;
 
     // UI Components - Feedback & Delivery
-    private TextView deliveryTimeTv, freeDeliveryTv, walletBalanceTv, currentLocationTv;
+    private TextView deliveryTimeTv, freeDeliveryTv, currentLocationTv, homeRefundedTv;
     private com.google.android.material.progressindicator.LinearProgressIndicator freeDeliveryProgress;
     private View freeDeliveryGoalCard, homeHeader;
     private ImageView sortIcon;
@@ -165,7 +168,7 @@ public class UserHomeActivity extends AppCompatActivity {
         freeDeliveryGoalCard = findViewById(R.id.freeDeliveryGoalCard);
         buyAgainSection = findViewById(R.id.buyAgainSection);
         sortIcon = findViewById(R.id.sortIcon);
-        walletBalanceTv = findViewById(R.id.walletBalanceTv);
+        homeRefundedTv = findViewById(R.id.homeRefundedTv);
 
         categoriesRv = findViewById(R.id.categoriesRv);
         featuredRecyclerView = findViewById(R.id.featuredRecyclerView);
@@ -192,8 +195,9 @@ public class UserHomeActivity extends AppCompatActivity {
 
         // Dashboard Click Listeners
         findViewById(R.id.walletCard).setOnClickListener(v -> {
-            // Future: WalletActivity
-            Toast.makeText(this, "Wallet feature coming soon!", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, UserWalletActivity.class);
+            intent.putExtra("user_id", userId);
+            startActivity(intent);
         });
 
         findViewById(R.id.offersBtn).setOnClickListener(v -> {
@@ -266,7 +270,8 @@ public class UserHomeActivity extends AppCompatActivity {
         buyAgainAdapter = new ProductAdapter(this, buyAgainProducts, userId);
         recommendedAdapter = new ProductAdapter(this, recommendedProducts, userId);
         recentlyViewedAdapter = new ProductAdapter(this, recentlyViewedProducts, userId);
-        recentOrdersAdapter = new com.sunit.groceryplus.adapters.RecentOrderAdapter(this, recentOrders, userId);
+        recentOrdersAdapter = new com.sunit.groceryplus.adapters.RecentOrderAdapter(this, recentOrders, userId,
+                this::showQuickCancelOrderDialog);
 
         ProductAdapter.OnCartUpdateListener cartListener = this::updateFreeDeliveryGoal;
         featuredAdapter.setCartUpdateListener(cartListener);
@@ -287,14 +292,16 @@ public class UserHomeActivity extends AppCompatActivity {
     private void setupBanner() {
         List<String> bannerImages = new ArrayList<>();
         Cursor cursor = dbHelper.getAllPromotions();
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                String imageUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.PromotionEntry.COLUMN_NAME_IMAGE_URL));
-                int isActive = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.PromotionEntry.COLUMN_NAME_IS_ACTIVE));
-                if (isActive == 1 && imageUrl != null && !imageUrl.isEmpty()) {
-                    bannerImages.add(imageUrl);
-                }
-            } while (cursor.moveToNext());
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    String imageUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.PromotionEntry.COLUMN_NAME_IMAGE_URL));
+                    int isActive = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.PromotionEntry.COLUMN_NAME_IS_ACTIVE));
+                    if (isActive == 1 && imageUrl != null && !imageUrl.isEmpty()) {
+                        bannerImages.add(imageUrl);
+                    }
+                } while (cursor.moveToNext());
+            }
             cursor.close();
         }
 
@@ -589,9 +596,11 @@ public class UserHomeActivity extends AppCompatActivity {
         List<com.sunit.groceryplus.models.Order> allUserOrders = orderRepository.getUserOrders(userId);
         if (allUserOrders != null && !allUserOrders.isEmpty()) {
             recentOrders.clear();
-            // Show only last 3 orders
+            // Show only last 3 orders (load line items so item count is correct on cards)
             for (int i = 0; i < Math.min(3, allUserOrders.size()); i++) {
-                recentOrders.add(allUserOrders.get(i));
+                com.sunit.groceryplus.models.Order o = allUserOrders.get(i);
+                o.setItems(orderRepository.getOrderItems(o.getOrderId()));
+                recentOrders.add(o);
             }
             recentOrdersSection.setVisibility(View.VISIBLE);
             recentOrdersAdapter.updateOrders(recentOrders);
@@ -701,9 +710,48 @@ public class UserHomeActivity extends AppCompatActivity {
     }
 
     private void updateWalletDisplay() {
-        double balance = orderRepository.getWalletBalance(userId);
-        if (walletBalanceTv != null) {
-            walletBalanceTv.setText("Balance: Rs. " + String.format("%.2f", balance));
+        if (homeRefundedTv != null) {
+            double balance = dbHelper.getWalletBalance(userId);
+            homeRefundedTv.setVisibility(View.VISIBLE);
+            homeRefundedTv.setText(String.format(Locale.getDefault(), "NPR %.2f", balance));
         }
+    }
+
+    /** One-step cancel from home: confirm, then same logic as order history (Stripe refund → wallet). */
+    private void showQuickCancelOrderDialog(com.sunit.groceryplus.models.Order order) {
+        new AlertDialog.Builder(this)
+                .setTitle("Cancel order?")
+                .setMessage("Order #" + order.getOrderId()
+                        + " will be cancelled. Paid orders (e.g. card): refund after 15% fee is credited to your wallet immediately.")
+                .setPositiveButton("Cancel order", (d, w) -> runCancelOrderInBackground(order))
+                .setNegativeButton("Keep order", null)
+                .show();
+    }
+
+    private void runCancelOrderInBackground(com.sunit.groceryplus.models.Order order) {
+        android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
+        progressDialog.setMessage("Cancelling order…");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+        new Thread(() -> {
+            boolean success = orderRepository.cancelOrder(order.getOrderId(), userId);
+            runOnUiThread(() -> {
+                progressDialog.dismiss();
+                if (success) {
+                    double bal = dbHelper.getWalletBalance(userId);
+                    Toast.makeText(this,
+                            "Order cancelled. Wallet balance: NPR " + String.format(Locale.getDefault(), "%.2f", bal),
+                            Toast.LENGTH_LONG).show();
+                    loadRecentOrders();
+                    updateWalletDisplay();
+                } else {
+                    String msg = "Could not cancel order";
+                    if (OrderRepository.lastError != null && !OrderRepository.lastError.isEmpty()) {
+                        msg += ": " + OrderRepository.lastError;
+                    }
+                    Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                }
+            });
+        }).start();
     }
 }

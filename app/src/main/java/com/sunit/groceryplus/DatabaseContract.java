@@ -249,7 +249,22 @@ public final class DatabaseContract {
         public static final String COLUMN_NAME_SOURCE = "source";
         public static final String COLUMN_NAME_DESCRIPTION = "description";
         public static final String COLUMN_NAME_TIMESTAMP = "timestamp";
+        public static final String COLUMN_NAME_STATUS = "status"; // completed, pending
+        public static final String COLUMN_NAME_AVAILABLE_AT = "available_at"; // for auto-refund
     }
+
+    public static final String SQL_CREATE_WALLET_TRANSACTIONS_TABLE =
+            "CREATE TABLE " + WalletTransactionEntry.TABLE_NAME + " (" +
+                    WalletTransactionEntry.COLUMN_NAME_TRANSACTION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    WalletTransactionEntry.COLUMN_NAME_USER_ID + " INTEGER," +
+                    WalletTransactionEntry.COLUMN_NAME_AMOUNT + " REAL," +
+                    WalletTransactionEntry.COLUMN_NAME_TYPE + " TEXT," +
+                    WalletTransactionEntry.COLUMN_NAME_SOURCE + " TEXT," +
+                    WalletTransactionEntry.COLUMN_NAME_DESCRIPTION + " TEXT," +
+                    WalletTransactionEntry.COLUMN_NAME_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    WalletTransactionEntry.COLUMN_NAME_STATUS + " TEXT DEFAULT 'completed'," +
+                    WalletTransactionEntry.COLUMN_NAME_AVAILABLE_AT + " DATETIME," +
+                    "FOREIGN KEY(" + WalletTransactionEntry.COLUMN_NAME_USER_ID + ") REFERENCES " + UserEntry.TABLE_NAME + "(" + UserEntry.COLUMN_NAME_USER_ID + "))";
 
     // SQL statements to create tables
     public static final String SQL_CREATE_USERS_TABLE =

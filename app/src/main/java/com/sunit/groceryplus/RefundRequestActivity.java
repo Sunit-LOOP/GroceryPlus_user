@@ -107,9 +107,9 @@ public class RefundRequestActivity extends AppCompatActivity {
         }
 
         if ("Stripe".equalsIgnoreCase(paymentMethod) || "Credit Card".equalsIgnoreCase(paymentMethod)) {
-            refundMethodInfoTv.setText("Refund Policy: Approved refunds will be credited back to your original payment method (Stripe).");
+            refundMethodInfoTv.setText("Refund Policy: Approved refunds will be credited back to your Wallet immediately.");
         } else {
-            refundMethodInfoTv.setText("Refund Policy: Approved refunds will be converted into Loyalty Points for future purchases.");
+            refundMethodInfoTv.setText("Refund Policy: Approved refunds will be added to your Wallet (Available for use in 3-5 days).");
         }
     }
 

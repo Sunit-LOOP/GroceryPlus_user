@@ -22,10 +22,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.sunit.groceryplus" />
+                  <option name="mobileSdkAppId" value="1:599988099782:android:adcaaaf3548b68069a95c7" />
+                  <option name="projectId" value="groceryplus-47db9" />
+                  <option name="projectNumber" value="599988099782" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

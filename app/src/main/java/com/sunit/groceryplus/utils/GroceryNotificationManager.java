@@ -86,60 +86,48 @@ public class GroceryNotificationManager {
             return;
         }
 
-        // Step 3: Prepare intent for notification click action
-        Intent intent;
-        if (TYPE_ORDER.equals(type) && refId != null) {
-            // Route to order tracking for order notifications
-            intent = new Intent(context, OrderTrackingActivity.class);
-            intent.putExtra("order_id", Integer.parseInt(refId));
-        } else if (TYPE_DELIVERY.equals(type) && refId != null) {
-            // Route to order tracking for delivery updates
-            intent = new Intent(context, OrderTrackingActivity.class);
-            intent.putExtra("order_id", Integer.parseInt(refId));
-        } else if (TYPE_STOCK.equals(type) && refId != null) {
-            // Route to product details for stock alerts
-            intent = new Intent(context, ProductDetailActivity.class);
-            intent.putExtra("product_id", Integer.parseInt(refId));
-        } else if (TYPE_VENDOR.equals(type) && refId != null) {
-            // Route to notification activity for vendor updates
-            intent = new Intent(context, NotificationActivity.class);
-            intent.putExtra("user_id", userId);
-        } else if (TYPE_REVIEW.equals(type) && refId != null) {
-            // Route to product details for review requests
-            intent = new Intent(context, ProductDetailActivity.class);
-            intent.putExtra("product_id", Integer.parseInt(refId));
-        } else if (TYPE_CART.equals(type)) {
-            // Route to home for cart updates
-            intent = new Intent(context, com.sunit.groceryplus.UserHomeActivity.class);
-            intent.putExtra("user_id", userId);
-        } else {
-            // Default route to notification activity
-            intent = new Intent(context, NotificationActivity.class);
-            intent.putExtra("user_id", userId);
-        }
-        
-        // Set intent flags for proper activity stack management
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        // Create pending intent for notification click
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), 
-                intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-        // Step 4: Build notification with basic properties
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notifications) // Default icon, will be updated based on type
-                .setContentTitle(title)
-                .setContentText(message)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(message)) // Expandable text
-                .setPriority(NotificationCompat.PRIORITY_HIGH) // High priority for visibility
-                .setContentIntent(pendingIntent) // Click action
-                .setAutoCancel(true); // Auto-dismiss on click
-
-        // Step 5: Set icon based on notification type
-        int iconRes = getIconByType(type);
-        builder.setSmallIcon(iconRes);
-
-        // Step 6: Display notification to user
         try {
+            // Step 3: Prepare intent for notification click action
+            Intent intent;
+            if (TYPE_ORDER.equals(type) && refId != null) {
+                intent = new Intent(context, OrderTrackingActivity.class);
+                intent.putExtra("order_id", Integer.parseInt(refId));
+            } else if (TYPE_DELIVERY.equals(type) && refId != null) {
+                intent = new Intent(context, OrderTrackingActivity.class);
+                intent.putExtra("order_id", Integer.parseInt(refId));
+            } else if (TYPE_STOCK.equals(type) && refId != null) {
+                intent = new Intent(context, ProductDetailActivity.class);
+                intent.putExtra("product_id", Integer.parseInt(refId));
+            } else if (TYPE_VENDOR.equals(type) && refId != null) {
+                intent = new Intent(context, NotificationActivity.class);
+                intent.putExtra("user_id", userId);
+            } else if (TYPE_REVIEW.equals(type) && refId != null) {
+                intent = new Intent(context, ProductDetailActivity.class);
+                intent.putExtra("product_id", Integer.parseInt(refId));
+            } else if (TYPE_CART.equals(type)) {
+                intent = new Intent(context, com.sunit.groceryplus.UserHomeActivity.class);
+                intent.putExtra("user_id", userId);
+            } else {
+                intent = new Intent(context, NotificationActivity.class);
+                intent.putExtra("user_id", userId);
+            }
+
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(),
+                    intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_notifications)
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true);
+
+            int iconRes = getIconByType(type);
+            builder.setSmallIcon(iconRes);
+
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
             if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
                 notificationManager.notify((int) System.currentTimeMillis(), builder.build());
@@ -148,7 +136,7 @@ public class GroceryNotificationManager {
         } catch (SecurityException e) {
             Log.e("GroceryNotificationManager", "SecurityException when sending notification", e);
         } catch (Exception e) {
-            Log.e("GroceryNotificationManager", "Error sending notification", e);
+            Log.e("GroceryNotificationManager", "Error building/showing notification", e);
         }
     }
 

@@ -6,7 +6,7 @@ import com.sunit.groceryplus.DatabaseHelper;
 import com.sunit.groceryplus.models.Product;
 import java.util.*;
 
-/** Sophisticated collaborative filtering engine implementing user-based, item-based, and matrix factorization algorithms for product recommendations. */
+/** collaborative filtering engine implementing user-based, item-based, and matrix factorization algorithms for product recommendations. */
 public class CollaborativeFilteringEngine {
     
     private static final String TAG = "CollaborativeFilteringEngine";

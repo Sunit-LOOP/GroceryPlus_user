@@ -100,18 +100,41 @@ public class AdminSupportActivity extends AppCompatActivity {
 
             @Override
             public void onApproveWalletRefund(SupportTicket ticket, double amount) {
-                // Update User Wallet
-                dbHelper.updateWalletBalance(ticket.getUserId(), amount);
+                // Determine if this is a cash-based order to apply the 3-5 day delay
+                String paymentMethod = "COD";
+                android.database.Cursor pCursor = dbHelper.getPaymentByOrderId(ticket.getOrderId());
+                if (pCursor != null && pCursor.moveToFirst()) {
+                    paymentMethod = pCursor.getString(pCursor.getColumnIndexOrThrow(com.sunit.groceryplus.DatabaseContract.PaymentEntry.COLUMN_NAME_PAYMENT_METHOD));
+                    pCursor.close();
+                }
+
+                boolean isPaidMethod = "Stripe".equalsIgnoreCase(paymentMethod) || "Credit Card".equalsIgnoreCase(paymentMethod);
+                
+                if (!isPaidMethod) {
+                    // APPLY DELAY for Cash/COD
+                    java.util.Calendar cal = java.util.Calendar.getInstance();
+                    cal.add(java.util.Calendar.DAY_OF_YEAR, 4);
+                    String availableAt = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(cal.getTime());
+                    
+                    dbHelper.logTransaction(ticket.getUserId(), amount, "credit", "refund", 
+                            "Support Refund for Order #" + ticket.getOrderId() + " (Available in 3-5 days)", "pending", availableAt);
+                    Toast.makeText(AdminSupportActivity.this, "Scheduled Rs. " + amount + " to Wallet (Pending 4 days)", Toast.LENGTH_LONG).show();
+                } else {
+                    // IMMEDIATE for Stripe
+                    dbHelper.logTransaction(ticket.getUserId(), amount, "credit", "refund", "Support Refund for Order #" + ticket.getOrderId());
+                    Toast.makeText(AdminSupportActivity.this, "Refund of Rs. " + amount + " added to Wallet immediately", Toast.LENGTH_LONG).show();
+                }
                 
                 // Update ticket
                 dbHelper.updateTicketStatus(ticket.getTicketId(), "resolved (refunded to wallet)");
-                
-                Toast.makeText(AdminSupportActivity.this, "Refund of Rs. " + amount + " processed to wallet", Toast.LENGTH_LONG).show();
                 loadTickets();
                 
                 // Notify User
+                String msg = "A refund of Rs. " + amount + " has been processed for your ticket #" + ticket.getTicketId();
+                if (!isPaidMethod) msg += ". It will be available in your Wallet in 3-5 days.";
+                
                 GroceryNotificationManager.getInstance(AdminSupportActivity.this).sendNotification(
-                        ticket.getUserId(), "Refund Processed", "A refund of Rs. " + amount + " has been added to your wallet.",
+                        ticket.getUserId(), "Refund Processed", msg,
                         GroceryNotificationManager.TYPE_PAYMENT, String.valueOf(ticket.getOrderId()));
             }
         });
